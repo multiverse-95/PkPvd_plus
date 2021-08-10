@@ -24,6 +24,8 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -31,6 +33,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -74,6 +77,8 @@ public class appController {
     @FXML
     private VBox vbox_rep_main;
 
+    @FXML
+    private HBox vbox_filter;
 
     @FXML
     private ChoiceBox<String> choiceFilter_box;
@@ -110,7 +115,114 @@ public class appController {
 
     }
 
+    public void SetResult(ArrayList<ReportModel> reportFind_arr){
+        if (reportFind_arr.isEmpty()){
+            Label label_search=new Label();
+            label_search.setText("Нет данных по указанному фильтру.");
+            label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+            data_rep_table.setPlaceholder(label_search);
+        }
+        ObservableList<ReportModel> dataReport = FXCollections.observableArrayList(reportFind_arr);
+        // Получение списка всех ведомств и заполнение в текстовое поле
+        // Заполнение данными таблицы
+        name_company_col.setCellValueFactory(new PropertyValueFactory<>("nameCompany"));
+        name_company_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+        appeal_col.setCellValueFactory(new PropertyValueFactory<>("appeal"));
+        appeal_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+        date_create_col.setCellValueFactory(new PropertyValueFactory<>("dateCreate"));
+        date_create_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+        action_col.setCellValueFactory(new PropertyValueFactory<>("action"));
+        action_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+        applicant_col.setCellValueFactory(new PropertyValueFactory<>("applicant"));
+        applicant_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+        data_rep_table.setItems(dataReport);
+        // Вызов события для кнопки скачивания отчета по ведомствам
+
+        download_report_b.setDisable(false);
+        ArrayList<ReportModel> finalReportFind_arr = reportFind_arr;
+        download_report_b.setOnAction(event1 -> {
+            //Download_Report_Task(period_report_label, parsed_result_arr);
+            ReportController reportController_new=new ReportController();
+            reportController_new.Download_report(finalReportFind_arr);
+        });
+    }
+
+    public void SearchResult(ArrayList<ReportModel> dataReportList, String typeFilter){
+            String FilterText=search_t.getText();
+            ReportController reportController=new ReportController();
+
+        ArrayList<ReportModel> reportFind_arr = new ArrayList<ReportModel>();
+            switch (typeFilter){
+                case "Заявитель":
+                    reportFind_arr=reportController.FilterApplicants(FilterText, dataReportList);
+
+                    /*Task FilterApplicantsTask = new ReportController.FilterApplicantsTask(FilterText, dataReportList);
+                    //  После выполнения потока
+                    FilterApplicantsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                        @Override
+                        public void handle(WorkerStateEvent event) {
+                            ArrayList<ReportModel> reportFind_arr =(ArrayList<ReportModel>) FilterApplicantsTask.getValue();
+                            SetResult(reportFind_arr);
+                        }
+                    });
+                    // Запуск потока
+                    Thread FilterApplicantsThread = new Thread(FilterApplicantsTask);
+                    FilterApplicantsThread.setDaemon(true);
+                    FilterApplicantsThread.start();*/
+
+                    break;
+                case "Организация":
+                    reportFind_arr =reportController.FilterNameCompany(FilterText, dataReportList);
+
+                    /*Task FilterNameCompanyTask = new ReportController.FilterNameCompanyTask(FilterText, dataReportList);
+                    //  После выполнения потока
+                    FilterNameCompanyTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                        @Override
+                        public void handle(WorkerStateEvent event) {
+                            ArrayList<ReportModel> reportFind_arr =(ArrayList<ReportModel>) FilterNameCompanyTask.getValue();
+                            SetResult(reportFind_arr);
+                        }
+                    });
+                    // Запуск потока
+                    Thread FilterNameCompanyThread = new Thread(FilterNameCompanyTask);
+                    FilterNameCompanyThread.setDaemon(true);
+                    FilterNameCompanyThread.start();*/
+                    break;
+                case "Обращения":
+                    reportFind_arr =reportController.FilterAppeal(FilterText, dataReportList);
+
+                    /*Task FilterAppealTask = new ReportController.FilterAppealTask(FilterText, dataReportList);
+                    //  После выполнения потока
+                    FilterAppealTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                        @Override
+                        public void handle(WorkerStateEvent event) {
+                            ArrayList<ReportModel> reportFind_arr =(ArrayList<ReportModel>) FilterAppealTask.getValue();
+                            SetResult(reportFind_arr);
+                        }
+                    });
+                    // Запуск потока
+                    Thread FilterAppealThread = new Thread(FilterAppealTask);
+                    FilterAppealThread.setDaemon(true);
+                    FilterAppealThread.start();*/
+                    break;
+                default:
+                    System.out.println("none");
+                    break;
+            }
+        SetResult(reportFind_arr);
+
+    }
+
     public void SetFilter(ArrayList<ReportModel> dataReportList){
+        System.out.println("Заявитель");
+        search_t.textProperty().addListener((observable, oldValue, newValue) -> {
+            SearchResult(dataReportList,"Заявитель");
+        });
         choiceFilter_box.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number number, Number number2) {
@@ -119,15 +231,36 @@ public class appController {
                 switch (selectedItemFilter){
                     case "Фильтр по заявителям":
                         System.out.println("Заявитель");
-                        search_t.setPromptText("Фильтр по заявителям");
+                        search_t.setPromptText("Введите ФИО заявителя");
+                        SearchResult(dataReportList,"Заявитель");
+                        search_t.textProperty().addListener((observable, oldValue, newValue) -> {
+                            SearchResult(dataReportList,"Заявитель");
+                        });
+                        show_rep_b.setOnAction(event -> {
+                            SearchResult(dataReportList,"Заявитель");
+                        });
                         break;
-                    case "Фильтр по организации":
+                    case "Фильтр по организациям":
                         System.out.println("Организация");
-                        search_t.setPromptText("Фильтр по организации");
+                        search_t.setPromptText("Введите название организации");
+                        SearchResult(dataReportList,"Организация");
+                        search_t.textProperty().addListener((observable, oldValue, newValue) -> {
+                            SearchResult(dataReportList,"Организация");
+                        });
+                        show_rep_b.setOnAction(event -> {
+                            SearchResult(dataReportList,"Организация");
+                        });
                         break;
                     case "Фильтр по обращениям":
                         System.out.println("Обращения");
-                        search_t.setPromptText("Фильтр по обращениям");
+                        search_t.setPromptText("Введите номер обращения");
+                        SearchResult(dataReportList,"Обращения");
+                        search_t.textProperty().addListener((observable, oldValue, newValue) -> {
+                            SearchResult(dataReportList,"Обращения");
+                        });
+                        show_rep_b.setOnAction(event -> {
+                            SearchResult(dataReportList,"Обращения");
+                        });
                         break;
                     default:
                         System.out.println("Nooone!");
@@ -135,68 +268,28 @@ public class appController {
                 }
             }
         });
-
-            String selectedItemFilter=choiceFilter_box.getSelectionModel().getSelectedItem();
-            switch (selectedItemFilter){
-                case "Фильтр по заявителям":
-                    System.out.println("Заявитель");
-                    search_t.textProperty().addListener((observable, oldValue, newValue) -> {
-                        String FilterText=search_t.getText();
-                        ReportController reportController=new ReportController();
-                        ArrayList<ReportModel> reportFind_arr= reportController.FilterApplicants(FilterText, dataReportList);
-                        if (reportFind_arr.isEmpty()){
-                            Label label_search=new Label();
-                            label_search.setText("Нет данных по указанному фильтру.");
-                            label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
-                            data_rep_table.setPlaceholder(label_search);
-                        }
-                        ObservableList<ReportModel> dataReport = FXCollections.observableArrayList(reportFind_arr);
-                        // Получение списка всех ведомств и заполнение в текстовое поле
-                        // Заполнение данными таблицы
-                        name_company_col.setCellValueFactory(new PropertyValueFactory<>("nameCompany"));
-                        name_company_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-                        appeal_col.setCellValueFactory(new PropertyValueFactory<>("appeal"));
-                        appeal_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-                        date_create_col.setCellValueFactory(new PropertyValueFactory<>("dateCreate"));
-                        date_create_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-                        action_col.setCellValueFactory(new PropertyValueFactory<>("action"));
-                        action_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-                        applicant_col.setCellValueFactory(new PropertyValueFactory<>("applicant"));
-                        applicant_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-                        data_rep_table.setItems(dataReport);
-                        // Вызов события для кнопки скачивания отчета по ведомствам
-
-                        download_report_b.setDisable(false);
-                        download_report_b.setOnAction(event1 -> {
-                            //Download_Report_Task(period_report_label, parsed_result_arr);
-                            ReportController reportController_new=new ReportController();
-                            reportController_new.Download_report(reportFind_arr);
-                        });
-                    });
-                    break;
-                case "Фильтр по организации":
-                    System.out.println("Организация");
-                    break;
-                case "Фильтр по обращениям":
-                    System.out.println("Обращения");
-                    break;
-                default:
-                    System.out.println("Nooone!");
-                    break;
-            }
-
-
     }
 
     public void Show_report(String cookie){
+        generate_report_b.setOnMouseEntered(event_mouse -> {
+            ((Node) event_mouse.getSource()).setCursor(Cursor.HAND);
+        });
+        download_report_b.setOnMouseEntered(event_mouse -> {
+            ((Node) event_mouse.getSource()).setCursor(Cursor.HAND);
+        });
+        show_rep_b.setOnMouseEntered(event_mouse -> {
+            ((Node) event_mouse.getSource()).setCursor(Cursor.HAND);
+        });
+        choiceFilter_box.setOnMouseEntered(event_mouse -> {
+            ((Node) event_mouse.getSource()).setCursor(Cursor.HAND);
+        });
+
+
         choiceFilter_box.setItems(FXCollections.observableArrayList(
-                "Фильтр по заявителям","Фильтр по организации", "Фильтр по обращениям"));
+                "Фильтр по заявителям","Фильтр по организациям", "Фильтр по обращениям"));
         choiceFilter_box.getSelectionModel().selectFirst();
+        search_t.setText("");
+        search_t.setPromptText("Введите ФИО заявителя");
 
         menu_item_change_user.setOnAction(event -> {
             File fileJson = new File("C:\\pkpvdplus\\settingsPVD.json");
@@ -256,6 +349,10 @@ public class appController {
         data_rep_table.setPlaceholder(label_onStart);
 
         generate_report_b.setOnAction(event -> {
+            choiceFilter_box.getSelectionModel().selectFirst();
+            search_t.setText("");
+            search_t.setPromptText("Введите ФИО заявителя");
+
             LocalDate dateStart=date_start_d.getValue();
             LocalDate dateFinish=date_finish_d.getValue();
 
@@ -316,6 +413,7 @@ public class appController {
                             pi.setVisible(false);
                             vbox_rep_main.setDisable(false);
                             data_rep_table.setDisable(false);
+                            vbox_filter.setDisable(false);
                             // Получение распарсенных данных по ведомствам МфЦ
 
                             // Получение данных с распарсенного поля

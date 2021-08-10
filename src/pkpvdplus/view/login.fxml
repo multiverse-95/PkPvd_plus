@@ -40,7 +40,7 @@
                         <Insets bottom="10.0" />
                      </VBox.margin>
                   </PasswordField>
-                  <CheckBox fx:id="saveMe_ch" alignment="CENTER" mnemonicParsing="false" text="Запомнить меня">
+                  <CheckBox fx:id="saveMe_ch" alignment="CENTER" mnemonicParsing="false" selected="true" text="Запомнить меня">
                      <VBox.margin>
                         <Insets bottom="7.0" />
                      </VBox.margin>

@@ -75,8 +75,8 @@ public class ReportController {
             long dateStartLong=timelist.get(0);
             long dateFinishLong=timelist.get(1);
             System.out.println("start: "+dateStartLong+" finish: "+dateFinishLong);
-            //String csvReport=getReport(dateStartLong,dateFinishLong,cookies);
-            String csvReport="";
+            String csvReport=getReport(dateStartLong,dateFinishLong,cookies);
+            //tring csvReport="";
             ArrayList<ReportModel> reportList= parsingReport(csvReport);
             return reportList;
         }
@@ -116,6 +116,53 @@ public class ReportController {
         }
     }
 
+    /*public static class FilterApplicantsTask extends Task<ArrayList<ReportModel>> {
+        private final String FilterApplicant;
+        private final ArrayList<ReportModel> dataReportList;
+
+        public FilterApplicantsTask(String FilterApplicant, ArrayList<ReportModel> dataReportList) {
+            this.FilterApplicant=FilterApplicant;
+            this.dataReportList = dataReportList;
+
+        }
+        @Override
+        protected ArrayList<ReportModel> call() throws Exception {
+            ArrayList<ReportModel> dataReportList_findArr=FilterApplicants(FilterApplicant, dataReportList);
+            return dataReportList_findArr;
+        }
+    }
+
+    public static class FilterNameCompanyTask extends Task<ArrayList<ReportModel>> {
+        private final String FilterNameCompany;
+        private final ArrayList<ReportModel> dataReportList;
+
+        public FilterNameCompanyTask(String FilterNameCompany, ArrayList<ReportModel> dataReportList) {
+            this.FilterNameCompany=FilterNameCompany;
+            this.dataReportList = dataReportList;
+
+        }
+        @Override
+        protected ArrayList<ReportModel> call() throws Exception {
+            ArrayList<ReportModel> dataReportList_findArr=FilterNameCompany(FilterNameCompany, dataReportList);
+            return dataReportList_findArr;
+        }
+    }
+
+    public static class FilterAppealTask extends Task<ArrayList<ReportModel>> {
+        private final String FilterAppeal;
+        private final ArrayList<ReportModel> dataReportList;
+
+        public FilterAppealTask(String FilterAppeal, ArrayList<ReportModel> dataReportList) {
+            this.FilterAppeal=FilterAppeal;
+            this.dataReportList = dataReportList;
+
+        }
+        @Override
+        protected ArrayList<ReportModel> call() throws Exception {
+            ArrayList<ReportModel> dataReportList_findArr=FilterAppeal(FilterAppeal, dataReportList);
+            return dataReportList_findArr;
+        }
+    }*/
 
 
     public static List<Long> convertTime(LocalDate dateStart, LocalDate dateFinish) throws ParseException {
@@ -180,8 +227,8 @@ public class ReportController {
 
     public static ArrayList<ReportModel> parsingReport(String csvReport) throws IOException, CsvValidationException {
         ArrayList<ReportModel> reportList=new ArrayList<ReportModel>();
-        try (CSVReader reader = new CSVReaderBuilder(new FileReader("D:\\recovery\\pk_pvd\\reportPkPvd.csv"))
-        //try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvReport))
+        //try (CSVReader reader = new CSVReaderBuilder(new FileReader("D:\\recovery\\pk_pvd\\reportPkPvd.csv"))
+        try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvReport))
                 .withSkipLines(1)           // skip the first line, header info
                 .build()) {
             String[] lineInArray;
@@ -221,6 +268,48 @@ public class ReportController {
         // Возвращаем список найденных переменных по запросу
         return dataReportList_findArr;
     }
+
+    public ArrayList<ReportModel> FilterNameCompany(String FilterNameCompany, ArrayList<ReportModel> dataReportList){
+        // Поиск через регулярные выражения
+        Pattern pattern = Pattern.compile(".*" + FilterNameCompany.toLowerCase() + ".*");
+
+        ArrayList<ReportModel> dataReportList_findArr = new ArrayList<ReportModel>();
+        // Идем по циклу данных, что есть в таблице, применяем паттерн. Совпадения записываем в новый список
+        for (int i = 0; i < dataReportList.size(); i++) {
+            Matcher matcher = pattern.matcher(dataReportList.get(i).getNameCompany().toLowerCase());
+            if (matcher.find()) {
+                dataReportList_findArr.add(new ReportModel(
+                        dataReportList.get(i).getPeriod(),dataReportList.get(i).getNameCompany() ,dataReportList.get(i).getAppeal(),
+                        dataReportList.get(i).getDateCreate(), dataReportList.get(i).getAction(), dataReportList.get(i).getApplicant()));
+            } else {
+                //System.out.println("Search Failed!");
+            }
+        }
+        // Возвращаем список найденных переменных по запросу
+        return dataReportList_findArr;
+    }
+
+    public ArrayList<ReportModel> FilterAppeal(String FilterAppeal, ArrayList<ReportModel> dataReportList){
+        // Поиск через регулярные выражения
+        Pattern pattern = Pattern.compile(".*" + FilterAppeal.toLowerCase() + ".*");
+
+        ArrayList<ReportModel> dataReportList_findArr = new ArrayList<ReportModel>();
+        // Идем по циклу данных, что есть в таблице, применяем паттерн. Совпадения записываем в новый список
+        for (int i = 0; i < dataReportList.size(); i++) {
+            Matcher matcher = pattern.matcher(dataReportList.get(i).getAppeal().toLowerCase());
+            if (matcher.find()) {
+                dataReportList_findArr.add(new ReportModel(
+                        dataReportList.get(i).getPeriod(),dataReportList.get(i).getNameCompany() ,dataReportList.get(i).getAppeal(),
+                        dataReportList.get(i).getDateCreate(), dataReportList.get(i).getAction(), dataReportList.get(i).getApplicant()));
+            } else {
+                //System.out.println("Search Failed!");
+            }
+        }
+        // Возвращаем список найденных переменных по запросу
+        return dataReportList_findArr;
+    }
+
+
 
     // Функция для загрузки отчета по ведомствам
     public void Download_report(ArrayList<ReportModel> dataReportList) {

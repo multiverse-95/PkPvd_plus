@@ -10,6 +10,8 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -58,6 +60,12 @@ public class StartController {
 
     @FXML
     void initialize() {
+        login_button.setOnMouseEntered(event_mouse -> {
+            ((Node) event_mouse.getSource()).setCursor(Cursor.HAND);
+        });
+        saveMe_ch.setOnMouseEntered(event_mouse -> {
+            ((Node) event_mouse.getSource()).setCursor(Cursor.HAND);
+        });
 
         ArrayList<LoginModel> dataLogin=AutoAutoriz();
             if (dataLogin.isEmpty()){
@@ -88,8 +96,8 @@ public class StartController {
                 if (saveMe_ch.isSelected()) {
                     Login_PkPvd(true); // Вызов функции авторизации
                 } else {
-                    //Login_PkPvd(false); // Вызов функции авторизации
-                    NotLogin();
+                    Login_PkPvd(false); // Вызов функции авторизации
+                    //NotLogin();
                 }
             }
         });

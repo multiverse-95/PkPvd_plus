@@ -107,25 +107,22 @@
                                           </Button>
                                        </children>
                                     </HBox>
-                                                <HBox alignment="CENTER" prefWidth="200.0">
+                                                <HBox fx:id="vbox_filter" alignment="CENTER" disable="true">
                                                     <children>
                                           <ChoiceBox fx:id="choiceFilter_box" prefWidth="200.0" />
-                                                        <TextField fx:id="search_t" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="600.0" promptText="Введите ФИО заявителя" style="-fx-background-radius: 20;">
+                                                        <TextField fx:id="search_t" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="550.0" promptText="Введите ФИО заявителя" stylesheets="@filterField.css">
                                                             <HBox.margin>
-                                                                <Insets left="5.0" />
+                                                                <Insets left="5.0" right="5.0" />
                                                             </HBox.margin>
                                                         </TextField>
-                                                        <Button fx:id="show_rep_b" mnemonicParsing="false" style="-fx-background-radius: 20;" text="Применить фильтр">
-                                                            <font>
-                                                                <Font name="Arial Rounded MT Bold" size="15.0" />
-                                                            </font>
-                                                            <HBox.margin>
-                                                                <Insets left="5.0" />
-                                                            </HBox.margin>
-                                                        </Button>
+                                          <Button fx:id="show_rep_b" mnemonicParsing="false" prefWidth="170.0" style="-fx-background-radius: 20;" text="Применить фильтр">
+                                             <font>
+                                                <Font name="Arial Rounded MT Bold" size="15.0" />
+                                             </font>
+                                          </Button>
                                                     </children>
                                                     <VBox.margin>
-                                                        <Insets top="5.0" />
+                                                        <Insets top="10.0" />
                                                     </VBox.margin>
                                                 </HBox>
                                     <Label fx:id="period_label" alignment="TOP_CENTER" layoutX="426.0" layoutY="10.0" style="-fx-text-fill: #2F4F4F;">
