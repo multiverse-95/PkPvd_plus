@@ -1,0 +1,7 @@
+.text-field {
+    -fx-background-color: #FFFFF0;
+    -fx-background-radius: 20;
+}
+.text-field:focused{
+    -fx-prompt-text-fill: derive(-fx-control-inner-background, -30%);
+}

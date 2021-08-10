@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="750.0" prefWidth="1031.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pkpvdplus.appController">
+    <children>
+        <MenuBar fx:id="app_menuBar" prefHeight="25.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <menus>
+                <Menu mnemonicParsing="false" text="Аккаунт">
+                    <items>
+                        <MenuItem fx:id="menu_item_change_user" mnemonicParsing="false" text="Сменить пользователя" />
+                    </items>
+                </Menu>
+            </menus>
+        </MenuBar>
+        <TabPane layoutY="23.0" maxHeight="1.7976931348623157E308" prefHeight="750.0" prefWidth="1031.0" stylesheets="@tabPane_style.css" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="23.0">
+            <tabs>
+                <Tab text="Заявления">
+                    <content>
+                        <BorderPane prefHeight="200.0" prefWidth="200.0">
+                            <top>
+                                <StackPane fx:id="root_report" maxHeight="1.7976931348623157E308" BorderPane.alignment="CENTER">
+                                    <children>
+                                        <VBox fx:id="vbox_rep_main" alignment="CENTER" maxHeight="1.7976931348623157E308" prefWidth="1031.0">
+                                            <children>
+                                                <Label alignment="TOP_CENTER" style="-fx-text-fill: #2F4F4F;" text="Список заявлений">
+                                                    <font>
+                                                        <Font name="Arial Rounded MT Bold" size="24.0" />
+                                                    </font>
+                                                </Label>
+                                    <Label alignment="TOP_CENTER" style="-fx-text-fill: #2F4F4F;" text="Период:">
+                                       <font>
+                                          <Font name="Arial Rounded MT Bold" size="18.0" />
+                                       </font>
+                                       <VBox.margin>
+                                          <Insets top="5.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                    <HBox alignment="CENTER" prefWidth="200.0">
+                                       <children>
+                                          <Label alignment="TOP_CENTER" style="-fx-text-fill: #2F4F4F;" text="с:">
+                                             <font>
+                                                <Font name="Arial Rounded MT Bold" size="18.0" />
+                                             </font>
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </Label>
+                                          <DatePicker fx:id="date_start_d">
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </DatePicker>
+                                          <Label alignment="TOP_CENTER" layoutX="405.0" layoutY="49.0" style="-fx-text-fill: #2F4F4F;" text="по:">
+                                             <font>
+                                                <Font name="Arial Rounded MT Bold" size="18.0" />
+                                             </font>
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </Label>
+                                          <DatePicker fx:id="date_finish_d" layoutX="460.0" layoutY="48.0">
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </DatePicker>
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" top="5.0" />
+                                       </VBox.margin>
+                                       <opaqueInsets>
+                                          <Insets />
+                                       </opaqueInsets>
+                                    </HBox>
+                                    <HBox alignment="CENTER" prefWidth="200.0">
+                                       <children>
+                                          <Button fx:id="generate_report_b" mnemonicParsing="false" prefWidth="170.0" style="-fx-background-radius: 20;" text="Сформировать отчёт">
+                                             <font>
+                                                <Font name="Arial Rounded MT Bold" size="15.0" />
+                                             </font>
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </Button>
+                                          <Button fx:id="download_report_b" disable="true" layoutX="444.0" layoutY="47.0" mnemonicParsing="false" prefWidth="170.0" style="-fx-background-radius: 20;" text="Скачать отчёт">
+                                             <font>
+                                                <Font name="Arial Rounded MT Bold" size="15.0" />
+                                             </font>
+                                          </Button>
+                                       </children>
+                                    </HBox>
+                                                <HBox alignment="CENTER" prefWidth="200.0">
+                                                    <children>
+                                          <ChoiceBox fx:id="choiceFilter_box" prefWidth="200.0" />
+                                                        <TextField fx:id="search_t" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="600.0" promptText="Введите ФИО заявителя" style="-fx-background-radius: 20;">
+                                                            <HBox.margin>
+                                                                <Insets left="5.0" />
+                                                            </HBox.margin>
+                                                        </TextField>
+                                                        <Button fx:id="show_rep_b" mnemonicParsing="false" style="-fx-background-radius: 20;" text="Применить фильтр">
+                                                            <font>
+                                                                <Font name="Arial Rounded MT Bold" size="15.0" />
+                                                            </font>
+                                                            <HBox.margin>
+                                                                <Insets left="5.0" />
+                                                            </HBox.margin>
+                                                        </Button>
+                                                    </children>
+                                                    <VBox.margin>
+                                                        <Insets top="5.0" />
+                                                    </VBox.margin>
+                                                </HBox>
+                                    <Label fx:id="period_label" alignment="TOP_CENTER" layoutX="426.0" layoutY="10.0" style="-fx-text-fill: #2F4F4F;">
+                                       <font>
+                                          <Font name="Arial Rounded MT Bold" size="20.0" />
+                                       </font>
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                    </Label>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                </StackPane>
+                            </top>
+                            <center>
+                                <TableView fx:id="data_rep_table" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="550.0" prefWidth="1031.0" BorderPane.alignment="CENTER">
+                                    <columns>
+                                        <TableColumn fx:id="name_company_col" prefWidth="195.0" text="Наименование организации" />
+                                        <TableColumn fx:id="appeal_col" prefWidth="214.0" text="Обращение" />
+                              <TableColumn fx:id="date_create_col" prefWidth="178.0" text="Дата создания" />
+                              <TableColumn fx:id="action_col" prefWidth="261.0" text="Действие" />
+                              <TableColumn fx:id="applicant_col" prefWidth="182.0" text="Заявители" />
+                                    </columns>
+                                </TableView>
+                            </center>
+                        </BorderPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </children>
+</AnchorPane>

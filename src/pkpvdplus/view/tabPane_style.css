@@ -1,0 +1,37 @@
+/* Modify the background color of the Pane area of ​​TabPane */
+.tab-pane {
+    -fx-background-color: #C0C0C0;
+}
+/* Modify the background color of Tab */
+.tab {
+    -fx-background-color: #A9A9A9;
+    -fx-background-radius: 10px 10px 0px 0px;
+    -fx-font: 16px Tahoma;
+}
+/* Modify the background color of the top bar */
+.tab-pane>*.tab-header-area>*.tab-header-background
+{
+    -fx-background-color: -fx-outer-border, -fx-text-box-border, #DCDCDC;
+}
+/* Modify the color of the text in the tab */
+.tab-label {
+    -fx-text-fill: #000000;
+
+}
+/* Child selector, select the child element tab-label when Tab is selected */
+.tab:selected .tab-label {
+    -fx-text-fill: #000000;
+
+}
+/* Set the background color when the tab is selected */
+.tab:selected {
+    -fx-background-color: #C0C0C0;
+    -fx-background-radius: 10px 10px 0px 0px;
+    -fx-font: 16px Tahoma;
+}
+/* When Tab is selected, select its border and modify the style */
+.tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-border-radius: 10px 10px 0px 0px;
+    -fx-border-width: 1px 1px 1px 1px;
+    -fx-border-color: #C0C0C0;
+}
