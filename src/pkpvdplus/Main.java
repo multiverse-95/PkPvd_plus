@@ -12,7 +12,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
         Parent root = FXMLLoader.load(getClass().getResource("view/login.fxml"));
         primaryStage.setTitle("ПК ПВД Плюс"); // Название приложения
-        primaryStage.setScene(new Scene(root, 400, 200)); // Изначальный размер окна
+        primaryStage.setScene(new Scene(root, 400, 220)); // Изначальный размер окна
         primaryStage.show(); // Запустить окно приложения
         primaryStage.setResizable(false); // Сделать размер окна неизменяемым
     }

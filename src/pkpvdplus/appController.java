@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +19,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -115,152 +118,136 @@ public class appController {
 
     }
 
-    public void SetResult(ArrayList<ReportModel> reportFind_arr){
-        if (reportFind_arr.isEmpty()){
-            Label label_search=new Label();
-            label_search.setText("Нет данных по указанному фильтру.");
-            label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
-            data_rep_table.setPlaceholder(label_search);
-        }
-        ObservableList<ReportModel> dataReport = FXCollections.observableArrayList(reportFind_arr);
-        // Получение списка всех ведомств и заполнение в текстовое поле
-        // Заполнение данными таблицы
-        name_company_col.setCellValueFactory(new PropertyValueFactory<>("nameCompany"));
-        name_company_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-        appeal_col.setCellValueFactory(new PropertyValueFactory<>("appeal"));
-        appeal_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-        date_create_col.setCellValueFactory(new PropertyValueFactory<>("dateCreate"));
-        date_create_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-        action_col.setCellValueFactory(new PropertyValueFactory<>("action"));
-        action_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-        applicant_col.setCellValueFactory(new PropertyValueFactory<>("applicant"));
-        applicant_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-        data_rep_table.setItems(dataReport);
-        // Вызов события для кнопки скачивания отчета по ведомствам
-
-        download_report_b.setDisable(false);
-        ArrayList<ReportModel> finalReportFind_arr = reportFind_arr;
-        download_report_b.setOnAction(event1 -> {
-            //Download_Report_Task(period_report_label, parsed_result_arr);
-            ReportController reportController_new=new ReportController();
-            reportController_new.Download_report(finalReportFind_arr);
+    public void FilterApplicants(ArrayList<ReportModel> dataReportList){
+        ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
+        FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
+        search_t.setOnKeyPressed(event -> {
+            search_t.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate((Predicate<? super ReportModel>) report_model->{
+                    if (newValue ==null || newValue.isEmpty()){
+                        return true;
+                    }
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    if (report_model.getApplicant().toLowerCase().contains(lowerCaseFilter)){
+                        return true;
+                    }
+                    return false;
+                });
+            });
+            SortedList<ReportModel> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(data_rep_table.comparatorProperty());
+            data_rep_table.setItems(sortedData);
+            if (sortedData.isEmpty()){
+                Label label_search=new Label();
+                label_search.setText("Нет данных по указанному фильтру.");
+                label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+                data_rep_table.setPlaceholder(label_search);
+            } else {
+                download_report_b.setOnAction(event1 -> {
+                    ArrayList<ReportModel> sortedFinal=new ArrayList<>(sortedData);
+                    ReportController reportController_new=new ReportController();
+                    reportController_new.Download_report(sortedFinal);
+                });
+            }
         });
     }
 
-    public void SearchResult(ArrayList<ReportModel> dataReportList, String typeFilter){
-            String FilterText=search_t.getText();
-            ReportController reportController=new ReportController();
-
-        ArrayList<ReportModel> reportFind_arr = new ArrayList<ReportModel>();
-            switch (typeFilter){
-                case "Заявитель":
-                    reportFind_arr=reportController.FilterApplicants(FilterText, dataReportList);
-
-                    /*Task FilterApplicantsTask = new ReportController.FilterApplicantsTask(FilterText, dataReportList);
-                    //  После выполнения потока
-                    FilterApplicantsTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-                        @Override
-                        public void handle(WorkerStateEvent event) {
-                            ArrayList<ReportModel> reportFind_arr =(ArrayList<ReportModel>) FilterApplicantsTask.getValue();
-                            SetResult(reportFind_arr);
-                        }
-                    });
-                    // Запуск потока
-                    Thread FilterApplicantsThread = new Thread(FilterApplicantsTask);
-                    FilterApplicantsThread.setDaemon(true);
-                    FilterApplicantsThread.start();*/
-
-                    break;
-                case "Организация":
-                    reportFind_arr =reportController.FilterNameCompany(FilterText, dataReportList);
-
-                    /*Task FilterNameCompanyTask = new ReportController.FilterNameCompanyTask(FilterText, dataReportList);
-                    //  После выполнения потока
-                    FilterNameCompanyTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-                        @Override
-                        public void handle(WorkerStateEvent event) {
-                            ArrayList<ReportModel> reportFind_arr =(ArrayList<ReportModel>) FilterNameCompanyTask.getValue();
-                            SetResult(reportFind_arr);
-                        }
-                    });
-                    // Запуск потока
-                    Thread FilterNameCompanyThread = new Thread(FilterNameCompanyTask);
-                    FilterNameCompanyThread.setDaemon(true);
-                    FilterNameCompanyThread.start();*/
-                    break;
-                case "Обращения":
-                    reportFind_arr =reportController.FilterAppeal(FilterText, dataReportList);
-
-                    /*Task FilterAppealTask = new ReportController.FilterAppealTask(FilterText, dataReportList);
-                    //  После выполнения потока
-                    FilterAppealTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-                        @Override
-                        public void handle(WorkerStateEvent event) {
-                            ArrayList<ReportModel> reportFind_arr =(ArrayList<ReportModel>) FilterAppealTask.getValue();
-                            SetResult(reportFind_arr);
-                        }
-                    });
-                    // Запуск потока
-                    Thread FilterAppealThread = new Thread(FilterAppealTask);
-                    FilterAppealThread.setDaemon(true);
-                    FilterAppealThread.start();*/
-                    break;
-                default:
-                    System.out.println("none");
-                    break;
+    public void FilterNameCompany(ArrayList<ReportModel> dataReportList){
+        ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
+        FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
+        search_t.setOnKeyPressed(event -> {
+            search_t.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate((Predicate<? super ReportModel>) report_model->{
+                    if (newValue ==null || newValue.isEmpty()){
+                        return true;
+                    }
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    if (report_model.getNameCompany().toLowerCase().contains(lowerCaseFilter)){
+                        return true;
+                    }
+                    return false;
+                });
+            });
+            SortedList<ReportModel> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(data_rep_table.comparatorProperty());
+            data_rep_table.setItems(sortedData);
+            if (sortedData.isEmpty()){
+                Label label_search=new Label();
+                label_search.setText("Нет данных по указанному фильтру.");
+                label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+                data_rep_table.setPlaceholder(label_search);
+            } else {
+                download_report_b.setOnAction(event1 -> {
+                    ArrayList<ReportModel> sortedFinal=new ArrayList<>(sortedData);
+                    ReportController reportController_new=new ReportController();
+                    reportController_new.Download_report(sortedFinal);
+                });
             }
-        SetResult(reportFind_arr);
+        });
+    }
 
+    public void FilterAppeal(ArrayList<ReportModel> dataReportList){
+        ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
+        FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
+        search_t.setOnKeyPressed(event -> {
+            search_t.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate((Predicate<? super ReportModel>) report_model->{
+                    if (newValue ==null || newValue.isEmpty()){
+                        return true;
+                    }
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    if (report_model.getAppeal().toLowerCase().contains(lowerCaseFilter)){
+                        return true;
+                    }
+                    return false;
+                });
+            });
+            SortedList<ReportModel> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(data_rep_table.comparatorProperty());
+            data_rep_table.setItems(sortedData);
+            if (sortedData.isEmpty()){
+                Label label_search=new Label();
+                label_search.setText("Нет данных по указанному фильтру.");
+                label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+                data_rep_table.setPlaceholder(label_search);
+            } else {
+                download_report_b.setOnAction(event1 -> {
+                    ArrayList<ReportModel> sortedFinal=new ArrayList<>(sortedData);
+                    ReportController reportController_new=new ReportController();
+                    reportController_new.Download_report(sortedFinal);
+                });
+            }
+        });
     }
 
     public void SetFilter(ArrayList<ReportModel> dataReportList){
         System.out.println("Заявитель");
-        search_t.textProperty().addListener((observable, oldValue, newValue) -> {
-            SearchResult(dataReportList,"Заявитель");
-        });
+        FilterApplicants(dataReportList);
         choiceFilter_box.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number number, Number number2) {
-                //String FilterText=search_t.getText();
                 String selectedItemFilter=choiceFilter_box.getItems().get((Integer) number2);
                 switch (selectedItemFilter){
                     case "Фильтр по заявителям":
                         System.out.println("Заявитель");
                         search_t.setPromptText("Введите ФИО заявителя");
-                        SearchResult(dataReportList,"Заявитель");
-                        search_t.textProperty().addListener((observable, oldValue, newValue) -> {
-                            SearchResult(dataReportList,"Заявитель");
-                        });
-                        show_rep_b.setOnAction(event -> {
-                            SearchResult(dataReportList,"Заявитель");
-                        });
+                        search_t.setText("");
+                        FilterApplicants(dataReportList);
+                        show_rep_b.setOnAction(event -> {});
                         break;
                     case "Фильтр по организациям":
                         System.out.println("Организация");
                         search_t.setPromptText("Введите название организации");
-                        SearchResult(dataReportList,"Организация");
-                        search_t.textProperty().addListener((observable, oldValue, newValue) -> {
-                            SearchResult(dataReportList,"Организация");
-                        });
-                        show_rep_b.setOnAction(event -> {
-                            SearchResult(dataReportList,"Организация");
-                        });
+                        search_t.setText("");
+                        FilterNameCompany(dataReportList);
+                        show_rep_b.setOnAction(event -> {});
                         break;
                     case "Фильтр по обращениям":
                         System.out.println("Обращения");
                         search_t.setPromptText("Введите номер обращения");
-                        SearchResult(dataReportList,"Обращения");
-                        search_t.textProperty().addListener((observable, oldValue, newValue) -> {
-                            SearchResult(dataReportList,"Обращения");
-                        });
-                        show_rep_b.setOnAction(event -> {
-                            SearchResult(dataReportList,"Обращения");
-                        });
+                        search_t.setText("");
+                        FilterAppeal(dataReportList);
+                        show_rep_b.setOnAction(event -> {});
                         break;
                     default:
                         System.out.println("Nooone!");
@@ -293,9 +280,6 @@ public class appController {
 
         menu_item_change_user.setOnAction(event -> {
             File fileJson = new File("C:\\pkpvdplus\\settingsPVD.json");
-            /*if(file.delete()){
-                System.out.println("C:\\pkpvdplus\\settingsPVD.json файл удален");
-            }else System.out.println("Файла C:\\pkpvdplus\\settingsPVD.json не обнаружено");*/
 
             JsonParser parser = new JsonParser();
             JsonElement jsontree = null;
@@ -463,24 +447,6 @@ public class appController {
                 }
             }
         });
-
     }
-
-    /*public void Download_Report_Task(String dateReport, ArrayList<ReportModel> parsed_result_arr){
-        Task DownloadTask = new ReportController.DownloadTask (dateReport, parsed_result_arr);
-
-        //  После выполнения потока
-        DownloadTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-            @Override
-            public void handle(WorkerStateEvent event) {
-                System.out.println(DownloadTask.getValue());
-            }
-        });
-
-        // Запуск потока
-        Thread DownloadThread = new Thread(DownloadTask);
-        DownloadThread.setDaemon(true);
-        DownloadThread.start();
-    }*/
 }
 
