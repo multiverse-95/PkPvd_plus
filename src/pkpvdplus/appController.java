@@ -42,6 +42,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import pkpvdplus.controller.LoginController;
 import pkpvdplus.controller.ReportController;
@@ -108,7 +109,7 @@ public class appController {
     private TableColumn<ReportModel, String> date_create_col;
 
     @FXML
-    private TableColumn<ReportModel, String> action_col;
+    private TableColumn<ReportModel, String> status_col;
 
     @FXML
     private TableColumn<ReportModel, String> applicant_col;
@@ -118,7 +119,7 @@ public class appController {
 
     }
 
-    public void FilterApplicants(ArrayList<ReportModel> dataReportList){
+    public void FilterApplicants(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
         FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
         search_t.setOnKeyPressed(event -> {
@@ -146,13 +147,13 @@ public class appController {
                 download_report_b.setOnAction(event1 -> {
                     ArrayList<ReportModel> sortedFinal=new ArrayList<>(sortedData);
                     ReportController reportController_new=new ReportController();
-                    reportController_new.Download_report(sortedFinal);
+                    reportController_new.Download_report(sortedFinal, dateStart, dateFinish);
                 });
             }
         });
     }
 
-    public void FilterNameCompany(ArrayList<ReportModel> dataReportList){
+    public void FilterNameCompany(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
         FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
         search_t.setOnKeyPressed(event -> {
@@ -180,13 +181,13 @@ public class appController {
                 download_report_b.setOnAction(event1 -> {
                     ArrayList<ReportModel> sortedFinal=new ArrayList<>(sortedData);
                     ReportController reportController_new=new ReportController();
-                    reportController_new.Download_report(sortedFinal);
+                    reportController_new.Download_report(sortedFinal, dateStart, dateFinish);
                 });
             }
         });
     }
 
-    public void FilterAppeal(ArrayList<ReportModel> dataReportList){
+    public void FilterAppeal(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
         FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
         search_t.setOnKeyPressed(event -> {
@@ -214,15 +215,15 @@ public class appController {
                 download_report_b.setOnAction(event1 -> {
                     ArrayList<ReportModel> sortedFinal=new ArrayList<>(sortedData);
                     ReportController reportController_new=new ReportController();
-                    reportController_new.Download_report(sortedFinal);
+                    reportController_new.Download_report(sortedFinal, dateStart, dateFinish);
                 });
             }
         });
     }
 
-    public void SetFilter(ArrayList<ReportModel> dataReportList){
+    public void SetFilter(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         System.out.println("Заявитель");
-        FilterApplicants(dataReportList);
+        FilterApplicants(dataReportList, dateStart, dateFinish);
         choiceFilter_box.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number number, Number number2) {
@@ -232,21 +233,21 @@ public class appController {
                         System.out.println("Заявитель");
                         search_t.setPromptText("Введите ФИО заявителя");
                         search_t.setText("");
-                        FilterApplicants(dataReportList);
+                        FilterApplicants(dataReportList, dateStart, dateFinish);
                         show_rep_b.setOnAction(event -> {});
                         break;
                     case "Фильтр по организациям":
                         System.out.println("Организация");
                         search_t.setPromptText("Введите название организации");
                         search_t.setText("");
-                        FilterNameCompany(dataReportList);
+                        FilterNameCompany(dataReportList, dateStart, dateFinish);
                         show_rep_b.setOnAction(event -> {});
                         break;
                     case "Фильтр по обращениям":
                         System.out.println("Обращения");
                         search_t.setPromptText("Введите номер обращения");
                         search_t.setText("");
-                        FilterAppeal(dataReportList);
+                        FilterAppeal(dataReportList, dateStart, dateFinish);
                         show_rep_b.setOnAction(event -> {});
                         break;
                     default:
@@ -323,7 +324,7 @@ public class appController {
             Stage stage = new Stage();
             stage.setTitle("ПК ПВД Плюс");
             stage.setResizable(false);
-            stage.setScene(new Scene(root, 400, 200));
+            stage.setScene(new Scene(root, 400, 220));
             stage.show();
         });
 
@@ -420,8 +421,8 @@ public class appController {
                             date_create_col.setCellValueFactory(new PropertyValueFactory<>("dateCreate"));
                             date_create_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
-                            action_col.setCellValueFactory(new PropertyValueFactory<>("action"));
-                            action_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+                            status_col.setCellValueFactory(new PropertyValueFactory<>("status"));
+                            status_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
                             applicant_col.setCellValueFactory(new PropertyValueFactory<>("applicant"));
                             applicant_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
@@ -433,10 +434,11 @@ public class appController {
                             download_report_b.setOnAction(event1 -> {
                                 //Download_Report_Task(period_report_label, parsed_result_arr);
                                 ReportController reportController=new ReportController();
-                                reportController.Download_report(parsed_result_arr);
+                                reportController.Download_report(parsed_result_arr ,dateStart, dateFinish);
                             });
 
-                            SetFilter(parsed_result_arr);
+                            SetFilter(parsed_result_arr, dateStart, dateFinish);
+                            autoResizeColumns(data_rep_table);
                         }
                     });
 
@@ -447,6 +449,34 @@ public class appController {
                 }
             }
         });
+    }
+
+    public static void autoResizeColumns( TableView<ReportModel> table )
+    {
+        //Set the right policy
+        table.setColumnResizePolicy( TableView.UNCONSTRAINED_RESIZE_POLICY);
+        table.getColumns().stream().forEach( (column) ->
+        {
+            //Minimal width = columnheader
+            Text t = new Text( column.getText() );
+            double max = t.getLayoutBounds().getWidth();
+            for ( int i = 0; i < table.getItems().size(); i++ )
+            {
+                //cell must not be empty
+                if ( column.getCellData( i ) != null )
+                {
+                    t = new Text( column.getCellData( i ).toString() );
+                    double calcwidth = t.getLayoutBounds().getWidth();
+                    //remember new max-width
+                    if ( calcwidth > max )
+                    {
+                        max = calcwidth;
+                    }
+                }
+            }
+            //set the new max-widht with some extra space
+            column.setPrefWidth( max + 10.0d );
+        } );
     }
 }
 

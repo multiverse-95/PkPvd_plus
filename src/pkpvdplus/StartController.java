@@ -211,7 +211,9 @@ public class StartController {
                     stage.setTitle("ПК ПВД Плюс");
                     //stage.setResizable(false);
                     stage.setScene(new Scene(root));
+                    ((Stage) stage.getScene().getWindow()).setMaximized(true);
                     stage.showAndWait();
+
 
 
                 } else {

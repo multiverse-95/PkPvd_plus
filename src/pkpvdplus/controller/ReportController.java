@@ -7,6 +7,10 @@ import com.google.gson.JsonParser;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
@@ -49,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -75,10 +80,14 @@ public class ReportController {
             long dateStartLong=timelist.get(0);
             long dateFinishLong=timelist.get(1);
             System.out.println("start: "+dateStartLong+" finish: "+dateFinishLong);
-            String csvReport=getReport(dateStartLong,dateFinishLong,cookies);
-            //String csvReport="";
-            ArrayList<ReportModel> reportList= parsingReport(csvReport);
-            return reportList;
+            String typeCountReport="Список заявлений.jrd";
+            String typeDocPeriod="Список поступивших выдаваемых документов за период.jrd";
+
+            String csvReportMain=getReport(dateStartLong,dateFinishLong,cookies, typeCountReport);
+            String csvReportDoc=getReport(dateStartLong,dateFinishLong,cookies, typeDocPeriod);
+            //String csvReportMain="";
+            ArrayList<ReportModel> reportListFinal= parsingReport(csvReportMain, csvReportDoc);
+            return reportListFinal;
         }
     }
 
@@ -128,10 +137,11 @@ public class ReportController {
         return timelist;
     }
 
-    public static String getReport(long dateStart, long dateFinish,String cookie) throws IOException {
+    public static String getReport(long dateStart, long dateFinish,String cookie, String typeReport) throws IOException {
         Payload_user payload_user = new Payload_user();
         CookieStore httpCookieStore = new BasicCookieStore();
-        payload_user.file ="Список заявлений.jrd";
+        //payload_user.file ="Список заявлений.jrd";
+        payload_user.file = typeReport;
         payload_user.output="csv";
 
         ArrayList<Params> params=new ArrayList<Params>();
@@ -173,32 +183,63 @@ public class ReportController {
         return reportCsv;
     }
 
-    public static ArrayList<ReportModel> parsingReport(String csvReport) throws IOException, CsvValidationException {
-        ArrayList<ReportModel> reportList=new ArrayList<ReportModel>();
+    public static ArrayList<ReportModel> parsingReport(String csvReportMain, String csvReportDoc) throws IOException, CsvValidationException {
+        ArrayList<ReportModel> reportListMain=new ArrayList<ReportModel>();
+        ArrayList<ReportModel> reportListDoc=new ArrayList<ReportModel>();
+        ArrayList<ReportModel> reportListFinal=new ArrayList<ReportModel>();
         //try (CSVReader reader = new CSVReaderBuilder(new FileReader("D:\\recovery\\pk_pvd\\reportPkPvd.csv"))
-        try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvReport))
+
+        // Main List
+        try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvReportMain))
                 .withSkipLines(1)           // skip the first line, header info
                 .build()) {
             String[] lineInArray;
             while ((lineInArray = reader.readNext()) != null) {
                 //System.out.println(lineInArray[0]);
-                reportList.add(new ReportModel(lineInArray[0], "", "", "", "",""));
+                reportListMain.add(new ReportModel(lineInArray[0], "", "", "", "",""));
+                reportListFinal.add(new ReportModel(lineInArray[0], "", "", "", "",""));
                 break;
                 //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
             }
 
             while ((lineInArray = reader.readNext()) != null) {
                 if (lineInArray[11].equals("Предоставление сведений, содержащихся в ЕГРН, об объектах недвижимости и (или) их правообладателях")){
-                    reportList.add(new ReportModel("", lineInArray[1], lineInArray[2], lineInArray[3], lineInArray[11],lineInArray[12]));
+                    reportListMain.add(new ReportModel("", lineInArray[1], lineInArray[2], lineInArray[3], lineInArray[11],lineInArray[12]));
                 }
                 //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
             }
         }
-        return reportList;
+        // Doc List
+        try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvReportDoc))
+                .withSkipLines(3)           // skip the first line, header info
+                .build()) {
+            String[] lineInArray;
+            while ((lineInArray = reader.readNext()) != null) {
+                reportListDoc.add(new ReportModel("", lineInArray[1], lineInArray[2], lineInArray[5], lineInArray[6],""));
+                //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
+            }
+        }
+        System.out.println("Size main List: "+reportListMain.size()+" Size doc list: "+reportListDoc.size());
+        if(reportListDoc.size()>reportListMain.size()){
+            for (int i=0; i<reportListMain.size(); i++){
+                String FilterAppeal = reportListMain.get(i).getAppeal().toLowerCase();
+                for (int j=0; j<reportListDoc.size(); j++){
+                    String ListDocAppeal = reportListDoc.get(j).getAppeal().toLowerCase();
+                    if (FilterAppeal.contains(ListDocAppeal)){
+                        reportListFinal.add(new ReportModel("",reportListMain.get(i).getNameCompany(), reportListMain.get(i).getAppeal(),
+                                reportListMain.get(i).getDateCreate(), reportListDoc.get(j).getStatus(),reportListMain.get(i).getApplicant()));
+                    }
+                }
+            }
+        } else {
+            reportListFinal=null;
+        }
+
+        return reportListFinal;
     }
 
     // Функция для загрузки отчета по ведомствам
-    public void Download_report(ArrayList<ReportModel> dataReportList) {
+    public void Download_report(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate datefinish) {
 
         //System.out.println(text_test);
         // Создаем экземпляр класса FileChooser
@@ -209,7 +250,9 @@ public class ReportController {
             fileChooser.setInitialDirectory(new File(lastPathDirectory));
         }
         // Устанавливаем список расширений для файла
-        fileChooser.setInitialFileName("report_pkpvd");// Устанавливаем название для файла
+
+        fileChooser.setInitialFileName("report_pkpvd "+dateStart.getDayOfMonth()+"."+dateStart.getMonthValue()+"."+dateStart.getYear()+"_"+
+                datefinish.getDayOfMonth()+"."+datefinish.getMonthValue()+"."+datefinish.getYear());// Устанавливаем название для файла
         // Список расширений для Excel
         FileChooser.ExtensionFilter extFilterExcel = new FileChooser.ExtensionFilter("Excel file (*.xlsx)", "*.xlsx");
         // Список расширений для Excel (старый формат)
@@ -387,7 +430,7 @@ public class ReportController {
         cell.setCellStyle(style);
 
         cell = row.createCell(3, CellType.STRING);
-        cell.setCellValue("Действие");
+        cell.setCellValue("Статус");
         cell.setCellStyle(style);
 
         cell = row.createCell(4, CellType.STRING);
@@ -412,7 +455,7 @@ public class ReportController {
             cell.setCellValue(reportModel.getDateCreate());
 
             cell = row.createCell(3, CellType.STRING);
-            cell.setCellValue(reportModel.getAction());
+            cell.setCellValue(reportModel.getStatus());
 
             cell = row.createCell(4, CellType.STRING);
             cell.setCellValue(reportModel.getApplicant());
@@ -474,7 +517,7 @@ public class ReportController {
         cell.setCellStyle(style);
 
         cell = row.createCell(3, CellType.STRING);
-        cell.setCellValue("Действие");
+        cell.setCellValue("Статус");
         cell.setCellStyle(style);
 
         cell = row.createCell(4, CellType.STRING);
@@ -499,7 +542,7 @@ public class ReportController {
             cell.setCellValue(reportModel.getDateCreate());
 
             cell = row.createCell(3, CellType.STRING);
-            cell.setCellValue(reportModel.getAction());
+            cell.setCellValue(reportModel.getStatus());
 
             cell = row.createCell(4, CellType.STRING);
             cell.setCellValue(reportModel.getApplicant());

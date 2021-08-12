@@ -144,7 +144,7 @@
                                         <TableColumn fx:id="name_company_col" prefWidth="195.0" text="Наименование организации" />
                                         <TableColumn fx:id="appeal_col" prefWidth="214.0" text="Обращение" />
                               <TableColumn fx:id="date_create_col" prefWidth="178.0" text="Дата создания" />
-                              <TableColumn fx:id="action_col" prefWidth="261.0" text="Действие" />
+                              <TableColumn fx:id="status_col" prefWidth="261.0" text="Статус" />
                               <TableColumn fx:id="applicant_col" prefWidth="182.0" text="Заявители" />
                                     </columns>
                                 </TableView>

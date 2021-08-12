@@ -7,15 +7,15 @@ public class ReportModel {
     private SimpleStringProperty nameCompany;
     private SimpleStringProperty appeal;
     private SimpleStringProperty dateCreate;
-    private SimpleStringProperty action;
+    private SimpleStringProperty status;
     private SimpleStringProperty applicant;
 
-    public ReportModel(String period, String nameCompany, String appeal, String dateCreate, String action, String applicant) {
+    public ReportModel(String period, String nameCompany, String appeal, String dateCreate, String status, String applicant) {
         this.period =new SimpleStringProperty(period);
         this.nameCompany = new SimpleStringProperty(nameCompany);
         this.appeal = new SimpleStringProperty(appeal);
         this.dateCreate = new SimpleStringProperty(dateCreate);
-        this.action = new SimpleStringProperty(action);
+        this.status = new SimpleStringProperty(status);
         this.applicant = new SimpleStringProperty(applicant);
     }
 
@@ -44,11 +44,11 @@ public class ReportModel {
     public void setDateCreate(String dateCreate) {
         this.dateCreate = new SimpleStringProperty(dateCreate);
     }
-    public String getAction() {
-        return action.get();
+    public String getStatus() {
+        return status.get();
     }
-    public void setAction(String action) {
-        this.action = new SimpleStringProperty(action);
+    public void setStatus(String status) {
+        this.status = new SimpleStringProperty(status);
     }
     public String getApplicant() {
         return applicant.get();
