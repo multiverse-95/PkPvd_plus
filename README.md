@@ -8,6 +8,6 @@
 ### Скриншот сохранения отчёта:
 ![Alt text](/src/pkpvdplus/screenshots/saving_report.PNG "Скриншот сохранения отчёта")
 ### Скриншот уведомления о сохранении:
-![Alt text](/src/pkpvdplus/screenshots/filters.png "Скриншот уведомления о сохранении")
+![Alt text](/src/pkpvdplus/screenshots/after_saving.PNG "Скриншот уведомления о сохранении")
 ### Скриншот отчёта:
 ![Alt text](/src/pkpvdplus/screenshots/excel_report.PNG "Скриншот отчёта")
