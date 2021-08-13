@@ -1,15 +1,16 @@
 package pkpvdplus.model;
 
 import javafx.beans.property.SimpleStringProperty;
-
+// Класс для отображения данных в отчёте
 public class ReportModel {
-    private SimpleStringProperty period;
-    private SimpleStringProperty nameCompany;
-    private SimpleStringProperty appeal;
-    private SimpleStringProperty dateCreate;
-    private SimpleStringProperty status;
-    private SimpleStringProperty applicant;
+    private SimpleStringProperty period; // Период, за который сформирован отчёт
+    private SimpleStringProperty nameCompany; // Название организации
+    private SimpleStringProperty appeal; // Номер обращения
+    private SimpleStringProperty dateCreate; // Дата создания обращения
+    private SimpleStringProperty status; // Статус обращения
+    private SimpleStringProperty applicant; // Заявители
 
+    // Конструктор
     public ReportModel(String period, String nameCompany, String appeal, String dateCreate, String status, String applicant) {
         this.period =new SimpleStringProperty(period);
         this.nameCompany = new SimpleStringProperty(nameCompany);

@@ -59,13 +59,14 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+// Контроллер для обработки отчётов
 public class ReportController {
-
+    // Класс для потока получения отчёта
     public static class ReportTask extends Task<ArrayList<ReportModel>> {
-        private final String cookies;
+        private final String cookies; // Куки
         private final String search_text;
-        private final LocalDate dateStart;
-        private final LocalDate dateFinish;
+        private final LocalDate dateStart; // Дата начала в юникс
+        private final LocalDate dateFinish; // Дата окончания в юникс
 
         public ReportTask(String cookies, String search_text, LocalDate dateStart, LocalDate dateFinish) {
             this.cookies = cookies;
@@ -76,21 +77,24 @@ public class ReportController {
         @Override
         protected ArrayList<ReportModel> call() throws Exception {
             System.out.println("start date: "+dateStart+" finish date: "+dateFinish);
-            List<Long> timelist=convertTime(dateStart, dateFinish);
-            long dateStartLong=timelist.get(0);
-            long dateFinishLong=timelist.get(1);
+            List<Long> timelist=convertTime(dateStart, dateFinish);// Конвертируем время в UNIX формат
+            long dateStartLong=timelist.get(0); // Получение начальной даты
+            long dateFinishLong=timelist.get(1); // Получение конечной даты
             System.out.println("start: "+dateStartLong+" finish: "+dateFinishLong);
-            String typeCountReport="Список заявлений.jrd";
-            String typeDocPeriod="Список поступивших выдаваемых документов за период.jrd";
-
+            String typeCountReport="Список заявлений.jrd"; // Основной отчёт
+            String typeDocPeriod="Список поступивших выдаваемых документов за период.jrd"; // Вспомогательный отчёт по документам
+            // Получение основного отчёта с сервера
             String csvReportMain=getReport(dateStartLong,dateFinishLong,cookies, typeCountReport);
+            // Получение дополнительного отчёта с сервера
             String csvReportDoc=getReport(dateStartLong,dateFinishLong,cookies, typeDocPeriod);
             //String csvReportMain="";
+            // Обработка отчётов и получение одного общего отчёта
             ArrayList<ReportModel> reportListFinal= parsingReport(csvReportMain, csvReportDoc);
-            return reportListFinal;
+            return reportListFinal; // Возвращаем итоговый отчёт
         }
     }
 
+    // Класс для потока скачивания отчёта
     public static class DownloadTaskExcel extends Task<ArrayList<String>> {
         private final ArrayList<ReportModel> dataReportList;
         private File file;
@@ -102,12 +106,13 @@ public class ReportController {
         }
         @Override
         protected ArrayList<String> call() throws Exception {
+            // Получение файла Excel
             ArrayList<String> pathFileAndDir=SaveFileExcel(dataReportList, file);
             String success_download="SUCCESS REPORT!!";
-            return pathFileAndDir;
+            return pathFileAndDir; // Возвращаем путь к файлу
         }
     }
-
+    // Класс для потока скачивания отчёта (Старый формат)
     public static class DownloadTaskExcelOld extends Task<ArrayList<String>> {
         private final ArrayList<ReportModel> dataReportList;
         private File file;
@@ -121,26 +126,29 @@ public class ReportController {
         protected ArrayList<String> call() throws Exception {
             ArrayList<String> pathFileAndDir=SaveFileExcelOldFormat(dataReportList, file);
             String success_download="SUCCESS REPORT!!";
-            return pathFileAndDir;
+            return pathFileAndDir; // Возвращаем путь к файлу
         }
     }
 
+    // Функция для конвертирования времени в UNIX формат
     public static List<Long> convertTime(LocalDate dateStart, LocalDate dateFinish) throws ParseException {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd"); // Получение времени по шаблону
         Date date1 = format.parse(String.valueOf(dateStart));
         Date date2 = format.parse(String.valueOf(dateFinish));
-        long timestamp1 = date1.getTime();
-        long timestamp2 =date2.getTime();
-        List<Long> timelist=new ArrayList<Long>();
+        long timestamp1 = date1.getTime(); // Конвертирование даты начала в UNIX формат
+        long timestamp2 =date2.getTime(); // Конвертирование даты окончания в UNIX формат
+        List<Long> timelist=new ArrayList<Long>(); // Добавление даты начала и даты окончания в список
         timelist.add(timestamp1);
         timelist.add(timestamp2);
-        return timelist;
+        return timelist; // Возвращаем список с датами
     }
 
+    // Функция для получения отчёта с сервера
     public static String getReport(long dateStart, long dateFinish,String cookie, String typeReport) throws IOException {
         Payload_user payload_user = new Payload_user();
         CookieStore httpCookieStore = new BasicCookieStore();
         //payload_user.file ="Список заявлений.jrd";
+        // Заполнение json параметрами
         payload_user.file = typeReport;
         payload_user.output="csv";
 
@@ -164,68 +172,76 @@ public class ReportController {
 
         payload_user.params=params;
 
-        String postUrl       = "http://10.42.200.207/api/rs/reports/execute";// put in your url
+        String postUrl       = "http://10.42.200.207/api/rs/reports/execute";// Ссылка на сервер
         Gson gson          = new Gson();
         HttpClient httpClient = null;
         HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
         httpClient = builder.build();
         HttpPost post          = new HttpPost(postUrl);
-        StringEntity postingString = new StringEntity(gson.toJson(payload_user), StandardCharsets.UTF_8);//gson.tojson() converts your payload to json
+        StringEntity postingString = new StringEntity(gson.toJson(payload_user), StandardCharsets.UTF_8);// Конвертирование json в строку
         System.out.println(gson.toJson(payload_user));
-        post.setEntity(postingString);
+        post.setEntity(postingString); // Установка json для запроса
         post.setHeader("Content-type", "application/json");
         post.addHeader("Cookie","JSESSIONID="+cookie);
-        HttpResponse response = httpClient.execute(post);
+        HttpResponse response = httpClient.execute(post); // Выполнение post запроса на сервер
         System.out.println(response.getStatusLine());
-        HttpEntity entity = response.getEntity();
+        HttpEntity entity = response.getEntity(); // Получение результата от сервера
 
         String reportCsv=EntityUtils.toString(entity);
-        return reportCsv;
+        return reportCsv; // Возвращаем результат в формате csv
     }
 
+    // Функция для обработки отчётов
     public static ArrayList<ReportModel> parsingReport(String csvReportMain, String csvReportDoc) throws IOException, CsvValidationException {
-        ArrayList<ReportModel> reportListMain=new ArrayList<ReportModel>();
-        ArrayList<ReportModel> reportListDoc=new ArrayList<ReportModel>();
-        ArrayList<ReportModel> reportListFinal=new ArrayList<ReportModel>();
+        ArrayList<ReportModel> reportListMain=new ArrayList<ReportModel>(); // Главный список
+        ArrayList<ReportModel> reportListDoc=new ArrayList<ReportModel>(); // Дополнительный список
+        ArrayList<ReportModel> reportListFinal=new ArrayList<ReportModel>(); // Итоговый список
         //try (CSVReader reader = new CSVReaderBuilder(new FileReader("D:\\recovery\\pk_pvd\\reportPkPvd.csv"))
 
-        // Main List
+        // Обрабатываем csv результат для главного списка
         try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvReportMain))
-                .withSkipLines(1)           // skip the first line, header info
+                .withSkipLines(1)           // Пропускаем первую строку
                 .build()) {
             String[] lineInArray;
+            // Идём по csv
             while ((lineInArray = reader.readNext()) != null) {
                 //System.out.println(lineInArray[0]);
+                // Получаем период с csv
                 reportListMain.add(new ReportModel(lineInArray[0], "", "", "", "",""));
                 reportListFinal.add(new ReportModel(lineInArray[0], "", "", "", "",""));
-                break;
+                break; // После получения периода, прерываем чтение данных
                 //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
             }
-
+            // Вновь читаем csv
             while ((lineInArray = reader.readNext()) != null) {
+                // Берём только данные по ЕГРН
                 if (lineInArray[11].equals("Предоставление сведений, содержащихся в ЕГРН, об объектах недвижимости и (или) их правообладателях")){
+                    // Записываем нужную информацию в список (Организация, номера обращений, даты создания, статус, заявители)
                     reportListMain.add(new ReportModel("", lineInArray[1], lineInArray[2], lineInArray[3], lineInArray[11],lineInArray[12]));
                 }
                 //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
             }
         }
-        // Doc List
+        // Идём по дополнительному отчёту в csv
         try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvReportDoc))
-                .withSkipLines(3)           // skip the first line, header info
+                .withSkipLines(3)           // Пропускаем первые три строки
                 .build()) {
             String[] lineInArray;
             while ((lineInArray = reader.readNext()) != null) {
+                // Записываем нужные данные в список дополнительного отчёта
                 reportListDoc.add(new ReportModel("", lineInArray[1], lineInArray[2], lineInArray[5], lineInArray[6],""));
                 //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
             }
         }
         System.out.println("Size main List: "+reportListMain.size()+" Size doc list: "+reportListDoc.size());
-        if(reportListDoc.size()>reportListMain.size()){
-            for (int i=0; i<reportListMain.size(); i++){
-                String FilterAppeal = reportListMain.get(i).getAppeal().toLowerCase();
-                for (int j=0; j<reportListDoc.size(); j++){
-                    String ListDocAppeal = reportListDoc.get(j).getAppeal().toLowerCase();
-                    if (FilterAppeal.contains(ListDocAppeal)){
+        // Обрабатываем основной и дополнительный отчёт
+        if(reportListDoc.size()>reportListMain.size()){ // Проверяем, чтобы дополнительный отчёт был больше основного
+            for (int i=0; i<reportListMain.size(); i++){ // Идём по циклу основного отчёта
+                String FilterAppeal = reportListMain.get(i).getAppeal().toLowerCase(); // Получаем номер обращения
+                for (int j=0; j<reportListDoc.size(); j++){ // Идём по циклу дополнительного отчёта
+                    String ListDocAppeal = reportListDoc.get(j).getAppeal().toLowerCase(); // Получаем номер обращения
+                    if (FilterAppeal.contains(ListDocAppeal)){ // Сравниваем номер обращения с основного отчёта и дополнительного
+                        // Если совпадают, то добавить в финальный отчёт информацию: Организация, номер обращения и т.д.
                         reportListFinal.add(new ReportModel("",reportListMain.get(i).getNameCompany(), reportListMain.get(i).getAppeal(),
                                 reportListMain.get(i).getDateCreate(), reportListDoc.get(j).getStatus(),reportListMain.get(i).getApplicant()));
                     }
@@ -235,10 +251,10 @@ public class ReportController {
             reportListFinal=null;
         }
 
-        return reportListFinal;
+        return reportListFinal; // Возвращаем итоговый отчёт
     }
 
-    // Функция для загрузки отчета по ведомствам
+    // Функция для загрузки отчета
     public void Download_report(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate datefinish) {
 
         //System.out.println(text_test);
@@ -290,22 +306,23 @@ public class ReportController {
                         @Override
                         public void handle(WorkerStateEvent event) {
                             //System.out.println(DownloadTaskExcel.getValue());
+                            // Получение директорий, вызов функции скачивания отчёта
                             ArrayList<String> pathFileAndDir= (ArrayList<String>) DownloadTaskExcel.getValue();
-
+                            // Получаем путь для файла
                             String pathToFile=pathFileAndDir.get(0);
                             String absolutePathToFile=pathFileAndDir.get(1);
 
                             System.out.println(pathToFile +" "+absolutePathToFile);
-
-                            ButtonType openReport = new ButtonType("Открыть отчёт", ButtonBar.ButtonData.OK_DONE); // Создание кнопки подтвердить
-                            ButtonType openDir = new ButtonType("Открыть папку с отчётом", ButtonBar.ButtonData.CANCEL_CLOSE); // Создание кнопки отменить
+                            // Отображаем окно с выбором: Открыть отчёт или открыть папку с отчётом
+                            ButtonType openReport = new ButtonType("Открыть отчёт", ButtonBar.ButtonData.OK_DONE); // Создание кнопки "Открыть отчёт"
+                            ButtonType openDir = new ButtonType("Открыть папку с отчётом", ButtonBar.ButtonData.CANCEL_CLOSE); // Создание кнопки "Открыть папку с отчётом"
                             Alert alert =new Alert(Alert.AlertType.INFORMATION , "Test", openReport, openDir);
                             alert.setTitle("Загрузка завершена!"); // Название предупреждения
                             alert.setHeaderText("Отчёт загружен!"); // Текст предупреждения
                             alert.setContentText("Отчёт доступен в папке: "+pathToFile);
                             // Вызов подтверждения элемента
                             alert.showAndWait().ifPresent(rs -> {
-                                if (rs == openReport){
+                                if (rs == openReport){ // Если выбрали открыть отчёт
                                     Desktop desktop = Desktop.getDesktop();
                                     File fileOpen= new File (absolutePathToFile);
                                     try {
@@ -314,7 +331,7 @@ public class ReportController {
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
-                                } else if (rs==openDir){
+                                } else if (rs==openDir){ // Если выбрали открыт папку
                                     try {
                                         Process p = new ProcessBuilder("explorer.exe", "/select,"+absolutePathToFile).start();
                                     } catch (IOException e) {
@@ -345,23 +362,23 @@ public class ReportController {
                         @Override
                         public void handle(WorkerStateEvent event) {
                             System.out.println(DownloadTaskExcelOld.getValue());
-
+                            // Получение директорий, вызов функции скачивания отчёта
                             ArrayList<String> pathFileAndDir= (ArrayList<String>) DownloadTaskExcelOld.getValue();
-
+                            // Получаем путь для файла
                             String pathToFile=pathFileAndDir.get(0);
                             String absolutePathToFile=pathFileAndDir.get(1);
 
                             System.out.println(pathToFile +" "+absolutePathToFile);
-
-                            ButtonType openReport = new ButtonType("Открыть отчёт", ButtonBar.ButtonData.OK_DONE); // Создание кнопки подтвердить
-                            ButtonType openDir = new ButtonType("Открыть папку с отчётом", ButtonBar.ButtonData.CANCEL_CLOSE); // Создание кнопки отменить
+                            // Отображаем окно с выбором: Открыть отчёт или открыть папку с отчётом
+                            ButtonType openReport = new ButtonType("Открыть отчёт", ButtonBar.ButtonData.OK_DONE); // Создание кнопки "Открыть отчёт"
+                            ButtonType openDir = new ButtonType("Открыть папку с отчётом", ButtonBar.ButtonData.CANCEL_CLOSE); // Создание кнопки "Открыть папку с отчётом"
                             Alert alert =new Alert(Alert.AlertType.INFORMATION , "Test", openReport, openDir);
                             alert.setTitle("Загрузка завершена!"); // Название предупреждения
                             alert.setHeaderText("Отчёт загружен!"); // Текст предупреждения
                             alert.setContentText("Отчёт доступен в папке: "+pathToFile);
                             // Вызов подтверждения элемента
                             alert.showAndWait().ifPresent(rs -> {
-                                if (rs == openReport){
+                                if (rs == openReport){ // Если выбрали открыть отчёт
                                     Desktop desktop = Desktop.getDesktop();
                                     File fileOpen= new File (absolutePathToFile);
                                     try {
@@ -370,7 +387,7 @@ public class ReportController {
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
-                                } else if (rs==openDir){
+                                } else if (rs==openDir){ // Если выбрали открыть папку с отчётом
                                     try {
                                         Process p = new ProcessBuilder("explorer.exe", "/select,"+absolutePathToFile).start();
                                     } catch (IOException e) {
@@ -399,6 +416,7 @@ public class ReportController {
         style.setFont(font);
         return style;
     }
+
     // Функция сохранения файла в Excel старый формат
     public static ArrayList<String> SaveFileExcelOldFormat(ArrayList<ReportModel> dataReportList, File file) throws IOException {
         // Создание книги Excel
@@ -416,23 +434,23 @@ public class ReportController {
 
         row = sheet.createRow(rownum);
 
-        // Создание столбца IdDepartm
+        // Создание столбца "Название организации"
         cell = row.createCell(0, CellType.STRING);
         cell.setCellValue("Название организации");
         cell.setCellStyle(style);
-        // Создание столбца названия ведомства
+        // Создание столбца "Обращение"
         cell = row.createCell(1, CellType.STRING);
         cell.setCellValue("Обращение");
         cell.setCellStyle(style);
-
+        // Создание столбца "Дата создания"
         cell = row.createCell(2, CellType.STRING);
         cell.setCellValue("Дата создания");
         cell.setCellStyle(style);
-
+        // Создание столбца "Статус"
         cell = row.createCell(3, CellType.STRING);
         cell.setCellValue("Статус");
         cell.setCellStyle(style);
-
+        // Создание столбца "Заявители"
         cell = row.createCell(4, CellType.STRING);
         cell.setCellValue("Заявители");
         cell.setCellStyle(style);
@@ -444,10 +462,10 @@ public class ReportController {
             rownum++;
             row = sheet.createRow(rownum);
 
-            // Запись id ведомства
+            // Запись данных в отчёт
             cell = row.createCell(0, CellType.STRING);
             cell.setCellValue(reportModel.getNameCompany());
-            // Запись Названия ведомства
+
             cell = row.createCell(1, CellType.STRING);
             cell.setCellValue(reportModel.getAppeal());
 
@@ -461,6 +479,7 @@ public class ReportController {
             cell.setCellValue(reportModel.getApplicant());
 
         }
+        // Выравнивание столбцов по ширине
         autoSizeColumns(workbook);
         // Создания потока сохранения файла
         FileOutputStream outFile = new FileOutputStream(file);
@@ -469,17 +488,16 @@ public class ReportController {
         // Закрытие потока записи
         outFile.close();
         System.out.println("Created file: " + file.getParent());
-
+        // Сохраняем путь, где был сохранён отчёт
         SaveLastPathInfo(file.getParent());
-
+        // Добавляем данные о пути файла в список
         ArrayList<String> pathFileAndDir=new ArrayList<String>();
         pathFileAndDir.add(file.getParent());
         pathFileAndDir.add(file.getAbsolutePath());
 
-        return pathFileAndDir;
-
-
+        return pathFileAndDir; // Возвращаем путь файл и абсолютный путь
     }
+
     // Функция для установки стилей Excel
     private static XSSFCellStyle createStyleForTitleNew(XSSFWorkbook workbook) {
         XSSFFont font = workbook.createFont();
@@ -488,6 +506,7 @@ public class ReportController {
         style.setFont(font);
         return style;
     }
+
     // Функция сохранения файла в Excel
     public static ArrayList<String> SaveFileExcel(ArrayList<ReportModel> dataReportList, File file) throws IOException {
         // Создание книги Excel
@@ -503,23 +522,23 @@ public class ReportController {
 
         row = sheet.createRow(rownum);
 
-        // Создание столбца IdDepartm
+        // Создание столбца "Название организации"
         cell = row.createCell(0, CellType.STRING);
         cell.setCellValue("Название организации");
         cell.setCellStyle(style);
-        // Создание столбца названия ведомства
+        // Создание столбца "Обращение"
         cell = row.createCell(1, CellType.STRING);
         cell.setCellValue("Обращение");
         cell.setCellStyle(style);
-
+        // Создание столбца "Дата создания"
         cell = row.createCell(2, CellType.STRING);
         cell.setCellValue("Дата создания");
         cell.setCellStyle(style);
-
+        // Создание столбца "Статус"
         cell = row.createCell(3, CellType.STRING);
         cell.setCellValue("Статус");
         cell.setCellStyle(style);
-
+        // Создание столбца "Заявители"
         cell = row.createCell(4, CellType.STRING);
         cell.setCellValue("Заявители");
         cell.setCellStyle(style);
@@ -531,10 +550,10 @@ public class ReportController {
             rownum++;
             row = sheet.createRow(rownum);
 
-            // Запись id Ведомства
+            // Запись данных в отчёт
             cell = row.createCell(0, CellType.STRING);
             cell.setCellValue(reportModel.getNameCompany());
-            // Запись Названия Ведомства
+
             cell = row.createCell(1, CellType.STRING);
             cell.setCellValue(reportModel.getAppeal());
 
@@ -548,6 +567,7 @@ public class ReportController {
             cell.setCellValue(reportModel.getApplicant());
 
         }
+        // Выравнивание столбцов по ширине
         autoSizeColumns(workbook);
         // Создания потока сохранения файла
         FileOutputStream outFile = new FileOutputStream(file);
@@ -558,24 +578,26 @@ public class ReportController {
 
 
         System.out.println("Created file: " + file.getParent());
+        // Сохранение последнего пути файла
         SaveLastPathInfo(file.getParent());
 
         ArrayList<String> pathFileAndDir=new ArrayList<String>();
         pathFileAndDir.add(file.getParent());
         pathFileAndDir.add(file.getAbsolutePath());
 
-        return pathFileAndDir;
+        return pathFileAndDir; // Возвращение пути и абсолютного пути файла
 
     }
 
+    // Функция для автоматического выравнивания столбцов по ширине содержимого
     public static void autoSizeColumns(Workbook workbook) {
-        int numberOfSheets = workbook.getNumberOfSheets();
-        for (int i = 0; i < numberOfSheets; i++) {
-            Sheet sheet = workbook.getSheetAt(i);
-            if (sheet.getPhysicalNumberOfRows() > 0) {
-                Row row = sheet.getRow(sheet.getFirstRowNum());
+        int numberOfSheets = workbook.getNumberOfSheets(); // Получаем кол-во листов
+        for (int i = 0; i < numberOfSheets; i++) { // Идём по кол-ву листов
+            Sheet sheet = workbook.getSheetAt(i); // Получаем лист
+            if (sheet.getPhysicalNumberOfRows() > 0) { // Если столбцов больше 0
+                Row row = sheet.getRow(sheet.getFirstRowNum()); // Получить первую строку
                 Iterator<Cell> cellIterator = row.cellIterator();
-                while (cellIterator.hasNext()) {
+                while (cellIterator.hasNext()) { // Идём по строкам и выравниваем по ширине
                     Cell cell = cellIterator.next();
                     int columnIndex = cell.getColumnIndex();
                     sheet.autoSizeColumn(columnIndex);
@@ -584,10 +606,11 @@ public class ReportController {
         }
     }
 
+    // Функция для сохранения последнего пути файла
     public static void SaveLastPathInfo(String lastPathToFile){
-        // setlasstput info
+        // Путь к файлу
         File fileJson = new File("C:\\pkpvdplus\\settingsPVD.json");
-
+        // Проверяем, существует ли файл
         if(!fileJson.exists())
         {
             System.out.println("No file!");
@@ -601,6 +624,7 @@ public class ReportController {
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+            // Парсим нужные данные
             JsonObject jsonObject = jsontree.getAsJsonObject();
             String login=jsonObject.get("login").getAsString();
             String password=jsonObject.get("password").getAsString();
@@ -612,7 +636,7 @@ public class ReportController {
             settingsModel.setCookie(cookie);
             settingsModel.setLastPathToFile(lastPathToFile);
             settingsModel.setCheckBoxSel(isCheckBoxSel);
-
+            // Сохраняем путь к файлу
             Gson gson = new Gson();
             File f = new File("C:\\pkpvdplus");
             try{
@@ -638,8 +662,10 @@ public class ReportController {
         }
     }
 
+    // Функция для получения последней директории, где был сохранён отчёт
     public String getLastDirectory(){
         String lastPathToFile="";
+        // Читаем файл
         File fileJson = new File("C:\\pkpvdplus\\settingsPVD.json");
 
         if(!fileJson.exists())
@@ -647,7 +673,7 @@ public class ReportController {
             System.out.println("No file!");
         } else {
             System.out.println("yes file!");
-
+            // Парсим нужные данные
             JsonParser parser = new JsonParser();
             JsonElement jsontree = null;
             try {
@@ -655,13 +681,14 @@ public class ReportController {
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+            // Получаем путь к файлу
             JsonObject jsonObject = jsontree.getAsJsonObject();
             lastPathToFile = jsonObject.get("lastPathToFile").getAsString();
         }
         return lastPathToFile;
     }
 
-
+    // Класс для для payload
     static class Payload_user
     {
         public String file;

@@ -48,9 +48,9 @@ import pkpvdplus.controller.LoginController;
 import pkpvdplus.controller.ReportController;
 import pkpvdplus.model.ReportModel;
 import pkpvdplus.model.SettingsModel;
-
+// Главный контроллер программы
 public class appController {
-
+    // Графические элементы
     @FXML
     private ResourceBundle resources;
 
@@ -119,16 +119,19 @@ public class appController {
 
     }
 
+    // Фильтр для обработки заявителей
     public void FilterApplicants(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
         FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
+        // При вводе в поле
         search_t.setOnKeyPressed(event -> {
             search_t.textProperty().addListener((observable, oldValue, newValue) -> {
                 filteredData.setPredicate((Predicate<? super ReportModel>) report_model->{
-                    if (newValue ==null || newValue.isEmpty()){
+                    if (newValue ==null || newValue.isEmpty()){ // Если значение пустое или null
                         return true;
                     }
-                    String lowerCaseFilter = newValue.toLowerCase();
+                    String lowerCaseFilter = newValue.toLowerCase(); // Получить значение с поля и привести к нижнему регистру
+                    // Если в списке отчёта есть данные, которые соответствуют фильтру
                     if (report_model.getApplicant().toLowerCase().contains(lowerCaseFilter)){
                         return true;
                     }
@@ -137,22 +140,26 @@ public class appController {
             });
             SortedList<ReportModel> sortedData = new SortedList<>(filteredData);
             sortedData.comparatorProperty().bind(data_rep_table.comparatorProperty());
-            data_rep_table.setItems(sortedData);
+            data_rep_table.setItems(sortedData); // Установить отсортированные данные для таблицы
+            // Если нет данные в отсортированных даннных
             if (sortedData.isEmpty()){
+                // Установить поле для таблицы
                 Label label_search=new Label();
                 label_search.setText("Нет данных по указанному фильтру.");
                 label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
                 data_rep_table.setPlaceholder(label_search);
             } else {
+                // Иначе назначить для кнопки "Скачать отчёт" событие на скачивание отчёта
                 download_report_b.setOnAction(event1 -> {
                     ArrayList<ReportModel> sortedFinal=new ArrayList<>(sortedData);
                     ReportController reportController_new=new ReportController();
-                    reportController_new.Download_report(sortedFinal, dateStart, dateFinish);
+                    reportController_new.Download_report(sortedFinal, dateStart, dateFinish); // Вызов функции на скачивание отчёта
                 });
             }
         });
     }
 
+    // Фильтр для обработки наименований организаций (Такое же, что и для заявителей)
     public void FilterNameCompany(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
         FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
@@ -163,6 +170,7 @@ public class appController {
                         return true;
                     }
                     String lowerCaseFilter = newValue.toLowerCase();
+                    // Сравниваем с фильтром название организации
                     if (report_model.getNameCompany().toLowerCase().contains(lowerCaseFilter)){
                         return true;
                     }
@@ -187,6 +195,7 @@ public class appController {
         });
     }
 
+    // Фильтр для обработки обращений (Такое же, что и для заявителей)
     public void FilterAppeal(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
         FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
@@ -197,6 +206,7 @@ public class appController {
                         return true;
                     }
                     String lowerCaseFilter = newValue.toLowerCase();
+                    // Сравниваем обращения с фильтром
                     if (report_model.getAppeal().toLowerCase().contains(lowerCaseFilter)){
                         return true;
                     }
@@ -221,33 +231,36 @@ public class appController {
         });
     }
 
+    // Функция для установки фильтра
     public void SetFilter(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         System.out.println("Заявитель");
+        // Ставим фильтр для заявителей по-умолчанию
         FilterApplicants(dataReportList, dateStart, dateFinish);
+        // Событие для переключателя фильтров
         choiceFilter_box.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observableValue, Number number, Number number2) {
                 String selectedItemFilter=choiceFilter_box.getItems().get((Integer) number2);
                 switch (selectedItemFilter){
-                    case "Фильтр по заявителям":
+                    case "Фильтр по заявителям": // Если выбраны заявители
                         System.out.println("Заявитель");
                         search_t.setPromptText("Введите ФИО заявителя");
                         search_t.setText("");
-                        FilterApplicants(dataReportList, dateStart, dateFinish);
+                        FilterApplicants(dataReportList, dateStart, dateFinish); // Запустить фильтр для заявителей
                         show_rep_b.setOnAction(event -> {});
                         break;
-                    case "Фильтр по организациям":
+                    case "Фильтр по организациям": // Если выбраны организации
                         System.out.println("Организация");
                         search_t.setPromptText("Введите название организации");
                         search_t.setText("");
-                        FilterNameCompany(dataReportList, dateStart, dateFinish);
+                        FilterNameCompany(dataReportList, dateStart, dateFinish); // Запустить фильтр для организаций
                         show_rep_b.setOnAction(event -> {});
                         break;
-                    case "Фильтр по обращениям":
+                    case "Фильтр по обращениям": // Если выбраны обращения
                         System.out.println("Обращения");
                         search_t.setPromptText("Введите номер обращения");
                         search_t.setText("");
-                        FilterAppeal(dataReportList, dateStart, dateFinish);
+                        FilterAppeal(dataReportList, dateStart, dateFinish); // Запустить фильтр для обращений
                         show_rep_b.setOnAction(event -> {});
                         break;
                     default:
@@ -258,7 +271,9 @@ public class appController {
         });
     }
 
+    // Функция для отображения отчёта
     public void Show_report(String cookie){
+        // Установить курсор при наведении на кнопки
         generate_report_b.setOnMouseEntered(event_mouse -> {
             ((Node) event_mouse.getSource()).setCursor(Cursor.HAND);
         });
@@ -272,14 +287,15 @@ public class appController {
             ((Node) event_mouse.getSource()).setCursor(Cursor.HAND);
         });
 
-
+        // Установить фильтры
         choiceFilter_box.setItems(FXCollections.observableArrayList(
                 "Фильтр по заявителям","Фильтр по организациям", "Фильтр по обращениям"));
         choiceFilter_box.getSelectionModel().selectFirst();
         search_t.setText("");
         search_t.setPromptText("Введите ФИО заявителя");
-
+        // Установить действие для кнопки "Сменить пользователя"
         menu_item_change_user.setOnAction(event -> {
+            // Считать данные с файла
             File fileJson = new File("C:\\pkpvdplus\\settingsPVD.json");
 
             JsonParser parser = new JsonParser();
@@ -289,6 +305,7 @@ public class appController {
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+            // Сохранить путь для сохранения отчёта, остальное удалить
             JsonObject jsonObject = jsontree.getAsJsonObject();
             String lastPathToFile = jsonObject.get("lastPathToFile").getAsString();
             SettingsModel settingsModel = new SettingsModel("", "", "", lastPathToFile, false);
@@ -311,8 +328,8 @@ public class appController {
             }
 
 
-            app_menuBar.getScene().getWindow().hide();// Скрываем окно авторизации
-
+            app_menuBar.getScene().getWindow().hide();// Скрываем окно программы
+            // Запускаем окно авторизации
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("/pkpvdplus/view/login.fxml"));
             try {
@@ -327,21 +344,23 @@ public class appController {
             stage.setScene(new Scene(root, 400, 220));
             stage.show();
         });
-
+        // Установить текст для поля таблицы
         Label label_onStart=new Label();
         label_onStart.setText("Выберите параметры для отчёта.");
         label_onStart.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
         data_rep_table.setPlaceholder(label_onStart);
-
+        // Установить событие на кнопку "Сформировать отчёт"
         generate_report_b.setOnAction(event -> {
+            // Выбрать для переключателя фильтров первый элемент
             choiceFilter_box.getSelectionModel().selectFirst();
             search_t.setText("");
             search_t.setPromptText("Введите ФИО заявителя");
-
+            // Получить начальную дату и конечную дату
             LocalDate dateStart=date_start_d.getValue();
             LocalDate dateFinish=date_finish_d.getValue();
-
+            // Если начальная дата или конечная дата пустые
             if (dateStart==null || dateFinish==null){
+                // Вывести предупреждение
                 System.out.println("Date is not correct!");
                 Alert alert =new Alert(Alert.AlertType.WARNING , "Test");
                 alert.setTitle("Вы не ввели дату!");
@@ -350,8 +369,8 @@ public class appController {
                 alert.showAndWait().ifPresent(rs -> {
                     if (rs == ButtonType.OK){}
                 });
-            } else {
-                //CheckDates
+            } else { // Иначе
+                // Получить начальную и конечную дату в Unix формате
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
                 Date date1 = null;
                 Date date2 =null;
@@ -361,11 +380,12 @@ public class appController {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                long dateStartLong = date1.getTime();
-                long dateFinishLong =date2.getTime();
-                long diffDate=dateFinishLong-dateStartLong;
-
+                long dateStartLong = date1.getTime(); // Дата начала в UNIX
+                long dateFinishLong =date2.getTime(); // Дата окончания в UNIX
+                long diffDate=dateFinishLong-dateStartLong; // Разность между конечной датой и начальной датой
+                // Если разность 0 или меньше
                 if (diffDate<=0){
+                    // Вывести предупреждение
                     System.out.println("Date is not correct!");
                     Alert alert =new Alert(Alert.AlertType.ERROR , "Test");
                     alert.setTitle("Вы ввели дату некорректно!");
@@ -374,20 +394,20 @@ public class appController {
                     alert.showAndWait().ifPresent(rs -> {
                         if (rs == ButtonType.OK){}
                     });
-                } else {
-                    data_rep_table.setItems(null);
+                } else { // Иначе, если дата в порядке
+                    data_rep_table.setItems(null); // Обнулить данные в таблице
                     ProgressIndicator pi = new ProgressIndicator(); // Запуск прогресс индикатора
                     VBox box = new VBox(pi);
                     box.setAlignment(Pos.CENTER);
                     data_rep_table.setDisable(true);
-
+                    // Установить текст для таблицы
                     Label label_load=new Label();
                     label_load.setText("Загрузка данных...");
                     label_load.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 18));
                     data_rep_table.setPlaceholder(label_load);
                     vbox_rep_main.setDisable(true);
                     root_report.getChildren().add(box);
-
+                    // Запустить поток для получения отчёта с сервера
                     Task ReportTask = new ReportController.ReportTask(cookie, "",dateStart,dateFinish);
 
                     //  После выполнения потока
@@ -399,18 +419,17 @@ public class appController {
                             vbox_rep_main.setDisable(false);
                             data_rep_table.setDisable(false);
                             vbox_filter.setDisable(false);
-                            // Получение распарсенных данных по ведомствам МфЦ
 
                             // Получение данных с распарсенного поля
                             ArrayList<ReportModel> parsed_result_arr= (ArrayList<ReportModel>) ReportTask.getValue();
 
                             System.out.println(parsed_result_arr.get(0).getPeriod());
+                            // Получить период
                             String period_report_label="Отчёт "+parsed_result_arr.get(0).getPeriod();
                             period_label.setText(period_report_label);
-                            parsed_result_arr.remove(0);
+                            parsed_result_arr.remove(0); // Удалить период со списка
 
                             ObservableList<ReportModel> dataReport = FXCollections.observableArrayList(parsed_result_arr);
-                            // Получение списка всех ведомств и заполнение в текстовое поле
                             // Заполнение данными таблицы
                             name_company_col.setCellValueFactory(new PropertyValueFactory<>("nameCompany"));
                             name_company_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
@@ -428,17 +447,16 @@ public class appController {
                             applicant_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
                             data_rep_table.setItems(dataReport);
-                            // Вызов события для кнопки скачивания отчета по ведомствам
 
                             download_report_b.setDisable(false);
+                            // Вызов события для кнопки скачивания отчета
                             download_report_b.setOnAction(event1 -> {
-                                //Download_Report_Task(period_report_label, parsed_result_arr);
                                 ReportController reportController=new ReportController();
-                                reportController.Download_report(parsed_result_arr ,dateStart, dateFinish);
+                                reportController.Download_report(parsed_result_arr ,dateStart, dateFinish); // Скачивание отчётаа
                             });
 
-                            SetFilter(parsed_result_arr, dateStart, dateFinish);
-                            autoResizeColumns(data_rep_table);
+                            SetFilter(parsed_result_arr, dateStart, dateFinish); // Установить фильтры
+                            autoResizeColumns(data_rep_table); // Выровнять колонки в таблице
                         }
                     });
 
@@ -451,30 +469,30 @@ public class appController {
         });
     }
 
+    // Функция для выравнивания колонок в таблице по ширине текста
     public static void autoResizeColumns( TableView<ReportModel> table )
     {
-        //Set the right policy
         table.setColumnResizePolicy( TableView.UNCONSTRAINED_RESIZE_POLICY);
         table.getColumns().stream().forEach( (column) ->
         {
-            //Minimal width = columnheader
+            // Получение минимальной ширины
             Text t = new Text( column.getText() );
             double max = t.getLayoutBounds().getWidth();
             for ( int i = 0; i < table.getItems().size(); i++ )
             {
-                //cell must not be empty
+                // Столбцы не должны быть пустыми
                 if ( column.getCellData( i ) != null )
                 {
-                    t = new Text( column.getCellData( i ).toString() );
-                    double calcwidth = t.getLayoutBounds().getWidth();
-                    //remember new max-width
+                    t = new Text( column.getCellData( i ).toString() ); // Получить текст со столбца
+                    double calcwidth = t.getLayoutBounds().getWidth(); // Получить ширину текста
+                    // Запомнить новую макс ширину
                     if ( calcwidth > max )
                     {
                         max = calcwidth;
                     }
                 }
             }
-            //set the new max-widht with some extra space
+            // Добавить к максимальной ширине немного пространства
             column.setPrefWidth( max + 10.0d );
         } );
     }

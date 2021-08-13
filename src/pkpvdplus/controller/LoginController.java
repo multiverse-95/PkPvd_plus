@@ -28,13 +28,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// Контроллер для авторизации в АИС
+// Контроллер для авторизации
 public class LoginController {
-
+    // Поток для авторизации
     public static class LoginTask extends Task<String> {
-        private final String username;
-        private final String password;
-        private final boolean isCheckBoxSel;
+        private final String username; // Логин
+        private final String password; // Пароль
+        private final boolean isCheckBoxSel; // Флаг чекбокса
 
         public LoginTask(String username, String password, boolean isCheckBoxSel) {
             this.username = username;
@@ -43,16 +43,13 @@ public class LoginController {
         }
         @Override
         protected String call() throws Exception {
-            /*ArrayList<String> results=new ArrayList<String>();
-            results.add("");
-            results.add("");*/
-            ArrayList<String> results=Autoriz(username,password);
-            String cookie=results.get(0);
-            String resultAutoriz=results.get(1);
-            if (resultAutoriz.isEmpty()){
+            ArrayList<String> results=Autoriz(username,password); // Запуск функции авторизации
+            String cookie=results.get(0); // Получение куки
+            String resultAutoriz=results.get(1); // Получение ответа с сервера
+            if (resultAutoriz.isEmpty()){ // Если результат пустой, то авторизация прошла успешно
                 System.out.println("Login correct!");
                 SaveAutoriz(username, password, cookie, isCheckBoxSel);
-            } else {
+            } else { // Иначе пришла страница с ошибкой, авторизация неудачна
                 System.out.println("Login is not correct!");
                 cookie="";
 
@@ -60,8 +57,9 @@ public class LoginController {
             return cookie;
         }
     }
-
+    // Функция для сохранения данных по авторизации
     private static void SaveAutoriz(String login, String password, String cookie , boolean isCheckBoxSel){
+        // Получаем логин, пароль, куки, флаг чекбокса
         SettingsModel settingsModel=new SettingsModel(login, password, cookie,"", isCheckBoxSel);
         settingsModel.setLogin(login);
         settingsModel.setPassword(password);
@@ -70,6 +68,7 @@ public class LoginController {
         Gson gson = new Gson();
         //StringEntity postingString = new StringEntity(gson.toJson(settingsModel), StandardCharsets.UTF_8);//gson.tojson() converts your payload to json
         System.out.println("json settings: "+ gson.toJson(settingsModel));
+        // Создаем файл с настройками
         File f = new File("C:\\pkpvdplus");
         try{
             if(f.mkdir()) {
@@ -79,7 +78,7 @@ public class LoginController {
                 try {
                     FileWriter fileWriter = null;
                     fileWriter = new FileWriter(file);
-                    fileWriter.write(content);
+                    fileWriter.write(content); // Записываем данные
                     fileWriter.close();
                 } catch (IOException ex) {
                     Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
@@ -92,48 +91,46 @@ public class LoginController {
         } catch(Exception e){
             e.printStackTrace();
         }
-
-
-
     }
 
     // Функция для начальной авторизации
     public static ArrayList<String> Autoriz(String username, String password) throws IOException {
         LoginModel loginModel = new LoginModel(username, password);
 
-        String login_user=loginModel.getLogin();
-        String password_user=loginModel.getPassword();
+        String login_user=loginModel.getLogin(); // Получаем логин
+        String password_user=loginModel.getPassword(); // Получаем пароль
         System.out.println(login_user+" "+password_user);
 
         CookieStore httpCookieStore = new BasicCookieStore();
         HttpClient httpClient = null;
         HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
         httpClient = builder.build();
-        String postUrl       = "http://10.42.200.207/api/rs/login?returi=http%3A%2F%2F10.42.200.207%2Fhelp";// put in your url
+        String postUrl       = "http://10.42.200.207/api/rs/login?returi=http%3A%2F%2F10.42.200.207%2Fhelp";// Сервер авторизации
         HttpPost post = new HttpPost(postUrl);
         List<NameValuePair> params = new ArrayList<NameValuePair>();
-
+        // Добавляем параметры для запроса
         params.add(new BasicNameValuePair("redirect", "http://10.42.200.207/help"));
         params.add(new BasicNameValuePair("username", login_user));
         params.add(new BasicNameValuePair("password", password_user));
         params.add(new BasicNameValuePair("commit", "Войти"));
-        post.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.UTF_8));
+        post.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.UTF_8)); // Устанавливаем параметры
 
-        HttpResponse response = httpClient.execute(post);
-        List<Cookie> cookies = httpCookieStore.getCookies();
+        HttpResponse response = httpClient.execute(post); // Выполняем post запрос
+        List<Cookie> cookies = httpCookieStore.getCookies(); // Получаем куки
         String cookie=cookies.get(0).getValue();
 
         HttpEntity entity = response.getEntity();
-        String result_of_req = EntityUtils.toString(entity);
+        String result_of_req = EntityUtils.toString(entity); // Получаем результат запроса
         ArrayList<String> results=new ArrayList<String>();
+        // Сохраняем данные в списке
         results.add(cookie);
         results.add(result_of_req);
-        return results;
+        return results; // Возвращаем список с куки и результатом с сервера
 
     }
-
+    // Функция для сохранения настроек
     public static void SaveSettings(String login, String password, boolean isCheckBoxSel){
-        // setlasstput info
+        // Путь к файлу
         File fileJson = new File("C:\\pkpvdplus\\settingsPVD.json");
             JsonParser parser = new JsonParser();
             JsonElement jsontree = null;
@@ -142,6 +139,7 @@ public class LoginController {
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+            // Парсим данные
             JsonObject jsonObject = jsontree.getAsJsonObject();
             //String login = jsonObject.get("login").getAsString();
             //String password = jsonObject.get("password").getAsString();
@@ -154,7 +152,7 @@ public class LoginController {
             settingsModel.setCookie(cookie);
             settingsModel.setLastPathToFile(lastPathToFile);
             settingsModel.setCheckBoxSel(isCheckBoxSel);
-
+            // Сохраняем настройки
             Gson gson = new Gson();
             String content = gson.toJson(settingsModel);
 
