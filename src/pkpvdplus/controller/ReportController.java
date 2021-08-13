@@ -250,8 +250,8 @@ public class ReportController {
             fileChooser.setInitialDirectory(new File(lastPathDirectory));
         }
         // Устанавливаем список расширений для файла
-
-        fileChooser.setInitialFileName("report_pkpvd "+dateStart.getDayOfMonth()+"."+dateStart.getMonthValue()+"."+dateStart.getYear()+"_"+
+        //fileChooser.setInitialFileName("report_pkpvd");// Устанавливаем название для файла
+        fileChooser.setInitialFileName("report_pkpvd_"+dateStart.getDayOfMonth()+"."+dateStart.getMonthValue()+"."+dateStart.getYear()+"-"+
                 datefinish.getDayOfMonth()+"."+datefinish.getMonthValue()+"."+datefinish.getYear());// Устанавливаем название для файла
         // Список расширений для Excel
         FileChooser.ExtensionFilter extFilterExcel = new FileChooser.ExtensionFilter("Excel file (*.xlsx)", "*.xlsx");
