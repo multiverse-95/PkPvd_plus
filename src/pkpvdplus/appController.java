@@ -104,7 +104,10 @@ public class appController {
     private TableColumn<ReportModel, String> name_company_col;
 
     @FXML
-    private TableColumn<ReportModel, String> appeal_col;
+    private TableColumn<ReportModel, String> number_appeal_col;
+
+    @FXML
+    private TableColumn<ReportModel, String> name_appeal_col;
 
     @FXML
     private TableColumn<ReportModel, String> date_create_col;
@@ -208,7 +211,7 @@ public class appController {
                     }
                     String lowerCaseFilter = newValue.toLowerCase();
                     // Сравниваем обращения с фильтром
-                    if (report_model.getAppeal().toLowerCase().contains(lowerCaseFilter)){
+                    if (report_model.getNumberAppeal().toLowerCase().contains(lowerCaseFilter)){
                         return true;
                     }
                     return false;
@@ -443,8 +446,11 @@ public class appController {
                             name_company_col.setCellValueFactory(new PropertyValueFactory<>("nameCompany"));
                             name_company_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
-                            appeal_col.setCellValueFactory(new PropertyValueFactory<>("appeal"));
-                            appeal_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+                            number_appeal_col.setCellValueFactory(new PropertyValueFactory<>("numberAppeal"));
+                            number_appeal_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+                            name_appeal_col.setCellValueFactory(new PropertyValueFactory<>("nameAppeal"));
+                            name_appeal_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
                             date_create_col.setCellValueFactory(new PropertyValueFactory<>("dateCreate"));
                             date_create_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
@@ -456,7 +462,6 @@ public class appController {
                             applicant_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
                             data_rep_table.setItems(dataReport);
-
                             download_report_b.setDisable(false);
                             // Вызов события для кнопки скачивания отчета
                             download_report_b.setOnAction(event1 -> {

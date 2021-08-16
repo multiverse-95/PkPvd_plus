@@ -4,17 +4,19 @@ import javafx.beans.property.SimpleStringProperty;
 // Класс для отображения данных в отчёте
 public class ReportModel {
     private SimpleStringProperty period; // Период, за который сформирован отчёт
-    private SimpleStringProperty nameCompany; // Название организации
-    private SimpleStringProperty appeal; // Номер обращения
+    private SimpleStringProperty nameCompany; // Наименование организации
+    private SimpleStringProperty numberAppeal; // Номер обращения
+    private SimpleStringProperty nameAppeal; // Наименование обращения
     private SimpleStringProperty dateCreate; // Дата создания обращения
     private SimpleStringProperty status; // Статус обращения
     private SimpleStringProperty applicant; // Заявители
 
     // Конструктор
-    public ReportModel(String period, String nameCompany, String appeal, String dateCreate, String status, String applicant) {
+    public ReportModel(String period, String nameCompany, String numberAppeal, String nameAppeal, String dateCreate, String status, String applicant) {
         this.period =new SimpleStringProperty(period);
         this.nameCompany = new SimpleStringProperty(nameCompany);
-        this.appeal = new SimpleStringProperty(appeal);
+        this.numberAppeal = new SimpleStringProperty(numberAppeal);
+        this.nameAppeal = new SimpleStringProperty(nameAppeal);
         this.dateCreate = new SimpleStringProperty(dateCreate);
         this.status = new SimpleStringProperty(status);
         this.applicant = new SimpleStringProperty(applicant);
@@ -33,11 +35,17 @@ public class ReportModel {
     public void setNameCompany(String nameCompany) {
         this.nameCompany = new SimpleStringProperty(nameCompany);
     }
-    public String getAppeal() {
-        return appeal.get();
+    public String getNumberAppeal() {
+        return numberAppeal.get();
     }
-    public void setAppeal(String appeal) {
-        this.appeal = new SimpleStringProperty(appeal);
+    public void setNumberAppeal(String numberAppeal) {
+        this.numberAppeal = new SimpleStringProperty(numberAppeal);
+    }
+    public String getNameAppeal() {
+        return nameAppeal.get();
+    }
+    public void setNameAppeal(String nameAppeal) {
+        this.nameAppeal = new SimpleStringProperty(nameAppeal);
     }
     public String getDateCreate() {
         return dateCreate.get();

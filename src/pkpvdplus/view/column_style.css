@@ -1,0 +1,3 @@
+.column-header.leftAlignedTableColumnHeader > .label {
+    -fx-alignment: center-left;
+}

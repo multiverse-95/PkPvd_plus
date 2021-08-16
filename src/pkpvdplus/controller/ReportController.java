@@ -208,8 +208,8 @@ public class ReportController {
             while ((lineInArray = reader.readNext()) != null) {
                 //System.out.println(lineInArray[0]);
                 // Получаем период с csv
-                reportListMain.add(new ReportModel(lineInArray[0], "", "", "", "",""));
-                reportListFinal.add(new ReportModel(lineInArray[0], "", "", "", "",""));
+                reportListMain.add(new ReportModel(lineInArray[0], "", "","", "", "",""));
+                reportListFinal.add(new ReportModel(lineInArray[0], "", "", "", "", "",""));
                 break; // После получения периода, прерываем чтение данных
                 //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
             }
@@ -218,7 +218,7 @@ public class ReportController {
                 // Берём только данные по ЕГРН
                 if (lineInArray[11].equals("Предоставление сведений, содержащихся в ЕГРН, об объектах недвижимости и (или) их правообладателях")){
                     // Записываем нужную информацию в список (Организация, номера обращений, даты создания, статус, заявители)
-                    reportListMain.add(new ReportModel("", lineInArray[1], lineInArray[2], lineInArray[3], lineInArray[11],lineInArray[12]));
+                    reportListMain.add(new ReportModel("", lineInArray[1], lineInArray[2],"", lineInArray[3], lineInArray[11],lineInArray[12]));
                 }
                 //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
             }
@@ -230,7 +230,7 @@ public class ReportController {
             String[] lineInArray;
             while ((lineInArray = reader.readNext()) != null) {
                 // Записываем нужные данные в список дополнительного отчёта
-                reportListDoc.add(new ReportModel("", lineInArray[1], lineInArray[2], lineInArray[5], lineInArray[6],""));
+                reportListDoc.add(new ReportModel("", lineInArray[1], lineInArray[2],lineInArray[3], lineInArray[5], lineInArray[6],""));
                 //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
             }
         }
@@ -238,13 +238,13 @@ public class ReportController {
         // Обрабатываем основной и дополнительный отчёт
         if(reportListDoc.size()>reportListMain.size()){ // Проверяем, чтобы дополнительный отчёт был больше основного
             for (int i=0; i<reportListMain.size(); i++){ // Идём по циклу основного отчёта
-                String FilterAppeal = reportListMain.get(i).getAppeal().toLowerCase(); // Получаем номер обращения
+                String FilterAppeal = reportListMain.get(i).getNumberAppeal().toLowerCase(); // Получаем номер обращения
                 for (int j=0; j<reportListDoc.size(); j++){ // Идём по циклу дополнительного отчёта
-                    String ListDocAppeal = reportListDoc.get(j).getAppeal().toLowerCase(); // Получаем номер обращения
+                    String ListDocAppeal = reportListDoc.get(j).getNumberAppeal().toLowerCase(); // Получаем номер обращения
                     if (FilterAppeal.contains(ListDocAppeal)){ // Сравниваем номер обращения с основного отчёта и дополнительного
                         // Если совпадают, то добавить в финальный отчёт информацию: Организация, номер обращения и т.д.
-                        reportListFinal.add(new ReportModel("",reportListMain.get(i).getNameCompany(), reportListMain.get(i).getAppeal(),
-                                reportListMain.get(i).getDateCreate(), reportListDoc.get(j).getStatus(),reportListMain.get(i).getApplicant()));
+                        reportListFinal.add(new ReportModel("",reportListMain.get(i).getNameCompany(), reportListMain.get(i).getNumberAppeal(),
+                                reportListDoc.get(j).getNameAppeal(),reportListMain.get(i).getDateCreate(), reportListDoc.get(j).getStatus(),reportListMain.get(i).getApplicant()));
                     }
                 }
             }
@@ -306,7 +306,7 @@ public class ReportController {
                     Alert alert =new Alert(Alert.AlertType.INFORMATION , "Test", ok_but, cancel_but);
                     alert.setTitle("Загрузка отчёта...");
                     alert.setHeaderText("Идёт загрузка отчёта, подождите...");
-                    alert.setContentText("После окончания загрузки, появится уведомление!");
+                    alert.setContentText("После загрузки появится уведомление!");
                     alert.show();
                     // Скрываем кнопки в окне, чтобы пользователь случайно не нажал их
                     Button okButton =( Button ) alert.getDialogPane().lookupButton( ok_but );
@@ -374,7 +374,7 @@ public class ReportController {
                     Alert alert =new Alert(Alert.AlertType.INFORMATION , "Test", ok_but, cancel_but);
                     alert.setTitle("Загрузка отчёта...");
                     alert.setHeaderText("Идёт загрузка отчёта, подождите...");
-                    alert.setContentText("После окончания загрузки, появится уведомление!");
+                    alert.setContentText("После загрузки появится уведомление!");
                     alert.show();
                     Button okButton =( Button ) alert.getDialogPane().lookupButton( ok_but );
                     Button cancelButton = ( Button ) alert.getDialogPane().lookupButton( cancel_but );
@@ -459,22 +459,26 @@ public class ReportController {
 
         // Создание столбца "Название организации"
         cell = row.createCell(0, CellType.STRING);
-        cell.setCellValue("Название организации");
+        cell.setCellValue("Наименование организации");
         cell.setCellStyle(style);
-        // Создание столбца "Обращение"
+        // Создание столбца "Номер обращения"
         cell = row.createCell(1, CellType.STRING);
-        cell.setCellValue("Обращение");
+        cell.setCellValue("Номер обращения");
+        cell.setCellStyle(style);
+        // Создание столбца "Наименование обращения"
+        cell = row.createCell(2, CellType.STRING);
+        cell.setCellValue("Наименование обращения");
         cell.setCellStyle(style);
         // Создание столбца "Дата создания"
-        cell = row.createCell(2, CellType.STRING);
+        cell = row.createCell(3, CellType.STRING);
         cell.setCellValue("Дата создания");
         cell.setCellStyle(style);
         // Создание столбца "Статус"
-        cell = row.createCell(3, CellType.STRING);
+        cell = row.createCell(4, CellType.STRING);
         cell.setCellValue("Статус");
         cell.setCellStyle(style);
         // Создание столбца "Заявители"
-        cell = row.createCell(4, CellType.STRING);
+        cell = row.createCell(5, CellType.STRING);
         cell.setCellValue("Заявители");
         cell.setCellStyle(style);
 
@@ -490,15 +494,18 @@ public class ReportController {
             cell.setCellValue(reportModel.getNameCompany());
 
             cell = row.createCell(1, CellType.STRING);
-            cell.setCellValue(reportModel.getAppeal());
+            cell.setCellValue(reportModel.getNumberAppeal());
 
             cell = row.createCell(2, CellType.STRING);
-            cell.setCellValue(reportModel.getDateCreate());
+            cell.setCellValue(reportModel.getNameAppeal());
 
             cell = row.createCell(3, CellType.STRING);
-            cell.setCellValue(reportModel.getStatus());
+            cell.setCellValue(reportModel.getDateCreate());
 
             cell = row.createCell(4, CellType.STRING);
+            cell.setCellValue(reportModel.getStatus());
+
+            cell = row.createCell(5, CellType.STRING);
             cell.setCellValue(reportModel.getApplicant());
 
         }
@@ -547,24 +554,30 @@ public class ReportController {
 
         // Создание столбца "Название организации"
         cell = row.createCell(0, CellType.STRING);
-        cell.setCellValue("Название организации");
+        cell.setCellValue("Наименование организации");
         cell.setCellStyle(style);
-        // Создание столбца "Обращение"
+        // Создание столбца "Номер обращения"
         cell = row.createCell(1, CellType.STRING);
-        cell.setCellValue("Обращение");
+        cell.setCellValue("Номер обращения");
+        cell.setCellStyle(style);
+        // Создание столбца "Наименование обращения"
+        cell = row.createCell(2, CellType.STRING);
+        cell.setCellValue("Наименование обращения");
         cell.setCellStyle(style);
         // Создание столбца "Дата создания"
-        cell = row.createCell(2, CellType.STRING);
+        cell = row.createCell(3, CellType.STRING);
         cell.setCellValue("Дата создания");
         cell.setCellStyle(style);
         // Создание столбца "Статус"
-        cell = row.createCell(3, CellType.STRING);
+        cell = row.createCell(4, CellType.STRING);
         cell.setCellValue("Статус");
         cell.setCellStyle(style);
         // Создание столбца "Заявители"
-        cell = row.createCell(4, CellType.STRING);
+        cell = row.createCell(5, CellType.STRING);
         cell.setCellValue("Заявители");
         cell.setCellStyle(style);
+
+
 
 
         // Перебор по данным
@@ -578,15 +591,18 @@ public class ReportController {
             cell.setCellValue(reportModel.getNameCompany());
 
             cell = row.createCell(1, CellType.STRING);
-            cell.setCellValue(reportModel.getAppeal());
+            cell.setCellValue(reportModel.getNumberAppeal());
 
             cell = row.createCell(2, CellType.STRING);
-            cell.setCellValue(reportModel.getDateCreate());
+            cell.setCellValue(reportModel.getNameAppeal());
 
             cell = row.createCell(3, CellType.STRING);
-            cell.setCellValue(reportModel.getStatus());
+            cell.setCellValue(reportModel.getDateCreate());
 
             cell = row.createCell(4, CellType.STRING);
+            cell.setCellValue(reportModel.getStatus());
+
+            cell = row.createCell(5, CellType.STRING);
             cell.setCellValue(reportModel.getApplicant());
 
         }

@@ -139,13 +139,14 @@
                                 </StackPane>
                             </top>
                             <center>
-                                <TableView fx:id="data_rep_table" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="550.0" prefWidth="1031.0" BorderPane.alignment="CENTER">
+                                <TableView fx:id="data_rep_table" editable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="550.0" prefWidth="1031.0" stylesheets="@column_style.css" BorderPane.alignment="CENTER">
                                     <columns>
-                                        <TableColumn fx:id="name_company_col" prefWidth="195.0" text="Наименование организации" />
-                                        <TableColumn fx:id="appeal_col" prefWidth="214.0" text="Обращение" />
-                              <TableColumn fx:id="date_create_col" prefWidth="178.0" text="Дата создания" />
-                              <TableColumn fx:id="status_col" prefWidth="261.0" text="Статус" />
-                              <TableColumn fx:id="applicant_col" prefWidth="182.0" text="Заявители" />
+                                        <TableColumn fx:id="name_company_col" prefWidth="195.0" styleClass="leftAlignedTableColumnHeader" text="Наименование организации" />
+                                        <TableColumn fx:id="number_appeal_col" prefWidth="138.0" styleClass="leftAlignedTableColumnHeader" text="Номер обращения" />
+                              <TableColumn fx:id="name_appeal_col" prefWidth="188.0" styleClass="leftAlignedTableColumnHeader" text="Наименование обращения" />
+                              <TableColumn fx:id="date_create_col" prefWidth="151.0" styleClass="leftAlignedTableColumnHeader" text="Дата создания" />
+                              <TableColumn fx:id="status_col" prefWidth="81.0" styleClass="leftAlignedTableColumnHeader" text="Статус" />
+                              <TableColumn fx:id="applicant_col" prefWidth="205.0" styleClass="leftAlignedTableColumnHeader" text="Заявители" />
                                     </columns>
                                 </TableView>
                             </center>
