@@ -23,11 +23,9 @@ import javafx.stage.WindowEvent;
 import pkpvdplus.controller.LoginController;
 import pkpvdplus.model.LoginModel;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 // Стартовый контроллер
@@ -134,9 +132,11 @@ public class StartController {
             // Считываем данные с файла json
             JsonParser parser = new JsonParser();
             JsonElement jsontree = null;
+
             try {
-                jsontree = parser.parse(new FileReader("C:\\pkpvdplus\\settingsPVD.json"));
-            } catch (FileNotFoundException e) {
+                jsontree = parser.parse(new BufferedReader(new InputStreamReader(new FileInputStream("C:\\pkpvdplus\\settingsPVD.json"), StandardCharsets.UTF_8)));
+                //jsontree = parser.parse(new FileReader("C:\\pkpvdplus\\settingsPVD.json"));
+            } catch (IOException e) {
                 e.printStackTrace();
             }
             // Парсим логин, пароль и флаг для активации чекбокса

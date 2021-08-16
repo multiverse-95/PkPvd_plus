@@ -17,6 +17,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.stage.FileChooser;
@@ -298,14 +299,29 @@ public class ReportController {
                 // Если файл не пустой
                 if(file != null){
                     // Сохраняем файл
-                    //SaveFileExcel(dataReportList, file);
+
+                    // Окно, которое уведомляет о загрузке файла
+                    ButtonType ok_but = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE); // Создание кнопки "Открыть отчёт"
+                    ButtonType cancel_but = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE); // Создание кнопки "Открыть папку с отчётом"
+                    Alert alert =new Alert(Alert.AlertType.INFORMATION , "Test", ok_but, cancel_but);
+                    alert.setTitle("Загрузка отчёта...");
+                    alert.setHeaderText("Идёт загрузка отчёта, подождите...");
+                    alert.setContentText("После окончания загрузки, появится уведомление!");
+                    alert.show();
+                    // Скрываем кнопки в окне, чтобы пользователь случайно не нажал их
+                    Button okButton =( Button ) alert.getDialogPane().lookupButton( ok_but );
+                    Button cancelButton = ( Button ) alert.getDialogPane().lookupButton( cancel_but );
+                    okButton.setVisible(false);
+                    cancelButton.setVisible(false);
+
                     Task DownloadTaskExcel =  new DownloadTaskExcel (dataReportList, file);
 
                     //  После выполнения потока
                     DownloadTaskExcel.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                         @Override
                         public void handle(WorkerStateEvent event) {
-                            //System.out.println(DownloadTaskExcel.getValue());
+
+                            cancelButton.fire(); // Закрываем окно с загрузкой
                             // Получение директорий, вызов функции скачивания отчёта
                             ArrayList<String> pathFileAndDir= (ArrayList<String>) DownloadTaskExcel.getValue();
                             // Получаем путь для файла
@@ -323,23 +339,19 @@ public class ReportController {
                             // Вызов подтверждения элемента
                             alert.showAndWait().ifPresent(rs -> {
                                 if (rs == openReport){ // Если выбрали открыть отчёт
-                                    Desktop desktop = Desktop.getDesktop();
-                                    File fileOpen= new File (absolutePathToFile);
                                     try {
-                                        //desktop.open(file);
-                                        desktop.open(fileOpen);
+                                        Desktop.getDesktop().open(new File(absolutePathToFile));
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
                                 } else if (rs==openDir){ // Если выбрали открыт папку
                                     try {
-                                        Process p = new ProcessBuilder("explorer.exe", "/select,"+absolutePathToFile).start();
+                                        Desktop.getDesktop().open(new File(pathToFile));
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
                                 }
                             });
-
                         }
                     });
 
@@ -355,13 +367,27 @@ public class ReportController {
                 // Если файл не пустой
                 if(file != null){
                     // Сохраняем файл
-                    //SaveFileExcelOldFormat(dataReportList, file);
+
+                    // Окно, которое уведомляет о загрузке файла
+                    ButtonType ok_but = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE); // Создание кнопки "Открыть отчёт"
+                    ButtonType cancel_but = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE); // Создание кнопки "Открыть папку с отчётом"
+                    Alert alert =new Alert(Alert.AlertType.INFORMATION , "Test", ok_but, cancel_but);
+                    alert.setTitle("Загрузка отчёта...");
+                    alert.setHeaderText("Идёт загрузка отчёта, подождите...");
+                    alert.setContentText("После окончания загрузки, появится уведомление!");
+                    alert.show();
+                    Button okButton =( Button ) alert.getDialogPane().lookupButton( ok_but );
+                    Button cancelButton = ( Button ) alert.getDialogPane().lookupButton( cancel_but );
+                    // Скрываем кнопки в окне, чтобы пользователь случайно не нажал их
+                    okButton.setVisible(false);
+                    cancelButton.setVisible(false);
+
                     Task DownloadTaskExcelOld =  new DownloadTaskExcelOld (dataReportList, file);
                     //  После выполнения потока
                     DownloadTaskExcelOld.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
                         @Override
                         public void handle(WorkerStateEvent event) {
-                            System.out.println(DownloadTaskExcelOld.getValue());
+                            cancelButton.fire(); // Закрываем окно с загрузкой
                             // Получение директорий, вызов функции скачивания отчёта
                             ArrayList<String> pathFileAndDir= (ArrayList<String>) DownloadTaskExcelOld.getValue();
                             // Получаем путь для файла
@@ -379,17 +405,14 @@ public class ReportController {
                             // Вызов подтверждения элемента
                             alert.showAndWait().ifPresent(rs -> {
                                 if (rs == openReport){ // Если выбрали открыть отчёт
-                                    Desktop desktop = Desktop.getDesktop();
-                                    File fileOpen= new File (absolutePathToFile);
                                     try {
-                                        //desktop.open(file);
-                                        desktop.open(fileOpen);
+                                        Desktop.getDesktop().open(new File(absolutePathToFile));
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
                                 } else if (rs==openDir){ // Если выбрали открыть папку с отчётом
                                     try {
-                                        Process p = new ProcessBuilder("explorer.exe", "/select,"+absolutePathToFile).start();
+                                        Desktop.getDesktop().open(new File(pathToFile));
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
@@ -607,7 +630,7 @@ public class ReportController {
     }
 
     // Функция для сохранения последнего пути файла
-    public static void SaveLastPathInfo(String lastPathToFile){
+    public static void SaveLastPathInfo(String lastPathToFile) throws IOException {
         // Путь к файлу
         File fileJson = new File("C:\\pkpvdplus\\settingsPVD.json");
         // Проверяем, существует ли файл
@@ -616,11 +639,12 @@ public class ReportController {
             System.out.println("No file!");
         } else {
             System.out.println("yes file!");
-
+            // Читаем в кодировке UTF-8
             JsonParser parser = new JsonParser();
             JsonElement jsontree = null;
             try {
-                jsontree = parser.parse(new FileReader("C:\\pkpvdplus\\settingsPVD.json"));
+                jsontree = parser.parse(new BufferedReader(new InputStreamReader(new FileInputStream("C:\\pkpvdplus\\settingsPVD.json"), StandardCharsets.UTF_8)));
+                //jsontree = parser.parse(new FileReader("C:\\pkpvdplus\\settingsPVD.json"));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -650,15 +674,18 @@ public class ReportController {
             }
 
             String content=gson.toJson(settingsModel);
-
-            try {
+            // Записываем в кодировке UTF-8
+            Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileJson), StandardCharsets.UTF_8));
+            out.write(content);
+            out.close();
+            /*try {
                 FileWriter fileWriter = null;
                 fileWriter = new FileWriter(fileJson);
                 fileWriter.write(content);
                 fileWriter.close();
             } catch (IOException ex) {
                 Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            }*/
         }
     }
 
@@ -677,7 +704,8 @@ public class ReportController {
             JsonParser parser = new JsonParser();
             JsonElement jsontree = null;
             try {
-                jsontree = parser.parse(new FileReader("C:\\pkpvdplus\\settingsPVD.json"));
+                jsontree = parser.parse(new BufferedReader(new InputStreamReader(new FileInputStream("C:\\pkpvdplus\\settingsPVD.json"), StandardCharsets.UTF_8)));
+                //jsontree = parser.parse(new FileReader("C:\\pkpvdplus\\settingsPVD.json"));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }

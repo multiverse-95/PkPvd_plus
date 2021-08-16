@@ -75,14 +75,17 @@ public class LoginController {
                 System.out.println("Directory Created");
                 String content=gson.toJson(settingsModel);
                 File file=new File("C:\\pkpvdplus\\settingsPVD.json");
-                try {
+                Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
+                out.write(content);
+                out.close();
+                /*try {
                     FileWriter fileWriter = null;
                     fileWriter = new FileWriter(file);
                     fileWriter.write(content); // Записываем данные
                     fileWriter.close();
                 } catch (IOException ex) {
                     Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                }*/
             } else {
                 System.out.println("Directory is not created");
                 SaveSettings(login, password, isCheckBoxSel);
@@ -129,23 +132,21 @@ public class LoginController {
 
     }
     // Функция для сохранения настроек
-    public static void SaveSettings(String login, String password, boolean isCheckBoxSel){
+    public static void SaveSettings(String login, String password, boolean isCheckBoxSel) throws IOException {
         // Путь к файлу
         File fileJson = new File("C:\\pkpvdplus\\settingsPVD.json");
             JsonParser parser = new JsonParser();
             JsonElement jsontree = null;
             try {
-                jsontree = parser.parse(new FileReader("C:\\pkpvdplus\\settingsPVD.json"));
+                jsontree = parser.parse(new BufferedReader(new InputStreamReader(new FileInputStream("C:\\pkpvdplus\\settingsPVD.json"), StandardCharsets.UTF_8)));
+                //jsontree = parser.parse(new FileReader("C:\\pkpvdplus\\settingsPVD.json"));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
             // Парсим данные
             JsonObject jsonObject = jsontree.getAsJsonObject();
-            //String login = jsonObject.get("login").getAsString();
-            //String password = jsonObject.get("password").getAsString();
             String cookie = jsonObject.get("cookie").getAsString();
             String lastPathToFile = jsonObject.get("lastPathToFile").getAsString();
-            //boolean isCheckBoxSel = jsonObject.get("isCheckBoxSel").getAsBoolean();
             SettingsModel settingsModel = new SettingsModel(login, password, cookie, lastPathToFile, isCheckBoxSel);
             settingsModel.setLogin(login);
             settingsModel.setPassword(password);
@@ -155,15 +156,17 @@ public class LoginController {
             // Сохраняем настройки
             Gson gson = new Gson();
             String content = gson.toJson(settingsModel);
-
-            try {
+            Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileJson), StandardCharsets.UTF_8));
+            out.write(content);
+            out.close();
+            /*try {
                 FileWriter fileWriter = null;
                 fileWriter = new FileWriter(fileJson);
                 fileWriter.write(content);
                 fileWriter.close();
             } catch (IOException ex) {
                 Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            }*/
 
     }
 

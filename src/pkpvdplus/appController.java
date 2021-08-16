@@ -2,6 +2,7 @@ package pkpvdplus;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -301,7 +302,8 @@ public class appController {
             JsonParser parser = new JsonParser();
             JsonElement jsontree = null;
             try {
-                jsontree = parser.parse(new FileReader("C:\\pkpvdplus\\settingsPVD.json"));
+                jsontree = parser.parse(new BufferedReader(new InputStreamReader(new FileInputStream("C:\\pkpvdplus\\settingsPVD.json"), StandardCharsets.UTF_8)));
+               // jsontree = parser.parse(new FileReader("C:\\pkpvdplus\\settingsPVD.json"));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -317,15 +319,22 @@ public class appController {
 
             Gson gson = new Gson();
             String content = gson.toJson(settingsModel);
-
             try {
+                Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileJson), StandardCharsets.UTF_8));
+                out.write(content);
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+           /* try {
                 FileWriter fileWriter = null;
                 fileWriter = new FileWriter(fileJson);
                 fileWriter.write(content);
                 fileWriter.close();
             } catch (IOException ex) {
                 Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            }*/
 
 
             app_menuBar.getScene().getWindow().hide();// Скрываем окно программы
