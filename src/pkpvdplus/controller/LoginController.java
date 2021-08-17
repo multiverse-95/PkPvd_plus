@@ -88,8 +88,7 @@ public class LoginController {
                 }*/
             } else {
                 System.out.println("Directory is not created");
-                SaveSettings(login, password, isCheckBoxSel);
-
+                SaveSettings(login, password, cookie, isCheckBoxSel);
             }
         } catch(Exception e){
             e.printStackTrace();
@@ -132,7 +131,7 @@ public class LoginController {
 
     }
     // Функция для сохранения настроек
-    public static void SaveSettings(String login, String password, boolean isCheckBoxSel) throws IOException {
+    public static void SaveSettings(String login, String password, String cookie, boolean isCheckBoxSel) throws IOException {
         // Путь к файлу
         File fileJson = new File("C:\\pkpvdplus\\settingsPVD.json");
             JsonParser parser = new JsonParser();
@@ -145,7 +144,6 @@ public class LoginController {
             }
             // Парсим данные
             JsonObject jsonObject = jsontree.getAsJsonObject();
-            String cookie = jsonObject.get("cookie").getAsString();
             String lastPathToFile = jsonObject.get("lastPathToFile").getAsString();
             SettingsModel settingsModel = new SettingsModel(login, password, cookie, lastPathToFile, isCheckBoxSel);
             settingsModel.setLogin(login);
@@ -159,14 +157,6 @@ public class LoginController {
             Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileJson), StandardCharsets.UTF_8));
             out.write(content);
             out.close();
-            /*try {
-                FileWriter fileWriter = null;
-                fileWriter = new FileWriter(fileJson);
-                fileWriter.write(content);
-                fileWriter.close();
-            } catch (IOException ex) {
-                Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-            }*/
 
     }
 
