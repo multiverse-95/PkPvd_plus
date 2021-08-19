@@ -113,7 +113,13 @@ public class appController {
     private TableColumn<ReportModel, String> date_create_col;
 
     @FXML
+    private TableColumn<ReportModel, String> date_end_col;
+
+    @FXML
     private TableColumn<ReportModel, String> status_col;
+
+    @FXML
+    private TableColumn<ReportModel, String> cur_step_col;
 
     @FXML
     private TableColumn<ReportModel, String> applicant_col;
@@ -455,8 +461,14 @@ public class appController {
                             date_create_col.setCellValueFactory(new PropertyValueFactory<>("dateCreate"));
                             date_create_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
+                            date_end_col.setCellValueFactory(new PropertyValueFactory<>("dateEnd"));
+                            date_end_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
                             status_col.setCellValueFactory(new PropertyValueFactory<>("status"));
                             status_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+                            cur_step_col.setCellValueFactory(new PropertyValueFactory<>("currentStep"));
+                            cur_step_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
                             applicant_col.setCellValueFactory(new PropertyValueFactory<>("applicant"));
                             applicant_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
@@ -507,7 +519,7 @@ public class appController {
                 }
             }
             // Добавить к максимальной ширине немного пространства
-            column.setPrefWidth( max + 10.0d );
+            column.setPrefWidth( max + 12.0d );
         } );
     }
 }

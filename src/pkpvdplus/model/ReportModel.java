@@ -10,9 +10,13 @@ public class ReportModel {
     private SimpleStringProperty dateCreate; // Дата создания обращения
     private SimpleStringProperty status; // Статус обращения
     private SimpleStringProperty applicant; // Заявители
+    private SimpleStringProperty dateEnd; // Дата окончания обработки
+    private SimpleStringProperty currentStep; // Текущий шаг
+
+
 
     // Конструктор
-    public ReportModel(String period, String nameCompany, String numberAppeal, String nameAppeal, String dateCreate, String status, String applicant) {
+    public ReportModel(String period, String nameCompany, String numberAppeal, String nameAppeal, String dateCreate, String status, String applicant, String dateEnd, String currentStep) {
         this.period =new SimpleStringProperty(period);
         this.nameCompany = new SimpleStringProperty(nameCompany);
         this.numberAppeal = new SimpleStringProperty(numberAppeal);
@@ -20,6 +24,9 @@ public class ReportModel {
         this.dateCreate = new SimpleStringProperty(dateCreate);
         this.status = new SimpleStringProperty(status);
         this.applicant = new SimpleStringProperty(applicant);
+        this.dateEnd = new SimpleStringProperty(dateEnd);
+        this.currentStep = new SimpleStringProperty(currentStep);
+
     }
 
     // Геттеры и сеттеры
@@ -64,5 +71,17 @@ public class ReportModel {
     }
     public void setApplicant(String applicant) {
         this.applicant = new SimpleStringProperty(applicant);
+    }
+    public String getDateEnd() {
+        return dateEnd.get();
+    }
+    public void setDateEnd(String dateEnd) {
+        this.dateEnd = new SimpleStringProperty(dateEnd);
+    }
+    public String getCurrentStep() {
+        return currentStep.get();
+    }
+    public void setCurrentStep(String currentStep) {
+        this.currentStep = new SimpleStringProperty(currentStep);
     }
 }
