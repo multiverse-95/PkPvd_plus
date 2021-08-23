@@ -170,7 +170,7 @@ public class ReportController {
         params2.required=true;
         params2.value=dateFinish;
         params.add(params2);
-
+        // Если тип отчёта Список обращений.jrd, то добавляем ещё одни параметры для запроса
         if (typeReport.equals("Список обращений.jrd")){
             Params params3=new Params();
             params3.name="num";
@@ -181,7 +181,7 @@ public class ReportController {
             params.add(params3);
         }
 
-        payload_user.params=params;
+        payload_user.params=params; // Заполняем все параметры
 
         String postUrl       = "http://10.42.200.207/api/rs/reports/execute";// Ссылка на сервер
         Gson gson          = new Gson();
@@ -313,7 +313,7 @@ public class ReportController {
 
         return reportListFinal; // Возвращаем итоговый отчёт
     }
-
+    // Функция для проверки на наличие дупликатов в списке
     public static Set<String> findDuplicates(List<String> listContainingDuplicates) {
 
         final Set<String> setToReturn = new HashSet<String>();

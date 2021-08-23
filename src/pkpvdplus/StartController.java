@@ -85,7 +85,7 @@ public class StartController {
         box.setAlignment(Pos.CENTER);
         bx.setDisable(true);
         root.getChildren().add(box);
-
+        // Проверяем действительность куки
         Task CookieValidTask = new CookieValidTask(cookie[0]);
         // После выполнения потока
         CookieValidTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
@@ -95,10 +95,10 @@ public class StartController {
             box.setDisable(true);
             pi.setVisible(false);
             bx.setDisable(false);
-            cookie[0] =CookieValidTask.getValue().toString();
-            if(!cookie[0].isEmpty()){
-                if (saveMe_ch.isSelected()){
-                    Enter_PkPvd(cookie[0]);
+            cookie[0] =CookieValidTask.getValue().toString(); // Получаем значение куки
+            if(!cookie[0].isEmpty()){ // Если куки не пустое
+                if (saveMe_ch.isSelected()){ // Если чекбокс выбран
+                    Enter_PkPvd(cookie[0]); // Входим в главное окно программы
                 } else {
                     // При нажатии на кнопку "Вход"
                     login_button.setOnAction(eventLogin -> {
@@ -184,13 +184,14 @@ public class StartController {
 
         }
         });
+        // Запускаем поток для проверки куки
         Thread CookieValidThread = new Thread(CookieValidTask);
         CookieValidThread.setDaemon(true);
         CookieValidThread.start();
 
     }
 
-
+    // Функция для установки логина и пароля в поле ввода
     public void setLoginPassword(){
         File file = new File("C:\\pkpvdplus\\settingsPVD.json");
         // Если файл не существует, то ничего не делать
@@ -263,7 +264,7 @@ public class StartController {
         return dataLogin;
     }
 
-
+    // Функция для проверки действительности куки
     public static String ifCookie_valid() throws IOException {
 
         String cookie="";
@@ -285,6 +286,7 @@ public class StartController {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            // Парсим и получаем значение куки с файла
             JsonObject jsonObject = jsontree.getAsJsonObject();
             cookie=jsonObject.get("cookie").getAsString();
             System.out.println("cookie from file "+cookie);
@@ -297,14 +299,15 @@ public class StartController {
             HttpGet httpGet = new HttpGet(getUrl);
             httpGet.setHeader("Content-type", "application/json");
             httpGet.addHeader("Cookie","JSESSIONID="+cookie);
-            HttpResponse response = httpClient.execute(httpGet); // Выполняем post запрос
+            HttpResponse response = httpClient.execute(httpGet); // Выполняем get запрос для проверки действительности куки
 
             HttpEntity entity = response.getEntity();
             String result_of_req = EntityUtils.toString(entity); // Получаем результат запроса
 
-            int status_code= response.getStatusLine().getStatusCode();
+            int status_code= response.getStatusLine().getStatusCode(); // Получаем код ответа от сервера
             System.out.println("Status cookie autor: "+status_code);
             boolean CookieValid;
+            // Если код ответа 200, значит куки действителен, если 401 или другой, то недействителен
             switch (status_code){
                 case 200:
                     CookieValid=true;
@@ -320,7 +323,7 @@ public class StartController {
             }
         }
 
-        return cookie;
+        return cookie; // Возвращаем значение куки
     }
 
     // Функция авторизации
@@ -413,7 +416,7 @@ public class StartController {
         loginThread.start();
 
     }
-
+    // Функция для входа в программу через куки
     public void Enter_PkPvd(String cookie)  {
         login_button.getScene().getWindow().hide();// Скрываем окно авторизации
         FXMLLoader loader = new FXMLLoader();
