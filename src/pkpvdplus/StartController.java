@@ -431,6 +431,7 @@ public class StartController {
         appController AppController = loader.getController();
         //AppController.testDates();
         AppController.Show_report(cookie); // Вызов функции заполнения отчёта
+        AppController.Show_Appeal_Info(cookie, "");
 
         // Запускаем основное окно программы ПК ПВД Плюс
         Stage stage = new Stage();

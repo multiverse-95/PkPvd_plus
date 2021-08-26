@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="900.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pkpvdplus.controller.AppealInfoController">
+   <children>
+      <StackPane fx:id="root" prefHeight="900.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <BorderPane>
+               <top>
+                  <Label text="Подробная информация об обращении" BorderPane.alignment="CENTER">
+                     <font>
+                        <Font name="Arial Rounded MT Bold" size="22.0" />
+                     </font>
+                     <BorderPane.margin>
+                        <Insets bottom="5.0" top="5.0" />
+                     </BorderPane.margin>
+                  </Label>
+               </top>
+               <center>
+                <AnchorPane prefHeight="868.0" prefWidth="801.0" BorderPane.alignment="CENTER">
+                     <children>
+                        <VBox alignment="TOP_CENTER" prefHeight="853.0" prefWidth="787.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <Accordion>
+                                <panes>
+                                  <TitledPane animated="false" focusTraversable="false" text="Общая информация">
+                                    <content>
+                                      <AnchorPane minHeight="0.0" minWidth="0.0">
+                                             <children>
+                                                <VBox alignment="CENTER" prefHeight="181.0" prefWidth="786.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                   <children>
+                                                      <HBox alignment="CENTER" prefHeight="185.0" prefWidth="786.0">
+                                                         <children>
+                                                            <Label text="Наименование:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" prefHeight="185.0" prefWidth="786.0">
+                                                         <children>
+                                                            <Label text="Внутренний номер:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="101.0" prefHeight="185.0" prefWidth="786.0">
+                                                         <children>
+                                                            <Label text="Номер пакета:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="130.0" prefHeight="185.0" prefWidth="786.0">
+                                                         <children>
+                                                            <Label text="Регистрационный номер ППОЗ:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="145.0" prefHeight="185.0" prefWidth="786.0">
+                                                         <children>
+                                                            <Label text="Статус:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="154.0" prefHeight="185.0" prefWidth="786.0">
+                                                         <children>
+                                                            <Label text="Регламентный срок:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="160.0" prefHeight="185.0" prefWidth="786.0">
+                                                         <children>
+                                                            <Label text="Окончание обработки:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="166.0" prefHeight="185.0" prefWidth="786.0">
+                                                         <children>
+                                                            <Label text="Принадлежит обращению">
+                                                               <font>
+                                                                  <Font name="Arial Black" size="16.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="144.0" prefHeight="185.0" prefWidth="786.0">
+                                                         <children>
+                                                            <Label text="Наименование:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="174.0" prefHeight="185.0" prefWidth="786.0">
+                                                         <children>
+                                                            <Label text="Шаг:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="194.0" prefHeight="185.0" prefWidth="786.0">
+                                                         <children>
+                                                            <Label text="Переход на шаг:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="214.0" prefHeight="185.0" prefWidth="786.0">
+                                                         <children>
+                                                            <Label text="Начало выполнения шага:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="234.0" prefHeight="185.0" prefWidth="786.0">
+                                                         <children>
+                                                            <Label text="Комментарий к текущей операции:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                   </children>
+                                                </VBox>
+                                             </children>
+                                          </AnchorPane>
+                                    </content>
+                                       <font>
+                                          <Font name="Cambria Math" size="18.0" />
+                                       </font>
+                                  </TitledPane>
+                                  <TitledPane animated="false" focusTraversable="false" text="Заявитель">
+                                    <content>
+                                      <AnchorPane minHeight="0.0" minWidth="0.0">
+                                             <children>
+                                                <VBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                   <children>
+                                                      <HBox alignment="CENTER">
+                                                         <children>
+                                                            <Label text="Заявитель:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="фио заявителя">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0">
+                                                         <children>
+                                                            <Label text="Тип субъекта:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="195.0">
+                                                         <children>
+                                                            <Label text="Дата и место рождения">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="195.0">
+                                                         <children>
+                                                            <Label text="Документ,серия, номер:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="563.0">
+                                                         <children>
+                                                            <Label text="Когда и кем выдан:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="600.0">
+                                                         <children>
+                                                            <Label text="СНИЛС:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="625.0">
+                                                         <children>
+                                                            <Label text="Гражданство:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="130.0">
+                                                         <children>
+                                                            <Label text="Адрес постоянного проживания">
+                                                               <font>
+                                                                  <Font name="Arial Bold" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="130.0">
+                                                         <children>
+                                                            <Label text="Кемеровская обл, Белово г, Механическая ул, д. 25, кв. 2">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="150.0">
+                                                         <children>
+                                                            <Label text="Контактная информация">
+                                                               <font>
+                                                                  <Font name="Arial Bold" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="130.0">
+                                                         <children>
+                                                            <Label text="Адрес:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="адрес прож">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="212.0">
+                                                         <children>
+                                                            <Label text="Телефон:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="номер тел">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="232.0">
+                                                         <children>
+                                                            <Label text="Категория заявителя:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="кат">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                   </children>
+                                                </VBox>
+                                             </children></AnchorPane>
+                                    </content>
+                                       <font>
+                                          <Font name="Cambria Math" size="18.0" />
+                                       </font>
+                                  </TitledPane>
+                                  <TitledPane animated="false" focusTraversable="false" text="Объекты">
+                                    <content>
+                                      <AnchorPane minHeight="0.0" minWidth="0.0">
+                                             <children>
+                                                <VBox prefHeight="234.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                   <children>
+                                                      <HBox alignment="CENTER">
+                                                         <children>
+                                                            <Label text="Вид объекта:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="кат">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0">
+                                                         <children>
+                                                            <Label text="Кадастровый номер:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="кат">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                      <HBox alignment="CENTER" layoutX="10.0" layoutY="30.0">
+                                                         <children>
+                                                            <Label text="Адрес:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <Label layoutX="10.0" layoutY="10.0" text="кат">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                         </children>
+                                                      </HBox>
+                                                   </children></VBox>
+                                             </children></AnchorPane>
+                                    </content>
+                                       <font>
+                                          <Font name="Cambria Math" size="18.0" />
+                                       </font>
+                                  </TitledPane>
+                                </panes>
+                              </Accordion>
+                           </children>
+                        </VBox>
+                     </children>
+                  </AnchorPane>
+               </center>
+            </BorderPane>
+         </children>
+      </StackPane>
+   </children>
+</AnchorPane>

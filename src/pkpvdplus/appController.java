@@ -129,6 +129,24 @@ public class appController {
 
     }
 
+    public void Show_Appeal_Info(String cookie, String numberAppeal){
+        show_rep_b.setOnAction(event -> {
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(getClass().getResource("/pkpvdplus/view/appeal_info.fxml"));
+            try {
+                loader.load();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Parent root = loader.getRoot();
+            Stage stage = new Stage();
+            stage.setTitle("Информация об обращении");
+            //stage.setResizable(false);
+            stage.setScene(new Scene(root, 800, 900));
+            stage.showAndWait();
+        });
+    }
+
     // Фильтр для обработки заявителей
     public void FilterApplicants(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
