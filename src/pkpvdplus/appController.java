@@ -24,6 +24,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -35,6 +36,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
@@ -45,6 +47,8 @@ import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import pkpvdplus.controller.AppealInfoController;
+import pkpvdplus.controller.GetAppealInfoController;
 import pkpvdplus.controller.LoginController;
 import pkpvdplus.controller.ReportController;
 import pkpvdplus.model.ReportModel;
@@ -130,7 +134,7 @@ public class appController {
     }
 
     public void Show_Appeal_Info(String cookie, String numberAppeal){
-        show_rep_b.setOnAction(event -> {
+       // show_rep_b.setOnAction(event -> {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("/pkpvdplus/view/appeal_info.fxml"));
             try {
@@ -139,12 +143,16 @@ public class appController {
                 e.printStackTrace();
             }
             Parent root = loader.getRoot();
+            AppealInfoController appealInfoController = loader.getController();
+            //AppController.testDates();
+            appealInfoController.ShowAppealInfo(cookie, numberAppeal); // Вызов функции заполнения отчёта
             Stage stage = new Stage();
             stage.setTitle("Информация об обращении");
             //stage.setResizable(false);
             stage.setScene(new Scene(root, 800, 900));
             stage.showAndWait();
-        });
+
+       // });
     }
 
     // Фильтр для обработки заявителей
@@ -501,6 +509,48 @@ public class appController {
 
                             SetFilter(parsed_result_arr, dateStart, dateFinish); // Установить фильтры
                             autoResizeColumns(data_rep_table); // Выровнять колонки в таблице
+
+                            // Create ContextMenu
+                            ContextMenu contextMenu = new ContextMenu();
+
+                            MenuItem openAppealInfo = new MenuItem("Открыть обращение");
+                            openAppealInfo.setOnAction(new EventHandler<ActionEvent>() {
+
+                                @Override
+                                public void handle(ActionEvent event) {
+                                    System.out.println("Number Appeal:");
+                                    ReportModel reportModel = data_rep_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
+                                    System.out.println("Number appeal selected item: "+reportModel.getNumberAppeal());
+                                    String numberAppeal=reportModel.getNumberAppeal();
+                                    Show_Appeal_Info(cookie, numberAppeal);
+                                }
+                            });
+                            MenuItem copyNumberAppeal = new MenuItem("Копировать номер обращения");
+                            copyNumberAppeal.setOnAction(new EventHandler<ActionEvent>() {
+
+                                @Override
+                                public void handle(ActionEvent event) {
+                                    System.out.println("Number Appeal:");
+                                    ReportModel reportModel = data_rep_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
+                                    System.out.println("Number appeal selected item: "+reportModel.getNumberAppeal());
+                                }
+                            });
+
+                            // When user right-click on Circle
+                            data_rep_table.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
+
+                                @Override
+                                public void handle(ContextMenuEvent event) {
+
+                                    contextMenu.show(data_rep_table, event.getScreenX(), event.getScreenY());
+                                }
+                            });
+
+                            // Add MenuItem to ContextMenu
+                            contextMenu.getItems().addAll(openAppealInfo, copyNumberAppeal);
+
+
+
                         }
                     });
 
