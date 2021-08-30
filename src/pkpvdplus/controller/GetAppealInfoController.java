@@ -1,8 +1,6 @@
 package pkpvdplus.controller;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
@@ -22,7 +20,11 @@ public class GetAppealInfoController {
 
     // Функция для проверки действительности куки
     public ArrayList<ApplicantInfoModel> SearchAppealID(String cookie, String numberAppeal) throws IOException {
+            ArrayList<String> Subject_and_Representive=new ArrayList<String>();
+            String IdSubjectApplicant="";
+            String IdRepresentative="";
             ArrayList<ApplicantInfoModel> applicantInfoArr=new ArrayList<ApplicantInfoModel>();
+
             CookieStore httpCookieStore = new BasicCookieStore();
             HttpClient httpClient = null;
             HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore); //MFC-0561/2021-241209
@@ -40,16 +42,30 @@ public class GetAppealInfoController {
             String result_of_req = EntityUtils.toString(entity); // Получаем результат запроса
 
             int status_code= response.getStatusLine().getStatusCode(); // Получаем код ответа от сервера
-            //System.out.println("Status cookie autor: "+status_code);
+            System.out.println("Status SearchAppealID: "+status_code);
             boolean CookieValid;
             // Если код ответа 200, значит куки действителен, если 401 или другой, то недействителен
             switch (status_code){
                 case 200:
                     CookieValid=true;
-                    String idAppeal=Parsing_result_searchAppealID(result_of_req);
+                    //String idAppeal=Parsing_result_searchAppealID(result_of_req);
+
+                    // Создания экземпляра парсинга
+                    JsonParser parser = new JsonParser();
+                    JsonElement element = parser.parse(result_of_req); // Получение главного элемента
+                    JsonArray content= element.getAsJsonObject().get("content").getAsJsonArray();
+                    String idAppeal=content.get(0).getAsJsonObject().get("id").getAsString();
                     String idStatement=GetStatementID(cookie, idAppeal);
-                    String SubjectApplicant=GetApplicantSubject(cookie, idAppeal, idStatement);
-                    applicantInfoArr=GetSubjectInfo(cookie, idAppeal, SubjectApplicant);
+                    Subject_and_Representive=GetApplicantSubjects(cookie, idAppeal, idStatement);
+                    if (Subject_and_Representive.size()==1){
+                        IdSubjectApplicant=Subject_and_Representive.get(0);
+                        applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdSubjectApplicant));
+                    } else if (Subject_and_Representive.size()==2){
+                        IdSubjectApplicant=Subject_and_Representive.get(0);
+                        IdRepresentative=Subject_and_Representive.get(1);
+                        applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdSubjectApplicant));
+                        applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdRepresentative));
+                    }
                     break;
                 case 401: // Если выбраны организации
                     CookieValid=false;
@@ -63,18 +79,6 @@ public class GetAppealInfoController {
 
 
         return applicantInfoArr; // Возвращаем значение куки
-    }
-
-    public String Parsing_result_searchAppealID(String json){
-        // Создания экземпляра парсинга
-        JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(json); // Получение главного элемента
-
-        JsonArray content= element.getAsJsonObject().get("content").getAsJsonArray();
-        String idAppeal=content.get(0).getAsJsonObject().get("id").getAsString();
-
-        System.out.println("ID of appeal: "+idAppeal);
-        return idAppeal;
     }
 
     public String GetStatementID(String cookie, String idAppeal) throws IOException {
@@ -93,13 +97,18 @@ public class GetAppealInfoController {
         String result_of_req = EntityUtils.toString(entity); // Получаем результат запроса
 
         int status_code= response.getStatusLine().getStatusCode(); // Получаем код ответа от сервера
-        //System.out.println("Status cookie autor: "+status_code);
+        System.out.println("Status GetStatementID: "+status_code);
         boolean CookieValid;
         // Если код ответа 200, значит куки действителен, если 401 или другой, то недействителен
         switch (status_code){
             case 200:
                 CookieValid=true;
-                idStatement=Parsing_result_getStatementID(result_of_req);
+                //idStatement=Parsing_result_getStatementID(result_of_req);
+                // Создания экземпляра парсинга
+                JsonParser parser = new JsonParser();
+                JsonElement element = parser.parse(result_of_req); // Получение главного элемента
+                JsonArray content= element.getAsJsonObject().get("content").getAsJsonArray();
+                idStatement=content.get(0).getAsJsonObject().get("id").getAsString();
                 break;
             case 401: // Если выбраны организации
                 CookieValid=false;
@@ -113,21 +122,11 @@ public class GetAppealInfoController {
 
         return idStatement; // Возвращаем значение куки
     }
-    public String Parsing_result_getStatementID(String json){
-        // Создания экземпляра парсинга
-        JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(json); // Получение главного элемента
 
-        JsonArray content= element.getAsJsonObject().get("content").getAsJsonArray();
-        String idStatement=content.get(0).getAsJsonObject().get("id").getAsString();
-
-        System.out.println("ID of statement: "+idStatement);
-        return idStatement;
-    }
-
-
-    public String GetApplicantSubject(String cookie, String idAppeal, String idStatement) throws IOException {
-        String SubjectApplicant="";
+    public ArrayList<String> GetApplicantSubjects(String cookie, String idAppeal, String idStatement) throws IOException {
+        ArrayList<String> Subject_and_Representive=new ArrayList<String>();
+        String IdSubjectApplicant="";
+        String IdRepresentative="";
         CookieStore httpCookieStore = new BasicCookieStore();
         HttpClient httpClient = null;
         HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
@@ -142,13 +141,23 @@ public class GetAppealInfoController {
         String result_of_req = EntityUtils.toString(entity); // Получаем результат запроса
 
         int status_code= response.getStatusLine().getStatusCode(); // Получаем код ответа от сервера
-        //System.out.println("Status cookie autor: "+status_code);
+        System.out.println("Status GetApplicantSubject: "+status_code);
         boolean CookieValid;
         // Если код ответа 200, значит куки действителен, если 401 или другой, то недействителен
         switch (status_code){
             case 200:
                 CookieValid=true;
-                SubjectApplicant=Parsing_result_getApplicant_Subject(result_of_req);
+                //SubjectApplicant=Parsing_result_getApplicant_Subject(result_of_req);
+                JsonParser parser = new JsonParser();
+                JsonElement element = parser.parse(result_of_req); // Получение главного элемента
+                JsonArray content= element.getAsJsonObject().get("content").getAsJsonArray();
+                IdSubjectApplicant=content.get(0).getAsJsonObject().get("subject").getAsString();
+                Subject_and_Representive.add(IdSubjectApplicant);
+                if (!content.get(0).getAsJsonObject().get("agent1").isJsonNull()) {
+                    IdRepresentative=content.get(0).getAsJsonObject().get("agent1").getAsString();
+                    Subject_and_Representive.add(IdRepresentative);
+                }
+
                 break;
             case 401: // Если выбраны организации
                 CookieValid=false;
@@ -160,22 +169,11 @@ public class GetAppealInfoController {
                 break;
         }
 
-        return SubjectApplicant; // Возвращаем значение куки
-    }
-    public String Parsing_result_getApplicant_Subject(String json){
-        // Создания экземпляра парсинга
-        JsonParser parser = new JsonParser();
-        JsonElement element = parser.parse(json); // Получение главного элемента
-
-        JsonArray content= element.getAsJsonObject().get("content").getAsJsonArray();
-        String idStatement=content.get(0).getAsJsonObject().get("subject").getAsString();
-
-        System.out.println("Subject of applicant: "+idStatement);
-        return idStatement;
+        return Subject_and_Representive; // Возвращаем значение куки
     }
 
-    public ArrayList<ApplicantInfoModel> GetSubjectInfo(String cookie, String idAppeal, String idSubject) throws IOException {
-        ArrayList<ApplicantInfoModel> applicantInfoArr=new ArrayList<ApplicantInfoModel>();
+    public ApplicantInfoModel  GetSubjectInfo(String cookie, String idAppeal, String idSubject) throws IOException {
+        ApplicantInfoModel applicantInfoModel;
         CookieStore httpCookieStore = new BasicCookieStore();
         HttpClient httpClient = null;
         HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
@@ -190,42 +188,137 @@ public class GetAppealInfoController {
         String result_of_req = EntityUtils.toString(entity); // Получаем результат запроса
 
         int status_code= response.getStatusLine().getStatusCode(); // Получаем код ответа от сервера
-        //System.out.println("Status cookie autor: "+status_code);
+        System.out.println("Status GetSubjectInfo: "+status_code);
         boolean CookieValid;
         // Если код ответа 200, значит куки действителен, если 401 или другой, то недействителен
         switch (status_code){
             case 200:
                 CookieValid=true;
-                applicantInfoArr=Parsing_result_GetSubjectInfo(result_of_req);
-                break;
+                applicantInfoModel = Parsing_result_GetSubjectInfo(result_of_req);
+                return applicantInfoModel; // Возвращаем значение куки
             case 401: // Если выбраны организации
                 CookieValid=false;
                 cookie="";
-                break;
+                return null; // Возвращаем значение куки
             default:
                 CookieValid=false;
                 cookie="";
-                break;
+                return null;
         }
-
-        return applicantInfoArr; // Возвращаем значение куки
     }
-    public ArrayList<ApplicantInfoModel> Parsing_result_GetSubjectInfo(String json){
+    public ApplicantInfoModel Parsing_result_GetSubjectInfo(String json){
+        // Переменные для персональных данных о заявителе
+        String descriptionBaseFormat="";
+        String firstName=""; String surname=""; String patronymic="";
+        String subjectType="";
+        String documentType=""; String documentSeries=""; String documentNum=""; String whenIssued=""; String whoIssued=""; String codeIssued="";
+        String documentInfoBase=""; String documentInfoWhenWho="";
+        String snils="";
+        // Переменные для адреса
+        String region=""; String district=""; String city=""; String street=""; String houseType=""; String house=""; String flatType=""; String flat="";
+        String residenceAddress="";
+        // Переменные для контактной информации
+        String address=""; String phone="";
+        // Категория заявителя
+        String classtype="";
         // Создания экземпляра парсинга
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(json); // Получение главного элемента
+        // ФИО заявителя и паспортные данные
+        if (!element.getAsJsonObject().get("descriptionBaseFormat").isJsonNull()) {descriptionBaseFormat = element.getAsJsonObject().get("descriptionBaseFormat").getAsString();}
+        if (!element.getAsJsonObject().get("firstName").isJsonNull()) {firstName = element.getAsJsonObject().get("firstName").getAsString();}
+        if (!element.getAsJsonObject().get("surname").isJsonNull()) {surname = element.getAsJsonObject().get("surname").getAsString();}
+        if (!element.getAsJsonObject().get("patronymic").isJsonNull()) {patronymic = element.getAsJsonObject().get("patronymic").getAsString();}
+        if (!element.getAsJsonObject().get("subjectType").isJsonNull()) {
+            subjectType = element.getAsJsonObject().get("subjectType").getAsString();
+            switch (subjectType){
+                case ("007003001000"):
+                    subjectType="Гражданин РФ";
+                    break;
+                default:
+                    subjectType="";
+                    break;
+            }
+        }
+        if (!element.getAsJsonObject().get("documentType").isJsonNull()) {
+            documentType = element.getAsJsonObject().get("documentType").getAsString();
+            switch (documentType){
+                case ("008001001000"):
+                    documentType="Паспорт гражданина Российской Федерации";
+                    break;
+                case ("008001011000"):
+                    documentType="Свидетельство о рождении";
+                    break;
+                default:
+                    documentType="";
+                    break;
+            }
+        }
+        if (!element.getAsJsonObject().get("documentSeries").isJsonNull()) {documentSeries = element.getAsJsonObject().get("documentSeries").getAsString();}
+        if (!element.getAsJsonObject().get("documentNum").isJsonNull()) {documentNum = element.getAsJsonObject().get("documentNum").getAsString();}
+        if (!element.getAsJsonObject().get("whenIssued").isJsonNull()) {whenIssued = element.getAsJsonObject().get("whenIssued").getAsString();}
+        if (!element.getAsJsonObject().get("whoIssued").isJsonNull()) {whoIssued = element.getAsJsonObject().get("whoIssued").getAsString();}
+        if (!element.getAsJsonObject().get("codeIssued").isJsonNull()) {codeIssued = element.getAsJsonObject().get("codeIssued").getAsString();}
+        if (!element.getAsJsonObject().get("snils").isJsonNull()) {snils = element.getAsJsonObject().get("snils").getAsString();}
+        documentInfoBase= documentType+" "+documentSeries+" "+documentNum;
+        documentInfoWhenWho=whenIssued+" "+whoIssued+" "+codeIssued;
+        // Адрес заявителя
+        if (!element.getAsJsonObject().get("address").getAsJsonObject().get("region").getAsJsonObject().get("name").isJsonNull() ||
+                !element.getAsJsonObject().get("address").getAsJsonObject().get("region").getAsJsonObject().get("type").isJsonNull()) {
+            region=element.getAsJsonObject().get("address").getAsJsonObject().get("region").getAsJsonObject().get("name").getAsString()+" "+
+                    element.getAsJsonObject().get("address").getAsJsonObject().get("region").getAsJsonObject().get("type").getAsString();
+        }
+        if (!element.getAsJsonObject().get("address").getAsJsonObject().get("district").getAsJsonObject().get("name").isJsonNull() ||
+                !element.getAsJsonObject().get("address").getAsJsonObject().get("district").getAsJsonObject().get("type").isJsonNull()) {
+            district=element.getAsJsonObject().get("address").getAsJsonObject().get("district").getAsJsonObject().get("name").getAsString()+" "+
+                    element.getAsJsonObject().get("address").getAsJsonObject().get("district").getAsJsonObject().get("type").getAsString();
+        }
+        if (!element.getAsJsonObject().get("address").getAsJsonObject().get("city").getAsJsonObject().get("name").isJsonNull() ||
+                !element.getAsJsonObject().get("address").getAsJsonObject().get("city").getAsJsonObject().get("type").isJsonNull()) {
+            city=element.getAsJsonObject().get("address").getAsJsonObject().get("city").getAsJsonObject().get("name").getAsString()+" "+
+                    element.getAsJsonObject().get("address").getAsJsonObject().get("city").getAsJsonObject().get("type").getAsString();
+        }
+        if (!element.getAsJsonObject().get("address").getAsJsonObject().get("street").getAsJsonObject().get("name").isJsonNull() ||
+                !element.getAsJsonObject().get("address").getAsJsonObject().get("street").getAsJsonObject().get("type").isJsonNull()) {
+            street=element.getAsJsonObject().get("address").getAsJsonObject().get("street").getAsJsonObject().get("name").getAsString()+" "+
+                    element.getAsJsonObject().get("address").getAsJsonObject().get("street").getAsJsonObject().get("type").getAsString();
+        }
 
-        String descriptionBaseFormat=element.getAsJsonObject().get("descriptionBaseFormat").getAsString();
-        String firstName=element.getAsJsonObject().get("firstName").getAsString();
-        String surname=element.getAsJsonObject().get("surname").getAsString();
-        String patronymic=element.getAsJsonObject().get("patronymic").getAsString();
+        if (!element.getAsJsonObject().get("address").getAsJsonObject().get("houseType").isJsonNull()) {
+            houseType=element.getAsJsonObject().get("address").getAsJsonObject().get("houseType").getAsString();
+        }
+        if (!element.getAsJsonObject().get("address").getAsJsonObject().get("house").isJsonNull()) {
+            house=element.getAsJsonObject().get("address").getAsJsonObject().get("house").getAsString();
+        }
 
-        String fio= surname+" "+firstName+" "+patronymic;
-        System.out.println("Applicant FIO: "+descriptionBaseFormat+"\n");
-        ArrayList<ApplicantInfoModel> applicantInfoArr=new ArrayList<ApplicantInfoModel>();
-        applicantInfoArr.add(new ApplicantInfoModel(descriptionBaseFormat,"","","","",
-                "","","",""));
-        return applicantInfoArr;
+        if (!element.getAsJsonObject().get("address").getAsJsonObject().get("flatType").isJsonNull()) {
+            flatType=element.getAsJsonObject().get("address").getAsJsonObject().get("flatType").getAsString();
+        }
+        if (!element.getAsJsonObject().get("address").getAsJsonObject().get("flat").isJsonNull()) {
+            flat=element.getAsJsonObject().get("address").getAsJsonObject().get("flat").getAsString();
+        }
+
+        if (flatType.equals("") || flat.equals("")){
+            residenceAddress= region+", "+district+", "+city+", "+street+", "+houseType+". "+house;
+        } else {
+            residenceAddress= region+", "+district+", "+city+", "+street+", "+houseType+". "+house+", "+flatType+". "+flat;
+        }
+
+        if (!element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("phone").isJsonNull()) {
+            phone=element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("phone").getAsString();
+        }
+        if (!element.getAsJsonObject().get("classtype").isJsonNull()) {
+            classtype=element.getAsJsonObject().get("classtype").getAsString();
+            if (classtype.equals("Person")){classtype="Иное лицо";}
+        }
+
+        ApplicantInfoModel applicantInfoModel=new ApplicantInfoModel(descriptionBaseFormat,subjectType,documentInfoBase,
+                documentInfoWhenWho,snils,"",residenceAddress,phone,classtype);
+        return  applicantInfoModel;
+        /*ArrayList<ApplicantInfoModel> applicantInfoArr=new ArrayList<ApplicantInfoModel>();
+        applicantInfoArr.add(new ApplicantInfoModel(descriptionBaseFormat,subjectType,documentInfoBase,
+                documentInfoWhenWho,snils,"",residenceAddress,phone,classtype));
+        return applicantInfoArr;*/
     }
 
 
