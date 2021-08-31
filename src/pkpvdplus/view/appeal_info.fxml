@@ -33,7 +33,7 @@
                <center>
                 <AnchorPane prefHeight="868.0" prefWidth="801.0" BorderPane.alignment="CENTER">
                      <children>
-                        <VBox alignment="TOP_CENTER" prefHeight="853.0" prefWidth="787.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                        <VBox fx:id="vbox_main" alignment="TOP_CENTER" prefHeight="853.0" prefWidth="787.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>
                               <Accordion fx:id="appeal_info_accord">
                                 <panes>
@@ -269,9 +269,9 @@
                                     <content>
                                       <AnchorPane minHeight="0.0" minWidth="0.0">
                                              <children>
-                                                <TabPane prefHeight="493.0" prefWidth="800.0" stylesheets="@tabPaneAppeal_style.css" tabClosingPolicy="UNAVAILABLE">
+                                                <TabPane fx:id="applicants_tabPane" prefWidth="800.0" stylesheets="@tabPaneAppeal_style.css" tabClosingPolicy="UNAVAILABLE">
                                                   <tabs>
-                                                    <Tab text="Заявитель (Физ.лицо)">
+                                                    <Tab fx:id="applicant_tab" text="Заявитель (Физ.лицо)">
                                                       <content>
                                                         <AnchorPane minHeight="0.0" minWidth="0.0">
                                                                <children>
@@ -294,7 +294,7 @@
                                                                               </TextField>
                                                                            </children>
                                                                            <VBox.margin>
-                                                                              <Insets bottom="5.0" top="5.0" />
+                                                                              <Insets bottom="5.0" top="20.0" />
                                                                            </VBox.margin>
                                                                         </HBox>
                                                                         <HBox layoutX="10.0" layoutY="10.0">
@@ -487,9 +487,172 @@
                                                             </AnchorPane>
                                                       </content>
                                                     </Tab>
-                                                    <Tab text="Представитель заявителя">
+                                                      <Tab fx:id="organiz_tab" text="Заявитель (Организация)">
+                                                         <content>
+                                                            <AnchorPane minHeight="0.0" minWidth="0.0">
+                                                               <children>
+                                                                  <VBox alignment="TOP_CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                     <children>
+                                                                        <HBox>
+                                                                           <children>
+                                                                              <Label text="Заявитель:">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </Label>
+                                                                              <TextField fx:id="applicant_organiz_textf" prefHeight="32.0" prefWidth="679.0">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                                 <HBox.margin>
+                                                                                    <Insets />
+                                                                                 </HBox.margin>
+                                                                              </TextField>
+                                                                           </children>
+                                                                           <VBox.margin>
+                                                                              <Insets bottom="5.0" top="20.0" />
+                                                                           </VBox.margin>
+                                                                        </HBox>
+                                                                        <HBox layoutX="10.0" layoutY="10.0">
+                                                                           <children>
+                                                                              <Label text="Тип субъекта:">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </Label>
+                                                                              <TextField fx:id="type_sub_applicant_organiz_textf" layoutX="238.0" layoutY="10.0" prefHeight="32.0" prefWidth="656.0">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </TextField>
+                                                                           </children>
+                                                                           <VBox.margin>
+                                                                              <Insets bottom="5.0" />
+                                                                           </VBox.margin>
+                                                                        </HBox>
+                                                                        <HBox layoutX="15.0" layoutY="67.0">
+                                                                           <children>
+                                                                              <Label text="Наименование:">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </Label>
+                                                                              <TextField fx:id="name_organiz_textf" layoutX="238.0" layoutY="10.0" prefHeight="32.0" prefWidth="644.0">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </TextField>
+                                                                           </children>
+                                                                           <VBox.margin>
+                                                                              <Insets bottom="5.0" />
+                                                                           </VBox.margin>
+                                                                        </HBox>
+                                                                        <HBox layoutX="15.0" layoutY="104.0">
+                                                                           <children>
+                                                                              <Label text="ОГРН:">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </Label>
+                                                                              <TextField fx:id="ogrn_organiz_textf" layoutX="238.0" layoutY="10.0" prefHeight="32.0" prefWidth="721.0">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </TextField>
+                                                                           </children>
+                                                                           <VBox.margin>
+                                                                              <Insets bottom="5.0" />
+                                                                           </VBox.margin>
+                                                                        </HBox>
+                                                                        <HBox layoutX="15.0" layoutY="178.0">
+                                                                           <children>
+                                                                              <Label text="ИНН:">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </Label>
+                                                                              <TextField fx:id="inn_organiz_textf" layoutX="238.0" layoutY="10.0" prefHeight="32.0" prefWidth="728.0">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </TextField>
+                                                                           </children>
+                                                                           <VBox.margin>
+                                                                              <Insets bottom="5.0" />
+                                                                           </VBox.margin>
+                                                                        </HBox>
+                                                                        <HBox layoutX="15.0" layoutY="141.0">
+                                                                           <children>
+                                                                              <Label text="КПП:">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </Label>
+                                                                              <TextField fx:id="kpp_organiz_textf" layoutX="238.0" layoutY="10.0" prefHeight="32.0" prefWidth="728.0">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </TextField>
+                                                                           </children>
+                                                                           <VBox.margin>
+                                                                              <Insets bottom="5.0" />
+                                                                           </VBox.margin>
+                                                                        </HBox>
+                                                                        <HBox layoutX="10.0" layoutY="150.0">
+                                                                           <children>
+                                                                              <Label text="Контактная информация">
+                                                                                 <font>
+                                                                                    <Font name="Arial Bold" size="18.0" />
+                                                                                 </font>
+                                                                              </Label>
+                                                                           </children>
+                                                                           <VBox.margin>
+                                                                              <Insets bottom="5.0" />
+                                                                           </VBox.margin>
+                                                                        </HBox>
+                                                                        <HBox layoutX="10.0" layoutY="130.0">
+                                                                           <children>
+                                                                              <Label text="Адрес:">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </Label>
+                                                                              <TextField fx:id="address_organiz_textf" layoutX="207.0" layoutY="10.0" prefHeight="32.0" prefWidth="718.0">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </TextField>
+                                                                           </children>
+                                                                           <VBox.margin>
+                                                                              <Insets bottom="5.0" />
+                                                                           </VBox.margin>
+                                                                        </HBox>
+                                                                        <HBox layoutX="10.0" layoutY="232.0">
+                                                                           <children>
+                                                                              <Label text="Категория заявителя:">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </Label>
+                                                                              <TextField fx:id="category_applicant_organiz_textf" prefHeight="32.0" prefWidth="590.0">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font>
+                                                                              </TextField>
+                                                                           </children>
+                                                                        </HBox>
+                                                                     </children>
+                                                                     <padding>
+                                                                        <Insets left="5.0" />
+                                                                     </padding>
+                                                                  </VBox>
+                                                               </children>
+                                                            </AnchorPane>
+                                                         </content>
+                                                      </Tab>
+                                                    <Tab fx:id="representive_tab" text="Представитель заявителя">
                                                       <content>
-                                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                                        <AnchorPane minHeight="0.0" minWidth="0.0" prefWidth="200.0">
                                                                <children>
                                                                   <VBox alignment="TOP_CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                                      <children>
@@ -510,7 +673,7 @@
                                                                               </TextField>
                                                                            </children>
                                                                            <VBox.margin>
-                                                                              <Insets bottom="5.0" top="5.0" />
+                                                                              <Insets bottom="5.0" top="20.0" />
                                                                            </VBox.margin>
                                                                         </HBox>
                                                                         <HBox layoutX="10.0" layoutY="10.0">
@@ -704,7 +867,7 @@
                                                                                     <Font name="Cambria Math" size="18.0" />
                                                                                  </font>
                                                                               </Label>
-                                                                              <TextField fx:id="position_applicant_repres_textf" prefHeight="32.0" prefWidth="666.0">
+                                                                              <TextField fx:id="position_applicant_repres_textf" prefHeight="32.0" prefWidth="668.0">
                                                                                  <font>
                                                                                     <Font name="Cambria Math" size="18.0" />
                                                                                  </font>
@@ -721,7 +884,10 @@
                                                                                     <Font name="Cambria Math" size="18.0" />
                                                                                  </font>
                                                                               </Label>
-                                                                              <TextArea fx:id="confirm_author_applicant_repr_textarea" prefHeight="48.0" prefWidth="520.0" />
+                                                                              <TextArea fx:id="confirm_author_applicant_repr_textarea" prefHeight="48.0" prefWidth="520.0">
+                                                                                 <font>
+                                                                                    <Font name="Cambria Math" size="18.0" />
+                                                                                 </font></TextArea>
                                                                            </children>
                                                                         </HBox>
                                                                      </children>
