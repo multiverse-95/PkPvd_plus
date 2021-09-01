@@ -8,7 +8,8 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import org.apache.http.util.TextUtils;
+import pkpvdplus.model.AllAppealInfoModel;
+import pkpvdplus.model.AppealGeneralInfoModel;
 import pkpvdplus.model.ApplicantInfoModel;
 
 import java.io.IOException;
@@ -31,15 +32,52 @@ public class AppealInfoController {
 
     @FXML
     private Accordion appeal_info_accord;
-
+    // Вкладка об общей информации про обращение
     @FXML
     private TitledPane main_info_appeal_info_pane;
 
     @FXML
-    private TitledPane applicant_appeal_info_pane;
+    private TextField statementType_appeal_textf;
 
     @FXML
-    private TitledPane object_info_appeal_pane;
+    private TextField internalNum_appeal_textf;
+
+    @FXML
+    private TextField packageNum_appeal_textf;
+
+    @FXML
+    private TextField numPPOZ_appeal_textf;
+
+    @FXML
+    private TextField statusNotePPOZ_appeal_textf;
+
+    @FXML
+    private TextField routineExecutionDays_appeal_textf;
+
+    @FXML
+    private TextField processingEndDate_appeal_textf;
+
+    @FXML
+    private TextField nameAdvanced_appeal_textf;
+
+    @FXML
+    private TextField internalNumAdvanced_appeal_textf;
+
+    @FXML
+    private TextField currentStepAdvanced_appeal_textf;
+
+    @FXML
+    private TextField moveStepEventDateWhenAdvanced_appeal_texf;
+
+    @FXML
+    private TextField executeEventAdvanced_appeal_textf;
+
+    @FXML
+    private TextField operationCommentAdvanced_appeal_textf;
+
+    // Вкладка о заявителях
+    @FXML
+    private TitledPane applicant_appeal_info_pane;
 
     @FXML
     private TabPane applicants_tabPane;
@@ -149,13 +187,18 @@ public class AppealInfoController {
 
     @FXML
     private TextArea confirm_author_applicant_repr_textarea;
+    // Вкладка об объектах
+    @FXML
+    private TitledPane object_info_appeal_pane;
+
+
 
     @FXML
     void initialize() {
 
     }
 
-    public static class ShowAppealInfoTask extends Task<ArrayList<ApplicantInfoModel>> {
+    public static class ShowAppealInfoTask extends Task<AllAppealInfoModel> {
         private final String cookie; // куки
         private final String numberAppeal; // Номер обращения
 
@@ -165,15 +208,16 @@ public class AppealInfoController {
 
         }
         @Override
-        protected ArrayList<ApplicantInfoModel> call() throws Exception {
-            ArrayList<ApplicantInfoModel> applicantInfoArr=new ArrayList<ApplicantInfoModel>();
+        protected AllAppealInfoModel call() throws Exception {
+            //ArrayList<ApplicantInfoModel> applicantInfoArr=new ArrayList<ApplicantInfoModel>();
+            AllAppealInfoModel allAppealInfoModel=null;
             GetAppealInfoController getAppealInfoController=new GetAppealInfoController();
             try {
-                applicantInfoArr= getAppealInfoController.GetAppealInfo(cookie,numberAppeal);
+                allAppealInfoModel= getAppealInfoController.GetAppealInfo(cookie,numberAppeal);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return applicantInfoArr;
+            return allAppealInfoModel;
         }
     }
 
@@ -189,8 +233,16 @@ public class AppealInfoController {
         ShowAppealInfoTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent event) {
-                ArrayList<ApplicantInfoModel> applicantInfoArr=new ArrayList<ApplicantInfoModel>();
-                applicantInfoArr= (ArrayList<ApplicantInfoModel>) ShowAppealInfoTask.getValue();
+                AllAppealInfoModel allAppealInfoModel;
+                AppealGeneralInfoModel appealGeneralInfoModel;
+                ArrayList<ApplicantInfoModel> applicantInfoArr;
+                allAppealInfoModel= (AllAppealInfoModel) ShowAppealInfoTask.getValue();
+                appealGeneralInfoModel=allAppealInfoModel.getAppealGeneralInfoModel();
+                applicantInfoArr=allAppealInfoModel.getApplicantInfoArr();
+
+
+                setTextAppealGeneralInfo(appealGeneralInfoModel);
+                //applicantInfoArr= (ArrayList<ApplicantInfoModel>) ShowAppealInfoTask.getValue();
                 switch (applicantInfoArr.get(0).getTypeOfApplicant()){
                     case "Person":
                         switch (applicantInfoArr.size()){
@@ -230,6 +282,43 @@ public class AppealInfoController {
         // Запуск потока
         Thread ShowAppealInfoThread = new Thread(ShowAppealInfoTask);
         ShowAppealInfoThread.start();
+
+    }
+
+    public void setTextAppealGeneralInfo(AppealGeneralInfoModel appealGeneralInfoModel){
+
+        String statementType_appeal=appealGeneralInfoModel.getStatementType();
+        statementType_appeal_textf.setText(statementType_appeal);
+        String internalNum_appeal =appealGeneralInfoModel.getInternalNum()+"; Создан: " +appealGeneralInfoModel.getCreateEventDateWhen()+" "+appealGeneralInfoModel.getCreateEventPerformer();
+        internalNum_appeal_textf.setText(internalNum_appeal);
+        String packageNum_appeal= appealGeneralInfoModel.getPackageNum();
+        packageNum_appeal_textf.setText(packageNum_appeal);
+        String numPPOZ_appeal=appealGeneralInfoModel.getNumPPOZ()+"; создан: "+appealGeneralInfoModel.getCreatePPOZDate();
+        numPPOZ_appeal_textf.setText(numPPOZ_appeal);
+        String statusNotePPOZ_appeal =appealGeneralInfoModel.getStatusNotePPOZ() +"; "+ appealGeneralInfoModel.getStatusPPOZ()+": "+appealGeneralInfoModel.getStatusPPOZDate();
+        statusNotePPOZ_appeal_textf.setText(statusNotePPOZ_appeal);
+        String routineExecutionDays_appeal=appealGeneralInfoModel.getRoutineExecutionDays();
+        routineExecutionDays_appeal_textf.setText(routineExecutionDays_appeal);
+        String processingEndDate_appeal=appealGeneralInfoModel.getProcessingEndDate();
+        processingEndDate_appeal_textf.setText(processingEndDate_appeal);
+
+        String nameAdvanced_appeal=appealGeneralInfoModel.getNameAdvanced();
+        nameAdvanced_appeal_textf.setText(nameAdvanced_appeal);
+        String internalNumAdvanced_appeal=appealGeneralInfoModel.getInternalNumAdvanced()+"; Создан: "+appealGeneralInfoModel.getCreateEventDateWhenAdvanced()+" "+
+                appealGeneralInfoModel.getCreateEventPerformerAdvanced();
+        internalNumAdvanced_appeal_textf.setText(internalNumAdvanced_appeal);
+        String currentStepAdvanced_appeal=appealGeneralInfoModel.getCurrentStepAdvanced();
+        currentStepAdvanced_appeal_textf.setText(currentStepAdvanced_appeal);
+        String moveStepEventDateWhenAdvanced_appeal = appealGeneralInfoModel.getMoveStepEventDateWhenAdvanced()+ " "+appealGeneralInfoModel.getMoveStepPerformerAdvanced();
+        moveStepEventDateWhenAdvanced_appeal_texf.setText(moveStepEventDateWhenAdvanced_appeal);
+        String executeEventAdvanced_appeal = appealGeneralInfoModel.getExecuteEventAdvanced();
+        executeEventAdvanced_appeal_textf.setText(executeEventAdvanced_appeal);
+        String operationCommentAdvanced_appeal = appealGeneralInfoModel.getOperationCommentAdvanced();
+        if (operationCommentAdvanced_appeal.equals("")){
+            operationCommentAdvanced_appeal_textf.setText("Комментарий отсутствует");
+        } else {
+            operationCommentAdvanced_appeal_textf.setText(operationCommentAdvanced_appeal);
+        }
 
     }
 

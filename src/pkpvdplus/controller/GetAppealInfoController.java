@@ -9,17 +9,23 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import pkpvdplus.model.AllAppealInfoModel;
+import pkpvdplus.model.AppealGeneralInfoModel;
 import pkpvdplus.model.ApplicantInfoModel;
 
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class GetAppealInfoController {
 
     // Функция для проверки действительности куки
-    public ArrayList<ApplicantInfoModel> GetAppealInfo(String cookie, String numberAppeal) throws IOException {
+    public AllAppealInfoModel GetAppealInfo(String cookie, String numberAppeal) throws IOException {
+            AllAppealInfoModel allAppealInfoModel;
+            AppealGeneralInfoModel appealGeneralInfoModel=null;
             ArrayList<String> Applicant_and_Representive=new ArrayList<String>();
             String IdApplicant="";
             String IdRepresentative="";
@@ -57,6 +63,7 @@ public class GetAppealInfoController {
                     JsonArray content= element.getAsJsonObject().get("content").getAsJsonArray();
                     String idAppeal=content.get(0).getAsJsonObject().get("id").getAsString();
                     String idStatement=GetStatementID(cookie, idAppeal);
+                    appealGeneralInfoModel= appealGeneralInfoModel= GetAppealGeneralInformation(cookie, idAppeal, idStatement);
                     Applicant_and_Representive=GetApplicantSubjects(cookie, idAppeal, idStatement);
 
                     switch (Applicant_and_Representive.size()){
@@ -98,9 +105,8 @@ public class GetAppealInfoController {
                     cookie="";
                     break;
             }
-
-
-        return applicantInfoArr; // Возвращаем значение куки
+            allAppealInfoModel=new AllAppealInfoModel(appealGeneralInfoModel, applicantInfoArr);
+            return allAppealInfoModel; // Возвращаем значение куки
     }
 
     public String GetStatementID(String cookie, String idAppeal) throws IOException {
@@ -144,6 +150,217 @@ public class GetAppealInfoController {
 
         return idStatement; // Возвращаем значение куки
     }
+
+    public AppealGeneralInfoModel GetAppealGeneralInformation(String cookie, String idAppeal, String idStatement ) throws IOException {
+        AppealGeneralInfoModel appealGeneralInfoModel;
+        // Запрос на получение основной информации об обращении
+        CookieStore httpCookieStore = new BasicCookieStore();
+        HttpClient httpClient = null;
+        HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
+        httpClient = builder.build();
+        String getUrlMainInfo       = "http://10.42.200.207/api/rs/appeal/"+idAppeal+"/statement/"+idStatement;// Сервер авторизации
+        HttpGet httpGet = new HttpGet(getUrlMainInfo);
+        httpGet.setHeader("Content-type", "application/json");
+        httpGet.addHeader("Cookie","JSESSIONID="+cookie);
+        HttpResponse response = httpClient.execute(httpGet); // Выполняем get запрос для проверки действительности куки
+
+        HttpEntity entity = response.getEntity();
+        String result_of_req_MainInfo = EntityUtils.toString(entity); // Получаем результат запроса
+        int status_code= response.getStatusLine().getStatusCode(); // Получаем код ответа от сервера
+
+        // Запрос на получение доп. информации об обращении
+        CookieStore httpCookieStoreAdvanced = new BasicCookieStore();
+        HttpClient httpClientAdvanced = null;
+        HttpClientBuilder builderAdvanced = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStoreAdvanced);
+        httpClientAdvanced = builderAdvanced.build();
+
+        String getUrlAdvancedInfo       = "http://10.42.200.207/api/rs/appeal/"+idAppeal;// Сервер авторизации
+        HttpGet httpGetAdvanced = new HttpGet(getUrlAdvancedInfo);
+        httpGetAdvanced.setHeader("Content-type", "application/json");
+        httpGetAdvanced.addHeader("Cookie","JSESSIONID="+cookie);
+        HttpResponse responseAdvanced = httpClientAdvanced.execute(httpGetAdvanced); // Выполняем get запрос для проверки действительности куки
+
+        HttpEntity entityAdvanced = responseAdvanced.getEntity();
+        String result_of_req_AdvancedInfo = EntityUtils.toString(entityAdvanced); // Получаем результат запроса
+        int status_code_Advanced= responseAdvanced.getStatusLine().getStatusCode(); // Получаем код ответа от сервера
+
+        System.out.println("Status GetAppealMainInformation: "+status_code);
+        System.out.println("Status GetAppealAdvancedInformation: "+status_code_Advanced);
+        boolean CookieValid;
+        // Если код ответа 200, значит куки действителен, если 401 или другой, то недействителен
+        switch (status_code){
+            case 200:
+                CookieValid=true;
+                if (status_code_Advanced==200){
+                    appealGeneralInfoModel= Parsing_result_GetAppealGeneralInformation(result_of_req_MainInfo, result_of_req_AdvancedInfo);
+                    return appealGeneralInfoModel;
+                } else {
+                    return null;
+                }
+            case 401: // Запрос завершился с ошибкой
+                CookieValid=false;
+                cookie="";
+                break;
+            default:
+                CookieValid=false;
+                cookie="";
+                break;
+        }
+
+        return null; // Возвращаем значение куки
+    }
+
+    public String convertTimeFromUnix(String timeUnix, String timeZone, String dateFormat){
+
+        long unixSeconds = Long.parseLong(timeUnix);
+        // convert seconds to milliseconds
+        Date date = new java.util.Date(unixSeconds);
+        // the format of your date
+        SimpleDateFormat sdf = new java.text.SimpleDateFormat(dateFormat);
+        // give a timezone reference for formatting (see comment at the bottom)
+        sdf.setTimeZone(java.util.TimeZone.getTimeZone(timeZone));
+        String formattedDate = sdf.format(date);
+        System.out.println("FORMAT DATE FROM UNIX: "+ formattedDate);
+        return formattedDate;
+    }
+
+    public AppealGeneralInfoModel Parsing_result_GetAppealGeneralInformation(String jsonMain, String jsonAdvanced){
+        // Переменные для главной информации об обращении
+        // Наименование, внутренний номер, дата создания, кем обработан: фио
+        String statementType=""; String internalNum=""; String createEventDateWhen=""; String createEventPerformer="";
+        String createEventSurName="";  String createEventFirstName=""; String createEventPatronymic="";
+        // Номер пакета
+        String packageNum="";
+        // Регистрационный номер ППОЗ, когда создан в ППОЗ, статус, обновление, дата обновления
+        String numPPOZ=""; String createPPOZDate=""; String statusNotePPOZ=""; String statusPPOZ=""; String statusPPOZDate="";
+        // Регламентный срок, Окончание обработки
+        String routineExecutionDays=""; String processingEndDate="";
+
+        // Переменные для доп. информации об обращении (принадлежит обращению)
+        // Наименование обращения
+        String nameAdvanced="";
+        // Внутренний номер, дата создания, кем создан:фио
+        String internalNumAdvanced=""; String createEventDateWhenAdvanced=""; String createEventPerformerAdvanced="";
+        String createEventSurNameAdvanced="";  String createEventFirstNameAdvanced=""; String createEventPatronymicAdvanced="";
+        // Шаг
+        String currentStepAdvanced="";
+        // Переход на шаг: дата, кто перешёл на шаг: фио
+        String moveStepEventDateWhenAdvanced=""; String moveStepPerformerAdvanced="";
+        String moveStepSurNameAdvanced="";  String moveStepFirstNameAdvanced=""; String moveStepPatronymicAdvanced="";
+        // Начало выполнения шага
+        String executeEventAdvanced="";
+        // Комментарий к текущей операции
+        String operationCommentAdvanced="";
+
+        // Парсинг главной информации об обращении
+        JsonParser parser = new JsonParser();
+        JsonElement element = parser.parse(jsonMain); // Получение главного элемента
+        if (!element.getAsJsonObject().get("statementType").isJsonNull()) { statementType=element.getAsJsonObject().get("statementType").getAsString(); }
+        if (!element.getAsJsonObject().get("internalNum").isJsonNull()) { internalNum=element.getAsJsonObject().get("internalNum").getAsString(); }
+        if (!element.getAsJsonObject().get("createEvent").getAsJsonObject().get("dateWhen").isJsonNull()) {
+            createEventDateWhen=element.getAsJsonObject().get("createEvent").getAsJsonObject().get("dateWhen").getAsString();
+            createEventDateWhen=convertTimeFromUnix(createEventDateWhen, "GMT+7", "dd.MM.yyyy HH:mm");
+        }
+        if (!element.getAsJsonObject().get("createEvent").getAsJsonObject().get("performer").isJsonNull()) {
+            createEventSurName=element.getAsJsonObject().get("createEvent").getAsJsonObject().get("performer").getAsJsonObject().get("surName").getAsString();
+            createEventFirstName=element.getAsJsonObject().get("createEvent").getAsJsonObject().get("performer").getAsJsonObject().get("firstName").getAsString();
+            createEventPatronymic=element.getAsJsonObject().get("createEvent").getAsJsonObject().get("performer").getAsJsonObject().get("patronymic").getAsString();
+            createEventPerformer=createEventSurName+" "+createEventFirstName+" "+createEventPatronymic;
+        }
+        if (!element.getAsJsonObject().get("packageNum").isJsonNull()) { packageNum=element.getAsJsonObject().get("packageNum").getAsString(); }
+        if (!element.getAsJsonObject().get("numPPOZ").isJsonNull()) { numPPOZ=element.getAsJsonObject().get("numPPOZ").getAsString(); }
+        if (!element.getAsJsonObject().get("createPPOZDate").isJsonNull()) {
+            createPPOZDate=element.getAsJsonObject().get("createPPOZDate").getAsString();
+            createPPOZDate=convertTimeFromUnix(createPPOZDate, "GMT+3", "dd.MM.yyyy HH:mm")+" МСК";
+        }
+        if (!element.getAsJsonObject().get("statusNotePPOZ").isJsonNull()) { statusNotePPOZ=element.getAsJsonObject().get("statusNotePPOZ").getAsString(); }
+        if (!element.getAsJsonObject().get("statusPPOZ").isJsonNull()) {
+            statusPPOZ=element.getAsJsonObject().get("statusPPOZ").getAsString();
+            switch (statusPPOZ){
+                case "returned":
+                    statusPPOZ="обновлен";
+                    break;
+                case "processed":
+                    statusPPOZ="обновлен";
+                    break;
+                default:
+                    statusPPOZ="неизвестно";
+                    break;
+            }
+        }
+        if (!element.getAsJsonObject().get("statusPPOZDate").isJsonNull()) {
+            statusPPOZDate=element.getAsJsonObject().get("statusPPOZDate").getAsString();
+            statusPPOZDate =convertTimeFromUnix(statusPPOZDate, "GMT+3","dd.MM.yyyy HH:mm")+" МСК";
+        }
+        if (!element.getAsJsonObject().get("routineExecutionDays").isJsonNull()) { routineExecutionDays=element.getAsJsonObject().get("routineExecutionDays").getAsString(); }
+        if (!element.getAsJsonObject().get("processingEndDate").isJsonNull()) {
+            processingEndDate=element.getAsJsonObject().get("processingEndDate").getAsString();
+            processingEndDate= convertTimeFromUnix(processingEndDate, "GMT+7","dd.MM.yyyy");
+        }
+
+        // Парсинг дополнительной информации об обращении
+        JsonParser parserAdvanced = new JsonParser();
+        JsonElement elementAdvanced = parserAdvanced.parse(jsonAdvanced); // Получение главного элемента
+        if (!elementAdvanced.getAsJsonObject().get("name").isJsonNull()) { nameAdvanced=elementAdvanced.getAsJsonObject().get("name").getAsString(); }
+        if (!elementAdvanced.getAsJsonObject().get("internalNum").isJsonNull()) { internalNumAdvanced=elementAdvanced.getAsJsonObject().get("internalNum").getAsString(); }
+        if (!elementAdvanced.getAsJsonObject().get("createEvent").getAsJsonObject().get("dateWhen").isJsonNull()) {
+            createEventDateWhenAdvanced=elementAdvanced.getAsJsonObject().get("createEvent").getAsJsonObject().get("dateWhen").getAsString();
+            createEventDateWhenAdvanced= convertTimeFromUnix(createEventDateWhenAdvanced, "GMT+7", "dd.MM.yyyy HH:mm");
+        }
+        if (!elementAdvanced.getAsJsonObject().get("createEvent").getAsJsonObject().get("performer").isJsonNull()) {
+            createEventSurNameAdvanced=elementAdvanced.getAsJsonObject().get("createEvent").getAsJsonObject().get("performer").getAsJsonObject().get("surName").getAsString();
+            createEventFirstNameAdvanced=elementAdvanced.getAsJsonObject().get("createEvent").getAsJsonObject().get("performer").getAsJsonObject().get("firstName").getAsString();
+            createEventPatronymicAdvanced=elementAdvanced.getAsJsonObject().get("createEvent").getAsJsonObject().get("performer").getAsJsonObject().get("patronymic").getAsString();
+            createEventPerformerAdvanced=createEventSurNameAdvanced+" "+createEventFirstNameAdvanced+" "+createEventPatronymicAdvanced;
+        }
+        if (!elementAdvanced.getAsJsonObject().get("currentStep").isJsonNull()) {
+            currentStepAdvanced=elementAdvanced.getAsJsonObject().get("currentStep").getAsString();
+            switch (currentStepAdvanced){
+                case "PROCESS_END_13":
+                    currentStepAdvanced="Обработка завершена";
+                    break;
+                case "WAIT_OUT_11":
+                    currentStepAdvanced="Ожидается выдача";
+                    break;
+                default:
+                    currentStepAdvanced="Неизвестно";
+                    break;
+            }
+        }
+        if (!elementAdvanced.getAsJsonObject().get("moveStepEvent").getAsJsonObject().get("dateWhen").isJsonNull()) {
+            moveStepEventDateWhenAdvanced=elementAdvanced.getAsJsonObject().get("moveStepEvent").getAsJsonObject().get("dateWhen").getAsString();
+            moveStepEventDateWhenAdvanced= convertTimeFromUnix(moveStepEventDateWhenAdvanced, "GMT+7", "dd.MM.yyyy HH:mm");
+        }
+        if (!elementAdvanced.getAsJsonObject().get("moveStepEvent").getAsJsonObject().get("performer").isJsonNull()) {
+            if(!elementAdvanced.getAsJsonObject().get("moveStepEvent").getAsJsonObject().get("performer").getAsJsonObject().get("surName").isJsonNull()){
+                moveStepSurNameAdvanced=elementAdvanced.getAsJsonObject().get("moveStepEvent").getAsJsonObject().get("performer").getAsJsonObject().get("surName").getAsString();
+            }
+            if(!elementAdvanced.getAsJsonObject().get("moveStepEvent").getAsJsonObject().get("performer").getAsJsonObject().get("firstName").isJsonNull()){
+                moveStepFirstNameAdvanced=elementAdvanced.getAsJsonObject().get("moveStepEvent").getAsJsonObject().get("performer").getAsJsonObject().get("firstName").getAsString();
+            }
+            if(!elementAdvanced.getAsJsonObject().get("moveStepEvent").getAsJsonObject().get("performer").getAsJsonObject().get("patronymic").isJsonNull()){
+                moveStepPatronymicAdvanced=elementAdvanced.getAsJsonObject().get("moveStepEvent").getAsJsonObject().get("performer").getAsJsonObject().get("patronymic").getAsString();
+            }
+            if (moveStepSurNameAdvanced.equals("") && moveStepFirstNameAdvanced.equals("") && moveStepPatronymicAdvanced.equals("")){
+                moveStepPerformerAdvanced="";
+            } else {
+                moveStepPerformerAdvanced=moveStepSurNameAdvanced+" "+moveStepFirstNameAdvanced+" "+moveStepPatronymicAdvanced;
+            }
+        }
+        if (!elementAdvanced.getAsJsonObject().get("executeEvent").isJsonNull()) { executeEventAdvanced=elementAdvanced.getAsJsonObject().get("executeEvent").getAsString(); }
+        if (!elementAdvanced.getAsJsonObject().get("operationComment").isJsonNull()) { operationCommentAdvanced=elementAdvanced.getAsJsonObject().get("operationComment").getAsString(); }
+
+
+        // Добавление в модель по обращению всех переменных
+        AppealGeneralInfoModel appealGeneralInfoModel = new AppealGeneralInfoModel(statementType,internalNum,createEventDateWhen,createEventPerformer,packageNum,
+                numPPOZ, createPPOZDate, statusNotePPOZ, statusPPOZ, statusPPOZDate, routineExecutionDays,processingEndDate,
+                nameAdvanced, internalNumAdvanced, createEventDateWhenAdvanced, createEventPerformerAdvanced, currentStepAdvanced, moveStepEventDateWhenAdvanced,
+                moveStepPerformerAdvanced, executeEventAdvanced, operationCommentAdvanced);
+        return appealGeneralInfoModel;
+
+    }
+
+
 
     public ArrayList<String> GetApplicantSubjects(String cookie, String idAppeal, String idStatement) throws IOException {
         ArrayList<String> Applicant_and_Representive=new ArrayList<String>();
@@ -494,7 +711,7 @@ public class GetAppealInfoController {
                 } else {
                     addressOrg= regionOrg+", "+districtOrg+", "+cityOrg+", "+streetOrg+", "+houseTypeOrg+". "+houseOrg+", "+flatTypeOrg+". "+flatOrg;
                 }
-
+                // Need to FIX!!!
                 switch (subjectType){
                     case "Российское юридическое лицо":
                         classtypeOrg="Правообладатель или его законный представитель";
@@ -517,5 +734,7 @@ public class GetAppealInfoController {
         }
 
     }
+
+
 
 }

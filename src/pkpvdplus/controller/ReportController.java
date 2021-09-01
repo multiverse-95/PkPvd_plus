@@ -210,95 +210,99 @@ public class ReportController {
         ArrayList<ReportModel> reportListAppeal=new ArrayList<ReportModel>(); // Список по обращениям
         ArrayList<ReportModel> reportListFinal=new ArrayList<ReportModel>(); // Итоговый список (Фильтрованный список по заявлениям, документам и обращениям)
         //try (CSVReader reader = new CSVReaderBuilder(new FileReader("D:\\recovery\\pk_pvd\\reportPkPvd.csv"))
-
-        // Обрабатываем csv результат для отчёта по заявлениям
-        try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvListOrdersReport))
-                .withSkipLines(1)           // Пропускаем первую строку
-                .build()) {
-            String[] lineInArray;
-            // Идём по csv
-            while ((lineInArray = reader.readNext()) != null) {
-                //System.out.println(lineInArray[0]);
-                // Получаем период с csv
-                //reportListOrders.add(new ReportModel(lineInArray[0], "", "","", "", "","","",""));
-                reportListFinal.add(new ReportModel(lineInArray[0], "", "", "", "", "","","",""));
-                break; // После получения периода, прерываем чтение данных
-                //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
-            }
-            // Вновь читаем csv
-            while ((lineInArray = reader.readNext()) != null) {
-                // Берём только данные по ЕГРН
-                if (lineInArray[11].equals("Предоставление сведений, содержащихся в ЕГРН, об объектах недвижимости и (или) их правообладателях")){
-                    // Записываем нужную информацию в список (Организация, номера обращений, даты создания, статус, заявители)
-                    reportListOrders.add(new ReportModel("", lineInArray[1], lineInArray[2],"", lineInArray[3], lineInArray[11],lineInArray[12],"",""));
-                }
-                //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
-            }
-        }
-        // Идём по отчёту документов в csv
-        try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvDocReport))
-                .withSkipLines(3)           // Пропускаем первые три строки
-                .build()) {
-            String[] lineInArray;
-            while ((lineInArray = reader.readNext()) != null) {
-                // Записываем нужные данные в список дополнительного отчёта
-                reportListDoc.add(new ReportModel("", lineInArray[1], lineInArray[2],lineInArray[3], lineInArray[5], lineInArray[6],"","",""));
-                //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
-            }
-        }
-
-        // Идём по отчёту обращений в csv
-        try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvAppealReport))
-                .withSkipLines(3)           // Пропускаем первые три строки
-                .build()) {
-            String[] lineInArray;
-            while ((lineInArray = reader.readNext()) != null) {
-                // Записываем нужные данные в список отчёта по обращениям
-                reportListAppeal.add(new ReportModel("", "", lineInArray[6],"", "","","", lineInArray[11],lineInArray[13]));
-                //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
-            }
-        }
-
-        System.out.println("Size orders List: "+reportListOrders.size()+" Size doc list: "+reportListDoc.size());
-        // Обрабатываем отчёт по заявлениям и отчёт по документам
-        if(reportListDoc.size()>reportListOrders.size()){ // Проверяем, чтобы отчёт по документам был больше отчёта по заявлениям
-            for (int i=0; i<reportListOrders.size(); i++){ // Идём по циклу отчёта по заявлениям
-                String FilterAppeal = reportListOrders.get(i).getNumberAppeal().toLowerCase(); // Получаем номер обращения
-                for (int j=0; j<reportListDoc.size(); j++){ // Идём по циклу отчёта по документам
-                    String ListDocAppeal = reportListDoc.get(j).getNumberAppeal().toLowerCase(); // Получаем номер обращения
-                    if (FilterAppeal.contains(ListDocAppeal)){ // Сравниваем номер обращения с отчёта по заявлениям и отчёта по документам
-                        // Если совпадают, то добавить в фильтрованный отчёт информацию: Организация, номер обращения и т.д.
-                        reportListOrdersDoc.add(new ReportModel("",reportListOrders.get(i).getNameCompany(), reportListDoc.get(j).getNumberAppeal(),
-                                reportListDoc.get(j).getNameAppeal(),reportListOrders.get(i).getDateCreate(),
-                                reportListDoc.get(j).getStatus(),reportListOrders.get(i).getApplicant(), "",""));
+        switch (csvListOrdersReport){
+            case "":
+                reportListFinal=null;
+                return reportListFinal;
+            default:
+                // Обрабатываем csv результат для отчёта по заявлениям
+                try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvListOrdersReport))
+                        .withSkipLines(1)           // Пропускаем первую строку
+                        .build()) {
+                    String[] lineInArray;
+                    // Идём по csv
+                    while ((lineInArray = reader.readNext()) != null) {
+                        //System.out.println(lineInArray[0]);
+                        // Получаем период с csv
+                        //reportListOrders.add(new ReportModel(lineInArray[0], "", "","", "", "","","",""));
+                        reportListFinal.add(new ReportModel(lineInArray[0], "", "", "", "", "","","",""));
+                        break; // После получения периода, прерываем чтение данных
+                        //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
+                    }
+                    // Вновь читаем csv
+                    while ((lineInArray = reader.readNext()) != null) {
+                        // Берём только данные по ЕГРН
+                        if (lineInArray[11].equals("Предоставление сведений, содержащихся в ЕГРН, об объектах недвижимости и (или) их правообладателях")){
+                            // Записываем нужную информацию в список (Организация, номера обращений, даты создания, статус, заявители)
+                            reportListOrders.add(new ReportModel("", lineInArray[1], lineInArray[2],"", lineInArray[3], lineInArray[11],lineInArray[12],"",""));
+                        }
+                        //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
                     }
                 }
-            }
-        } else {
-            reportListOrdersDoc=null;
-        }
-
-        System.out.println("Size OrdersDoc List: "+reportListOrdersDoc.size()+" Size appeal list: "+reportListAppeal.size());
-        // Обрабатываем отфильтрованный отчёт с отчётом по обращениям
-        if(reportListAppeal.size()>reportListOrdersDoc.size()){ // Проверяем, чтобы отчёт по обращениям был больше отчёта фильтрованного
-            for (int i=0; i<reportListOrdersDoc.size(); i++){ // Идём по циклу фильтрованного отчёта
-                String FilterNumberAppeal = reportListOrdersDoc.get(i).getNumberAppeal().toLowerCase(); // Получаем номер обращения
-                for (int j=0; j<reportListAppeal.size(); j++){ // Идём по циклу отчёта по обращениям
-                    String ListNumberAppeal = reportListAppeal.get(j).getNumberAppeal().toLowerCase(); // Получаем номер обращения
-                    if (FilterNumberAppeal.contains(ListNumberAppeal)){ // Сравниваем номер обращения с фильтрованного отчёта и отчёта по обращениям
-                        // Если совпадают, то добавить в финальный отчёт информацию: Организация, номер обращения и т.д.
-                        reportListFinal.add(new ReportModel("",reportListOrdersDoc.get(i).getNameCompany(), reportListOrdersDoc.get(i).getNumberAppeal(),
-                                reportListOrdersDoc.get(i).getNameAppeal(),reportListOrdersDoc.get(i).getDateCreate(),
-                                reportListOrdersDoc.get(i).getStatus(),reportListOrdersDoc.get(i).getApplicant(),
-                                reportListAppeal.get(j).getDateEnd(), reportListAppeal.get(j).getCurrentStep()));
+                // Идём по отчёту документов в csv
+                try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvDocReport))
+                        .withSkipLines(3)           // Пропускаем первые три строки
+                        .build()) {
+                    String[] lineInArray;
+                    while ((lineInArray = reader.readNext()) != null) {
+                        // Записываем нужные данные в список дополнительного отчёта
+                        reportListDoc.add(new ReportModel("", lineInArray[1], lineInArray[2],lineInArray[3], lineInArray[5], lineInArray[6],"","",""));
+                        //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
                     }
                 }
-            }
-        } else {
-            reportListFinal=null;
-        }
 
-        System.out.println("Size Final List: "+reportListFinal.size());
+                // Идём по отчёту обращений в csv
+                try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvAppealReport))
+                        .withSkipLines(3)           // Пропускаем первые три строки
+                        .build()) {
+                    String[] lineInArray;
+                    while ((lineInArray = reader.readNext()) != null) {
+                        // Записываем нужные данные в список отчёта по обращениям
+                        reportListAppeal.add(new ReportModel("", "", lineInArray[6],"", "","","", lineInArray[11],lineInArray[13]));
+                        //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
+                    }
+                }
+
+                System.out.println("Size orders List: "+reportListOrders.size()+" Size doc list: "+reportListDoc.size());
+                // Обрабатываем отчёт по заявлениям и отчёт по документам
+                if(reportListDoc.size()>reportListOrders.size()){ // Проверяем, чтобы отчёт по документам был больше отчёта по заявлениям
+                    for (int i=0; i<reportListOrders.size(); i++){ // Идём по циклу отчёта по заявлениям
+                        String FilterAppeal = reportListOrders.get(i).getNumberAppeal().toLowerCase(); // Получаем номер обращения
+                        for (int j=0; j<reportListDoc.size(); j++){ // Идём по циклу отчёта по документам
+                            String ListDocAppeal = reportListDoc.get(j).getNumberAppeal().toLowerCase(); // Получаем номер обращения
+                            if (FilterAppeal.contains(ListDocAppeal)){ // Сравниваем номер обращения с отчёта по заявлениям и отчёта по документам
+                                // Если совпадают, то добавить в фильтрованный отчёт информацию: Организация, номер обращения и т.д.
+                                reportListOrdersDoc.add(new ReportModel("",reportListOrders.get(i).getNameCompany(), reportListDoc.get(j).getNumberAppeal(),
+                                        reportListDoc.get(j).getNameAppeal(),reportListOrders.get(i).getDateCreate(),
+                                        reportListDoc.get(j).getStatus(),reportListOrders.get(i).getApplicant(), "",""));
+                            }
+                        }
+                    }
+                } else {
+                    reportListOrdersDoc=null;
+                }
+
+                System.out.println("Size OrdersDoc List: "+reportListOrdersDoc.size()+" Size appeal list: "+reportListAppeal.size());
+                // Обрабатываем отфильтрованный отчёт с отчётом по обращениям
+                if(reportListAppeal.size()>reportListOrdersDoc.size()){ // Проверяем, чтобы отчёт по обращениям был больше отчёта фильтрованного
+                    for (int i=0; i<reportListOrdersDoc.size(); i++){ // Идём по циклу фильтрованного отчёта
+                        String FilterNumberAppeal = reportListOrdersDoc.get(i).getNumberAppeal().toLowerCase(); // Получаем номер обращения
+                        for (int j=0; j<reportListAppeal.size(); j++){ // Идём по циклу отчёта по обращениям
+                            String ListNumberAppeal = reportListAppeal.get(j).getNumberAppeal().toLowerCase(); // Получаем номер обращения
+                            if (FilterNumberAppeal.contains(ListNumberAppeal)){ // Сравниваем номер обращения с фильтрованного отчёта и отчёта по обращениям
+                                // Если совпадают, то добавить в финальный отчёт информацию: Организация, номер обращения и т.д.
+                                reportListFinal.add(new ReportModel("",reportListOrdersDoc.get(i).getNameCompany(), reportListOrdersDoc.get(i).getNumberAppeal(),
+                                        reportListOrdersDoc.get(i).getNameAppeal(),reportListOrdersDoc.get(i).getDateCreate(),
+                                        reportListOrdersDoc.get(i).getStatus(),reportListOrdersDoc.get(i).getApplicant(),
+                                        reportListAppeal.get(j).getDateEnd(), reportListAppeal.get(j).getCurrentStep()));
+                            }
+                        }
+                    }
+                } else {
+                    reportListFinal=null;
+                }
+
+                System.out.println("Size Final List: "+reportListFinal.size());
 
         /*ArrayList<String> columnOrder=new ArrayList<String>();
         for (int i=0; i<reportListFinal.size(); i++){
@@ -311,7 +315,9 @@ public class ReportController {
         System.out.println("\nHere are the duplicate elements from list : " + findDuplicates(columnOrder));*/
 
 
-        return reportListFinal; // Возвращаем итоговый отчёт
+                return reportListFinal; // Возвращаем итоговый отчёт
+        }
+
     }
     // Функция для проверки на наличие дупликатов в списке
     public static Set<String> findDuplicates(List<String> listContainingDuplicates) {

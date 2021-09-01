@@ -466,91 +466,103 @@ public class appController {
 
                             // Получение данных с распарсенного поля
                             ArrayList<ReportModel> parsed_result_arr= (ArrayList<ReportModel>) ReportTask.getValue();
+                            if (parsed_result_arr==null){
+                                vbox_filter.setDisable(true);
+                                download_report_b.setDisable(true);
 
-                            System.out.println(parsed_result_arr.get(0).getPeriod());
-                            // Получить период
-                            String period_report_label="Отчёт "+parsed_result_arr.get(0).getPeriod();
-                            period_label.setText(period_report_label);
-                            parsed_result_arr.remove(0); // Удалить период со списка
+                                Label label_load=new Label();
+                                label_load.setText("Выберите параметры для отчёта.");
+                                label_load.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+                                data_rep_table.setPlaceholder(label_load);
+                                period_label.setText("Отчёт не существует.");
+                                Alert alert =new Alert(Alert.AlertType.ERROR , "Test");
+                                alert.setTitle("Отчёт не сформирован!");
+                                alert.setHeaderText("За данный период отчёт ещё не был сформирован на сервере!");
+                                alert.setContentText("Выберите другой период!");
+                                alert.showAndWait().ifPresent(rs -> {if (rs == ButtonType.OK){}});
+                            } else {
+                                System.out.println(parsed_result_arr.get(0).getPeriod());
+                                // Получить период
+                                String period_report_label="Отчёт "+parsed_result_arr.get(0).getPeriod();
+                                period_label.setText(period_report_label);
+                                parsed_result_arr.remove(0); // Удалить период со списка
 
-                            ObservableList<ReportModel> dataReport = FXCollections.observableArrayList(parsed_result_arr);
-                            // Заполнение данными таблицы
-                            name_company_col.setCellValueFactory(new PropertyValueFactory<>("nameCompany"));
-                            name_company_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+                                ObservableList<ReportModel> dataReport = FXCollections.observableArrayList(parsed_result_arr);
+                                // Заполнение данными таблицы
+                                name_company_col.setCellValueFactory(new PropertyValueFactory<>("nameCompany"));
+                                name_company_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
-                            number_appeal_col.setCellValueFactory(new PropertyValueFactory<>("numberAppeal"));
-                            number_appeal_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+                                number_appeal_col.setCellValueFactory(new PropertyValueFactory<>("numberAppeal"));
+                                number_appeal_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
-                            name_appeal_col.setCellValueFactory(new PropertyValueFactory<>("nameAppeal"));
-                            name_appeal_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+                                name_appeal_col.setCellValueFactory(new PropertyValueFactory<>("nameAppeal"));
+                                name_appeal_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
-                            date_create_col.setCellValueFactory(new PropertyValueFactory<>("dateCreate"));
-                            date_create_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+                                date_create_col.setCellValueFactory(new PropertyValueFactory<>("dateCreate"));
+                                date_create_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
-                            date_end_col.setCellValueFactory(new PropertyValueFactory<>("dateEnd"));
-                            date_end_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+                                date_end_col.setCellValueFactory(new PropertyValueFactory<>("dateEnd"));
+                                date_end_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
-                            status_col.setCellValueFactory(new PropertyValueFactory<>("status"));
-                            status_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+                                status_col.setCellValueFactory(new PropertyValueFactory<>("status"));
+                                status_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
-                            cur_step_col.setCellValueFactory(new PropertyValueFactory<>("currentStep"));
-                            cur_step_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+                                cur_step_col.setCellValueFactory(new PropertyValueFactory<>("currentStep"));
+                                cur_step_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
-                            applicant_col.setCellValueFactory(new PropertyValueFactory<>("applicant"));
-                            applicant_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+                                applicant_col.setCellValueFactory(new PropertyValueFactory<>("applicant"));
+                                applicant_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
 
-                            data_rep_table.setItems(dataReport);
-                            download_report_b.setDisable(false);
-                            // Вызов события для кнопки скачивания отчета
-                            download_report_b.setOnAction(event1 -> {
-                                ReportController reportController=new ReportController();
-                                reportController.Download_report(parsed_result_arr ,dateStart, dateFinish); // Скачивание отчётаа
-                            });
+                                data_rep_table.setItems(dataReport);
+                                download_report_b.setDisable(false);
+                                // Вызов события для кнопки скачивания отчета
+                                download_report_b.setOnAction(event1 -> {
+                                    ReportController reportController=new ReportController();
+                                    reportController.Download_report(parsed_result_arr ,dateStart, dateFinish); // Скачивание отчётаа
+                                });
 
-                            SetFilter(parsed_result_arr, dateStart, dateFinish); // Установить фильтры
-                            autoResizeColumns(data_rep_table); // Выровнять колонки в таблице
+                                SetFilter(parsed_result_arr, dateStart, dateFinish); // Установить фильтры
+                                autoResizeColumns(data_rep_table); // Выровнять колонки в таблице
 
-                            // Create ContextMenu
-                            ContextMenu contextMenu = new ContextMenu();
+                                // Create ContextMenu
+                                ContextMenu contextMenu = new ContextMenu();
 
-                            MenuItem openAppealInfo = new MenuItem("Открыть обращение");
-                            openAppealInfo.setOnAction(new EventHandler<ActionEvent>() {
+                                MenuItem openAppealInfo = new MenuItem("Открыть обращение");
+                                openAppealInfo.setOnAction(new EventHandler<ActionEvent>() {
 
-                                @Override
-                                public void handle(ActionEvent event) {
-                                    System.out.println("Number Appeal:");
-                                    ReportModel reportModel = data_rep_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
-                                    System.out.println("Number appeal selected item: "+reportModel.getNumberAppeal());
-                                    String numberAppeal=reportModel.getNumberAppeal();
-                                    Show_Appeal_Info(cookie, numberAppeal);
-                                }
-                            });
-                            MenuItem copyNumberAppeal = new MenuItem("Копировать номер обращения");
-                            copyNumberAppeal.setOnAction(new EventHandler<ActionEvent>() {
+                                    @Override
+                                    public void handle(ActionEvent event) {
+                                        System.out.println("Number Appeal:");
+                                        ReportModel reportModel = data_rep_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
+                                        System.out.println("Number appeal selected item: "+reportModel.getNumberAppeal());
+                                        String numberAppeal=reportModel.getNumberAppeal();
+                                        Show_Appeal_Info(cookie, numberAppeal);
+                                    }
+                                });
+                                MenuItem copyNumberAppeal = new MenuItem("Копировать номер обращения");
+                                copyNumberAppeal.setOnAction(new EventHandler<ActionEvent>() {
 
-                                @Override
-                                public void handle(ActionEvent event) {
-                                    System.out.println("Number Appeal:");
-                                    ReportModel reportModel = data_rep_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
-                                    System.out.println("Number appeal selected item: "+reportModel.getNumberAppeal());
-                                }
-                            });
+                                    @Override
+                                    public void handle(ActionEvent event) {
+                                        System.out.println("Number Appeal:");
+                                        ReportModel reportModel = data_rep_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
+                                        System.out.println("Number appeal selected item: "+reportModel.getNumberAppeal());
+                                    }
+                                });
 
-                            // When user right-click on Circle
-                            data_rep_table.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
+                                // When user right-click on Circle
+                                data_rep_table.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
 
-                                @Override
-                                public void handle(ContextMenuEvent event) {
+                                    @Override
+                                    public void handle(ContextMenuEvent event) {
 
-                                    contextMenu.show(data_rep_table, event.getScreenX(), event.getScreenY());
-                                }
-                            });
+                                        contextMenu.show(data_rep_table, event.getScreenX(), event.getScreenY());
+                                    }
+                                });
 
-                            // Add MenuItem to ContextMenu
-                            contextMenu.getItems().addAll(openAppealInfo, copyNumberAppeal);
-
-
-
+                                // Add MenuItem to ContextMenu
+                                contextMenu.getItems().addAll(openAppealInfo, copyNumberAppeal);
+                            }
                         }
                     });
 

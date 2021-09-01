@@ -1,209 +1,203 @@
 package pkpvdplus.model;
 
-import javafx.beans.property.SimpleStringProperty;
-
 public class ApplicantInfoModel {
-    private SimpleStringProperty typeOfApplicant; // Тип заявителя (Физ. лицо или организация)
+    private String typeOfApplicant; // Тип заявителя (Физ. лицо или организация)
 
     // Переменные для физ. лиц и представителя заявителя
-    private SimpleStringProperty applicantFIO; // ФИО заявителя (представителя)
-    private SimpleStringProperty applicantSubjectType; // Тип субъекта (представителя)
-    private SimpleStringProperty applicantDocumentNumberSeries; // Документ заявителя: номер и серия (представителя)
-    private SimpleStringProperty applicantDocumentWhenIssuedAndWhoIssued; // Документ заявителя: когда и кем выдан (представителя)
-    private SimpleStringProperty applicantSnils; // Снилс заявителя (представителя)
-    private SimpleStringProperty applicantSubType; // Гражданство заявителя (представителя)
-    private SimpleStringProperty applicantAddress; // Адрес заявителя (представителя)
-    private SimpleStringProperty applicantPhoneNumber; // Номер телефона заявителя (представителя)
-    private SimpleStringProperty applicantCategory; // Категория заявителя (представителя)
-    private SimpleStringProperty representiveType; // Тип представителя
-    private SimpleStringProperty confirmAuthorRepres; // Подтверждение полномочий представителя
+    private String applicantFIO; // ФИО заявителя (представителя)
+    private String applicantSubjectType; // Тип субъекта (представителя)
+    private String applicantDocumentNumberSeries; // Документ заявителя: номер и серия (представителя)
+    private String applicantDocumentWhenIssuedAndWhoIssued; // Документ заявителя: когда и кем выдан (представителя)
+    private String applicantSnils; // Снилс заявителя (представителя)
+    private String applicantSubType; // Гражданство заявителя (представителя)
+    private String applicantAddress; // Адрес заявителя (представителя)
+    private String applicantPhoneNumber; // Номер телефона заявителя (представителя)
+    private String applicantCategory; // Категория заявителя (представителя)
+    private String representiveType; // Тип представителя
+    private String confirmAuthorRepres; // Подтверждение полномочий представителя
     // Переменные для организации
-    private SimpleStringProperty applicantOrg; // Заявитель (Организация)
-    private SimpleStringProperty nameOrg; // Название организации
-    private SimpleStringProperty ogrnOrg; // ОГРН организации
-    private SimpleStringProperty innOrg; // ИНН организации
-    private SimpleStringProperty kppOrg; // КПП организации
-    private SimpleStringProperty addressOrg; // Адрес организации
-    private SimpleStringProperty classtypeOrg; // Категория заявителя (организация)
+    private String applicantOrg; // Заявитель (Организация)
+    private String nameOrg; // Название организации
+    private String ogrnOrg; // ОГРН организации
+    private String innOrg; // ИНН организации
+    private String kppOrg; // КПП организации
+    private String addressOrg; // Адрес организации
+    private String classtypeOrg; // Категория заявителя (организация)
 
-
-    public ApplicantInfoModel(String typeOfApplicant, String applicantFIO, String applicantSubjectType, String applicantDocumentNumberSeries, String applicantDocumentWhenIssuedAndWhoIssued,
-                              String applicantSnils, String applicantSubType, String applicantAddress, String applicantPhoneNumber, String applicantCategory,
-                              String representiveType, String confirmAuthorRepres,
-                              String applicantOrg, String nameOrg, String ogrnOrg, String innOrg, String kppOrg, String addressOrg, String classtypeOrg) {
-
-        this.typeOfApplicant = new SimpleStringProperty(typeOfApplicant);
-
-        this.applicantFIO = new SimpleStringProperty(applicantFIO);
-        this.applicantSubjectType = new SimpleStringProperty(applicantSubjectType);
-        this.applicantDocumentNumberSeries = new SimpleStringProperty(applicantDocumentNumberSeries);
-        this.applicantDocumentWhenIssuedAndWhoIssued =new SimpleStringProperty(applicantDocumentWhenIssuedAndWhoIssued);
-        this.applicantSnils = new SimpleStringProperty(applicantSnils);
-        this.applicantSubType = new SimpleStringProperty(applicantSubType);
-        this.applicantAddress = new SimpleStringProperty(applicantAddress);
-        this.applicantPhoneNumber = new SimpleStringProperty(applicantPhoneNumber);
-        this.applicantCategory = new SimpleStringProperty(applicantCategory);
-        this.representiveType = new SimpleStringProperty(representiveType);
-        this.confirmAuthorRepres = new SimpleStringProperty(confirmAuthorRepres);
-
-        this.applicantOrg =new SimpleStringProperty(applicantOrg);
-        this.nameOrg =new SimpleStringProperty(nameOrg);
-        this.ogrnOrg =new SimpleStringProperty(ogrnOrg);
-        this.innOrg =new SimpleStringProperty(innOrg);
-        this.kppOrg =new SimpleStringProperty(kppOrg);
-        this.addressOrg =new SimpleStringProperty(addressOrg);
-        this.classtypeOrg =new SimpleStringProperty(classtypeOrg);
+    public ApplicantInfoModel(String typeOfApplicant, String applicantFIO, String applicantSubjectType, String applicantDocumentNumberSeries,
+                              String applicantDocumentWhenIssuedAndWhoIssued, String applicantSnils, String applicantSubType, String applicantAddress,
+                              String applicantPhoneNumber, String applicantCategory, String representiveType, String confirmAuthorRepres, String applicantOrg,
+                              String nameOrg, String ogrnOrg, String innOrg, String kppOrg, String addressOrg, String classtypeOrg) {
+        this.typeOfApplicant = typeOfApplicant;
+        this.applicantFIO = applicantFIO;
+        this.applicantSubjectType = applicantSubjectType;
+        this.applicantDocumentNumberSeries = applicantDocumentNumberSeries;
+        this.applicantDocumentWhenIssuedAndWhoIssued = applicantDocumentWhenIssuedAndWhoIssued;
+        this.applicantSnils = applicantSnils;
+        this.applicantSubType = applicantSubType;
+        this.applicantAddress = applicantAddress;
+        this.applicantPhoneNumber = applicantPhoneNumber;
+        this.applicantCategory = applicantCategory;
+        this.representiveType = representiveType;
+        this.confirmAuthorRepres = confirmAuthorRepres;
+        this.applicantOrg = applicantOrg;
+        this.nameOrg = nameOrg;
+        this.ogrnOrg = ogrnOrg;
+        this.innOrg = innOrg;
+        this.kppOrg = kppOrg;
+        this.addressOrg = addressOrg;
+        this.classtypeOrg = classtypeOrg;
     }
 
     public String getTypeOfApplicant() {
-        return typeOfApplicant.get();
+        return typeOfApplicant;
     }
 
     public void setTypeOfApplicant(String typeOfApplicant) {
-        this.typeOfApplicant = new SimpleStringProperty(typeOfApplicant);
+        this.typeOfApplicant = typeOfApplicant;
     }
 
     public String getApplicantFIO() {
-        return applicantFIO.get();
+        return applicantFIO;
     }
 
     public void setApplicantFIO(String applicantFIO) {
-        this.applicantFIO = new SimpleStringProperty(applicantFIO);
+        this.applicantFIO = applicantFIO;
     }
 
     public String getApplicantSubjectType() {
-        return applicantSubjectType.get();
+        return applicantSubjectType;
     }
 
     public void setApplicantSubjectType(String applicantSubjectType) {
-        this.applicantSubjectType =new SimpleStringProperty(applicantSubjectType);
+        this.applicantSubjectType = applicantSubjectType;
     }
 
     public String getApplicantDocumentNumberSeries() {
-        return applicantDocumentNumberSeries.get();
+        return applicantDocumentNumberSeries;
     }
 
     public void setApplicantDocumentNumberSeries(String applicantDocumentNumberSeries) {
-        this.applicantDocumentNumberSeries = new SimpleStringProperty(applicantDocumentNumberSeries);
+        this.applicantDocumentNumberSeries = applicantDocumentNumberSeries;
     }
 
     public String getApplicantDocumentWhenIssuedAndWhoIssued() {
-        return applicantDocumentWhenIssuedAndWhoIssued.get();
+        return applicantDocumentWhenIssuedAndWhoIssued;
     }
 
     public void setApplicantDocumentWhenIssuedAndWhoIssued(String applicantDocumentWhenIssuedAndWhoIssued) {
-        this.applicantDocumentWhenIssuedAndWhoIssued = new SimpleStringProperty(applicantDocumentWhenIssuedAndWhoIssued);
+        this.applicantDocumentWhenIssuedAndWhoIssued = applicantDocumentWhenIssuedAndWhoIssued;
     }
 
     public String getApplicantSnils() {
-        return applicantSnils.get();
+        return applicantSnils;
     }
 
     public void setApplicantSnils(String applicantSnils) {
-        this.applicantSnils = new SimpleStringProperty(applicantSnils);
+        this.applicantSnils = applicantSnils;
     }
 
     public String getApplicantSubType() {
-        return applicantSubType.get();
+        return applicantSubType;
     }
 
     public void setApplicantSubType(String applicantSubType) {
-        this.applicantSubType = new SimpleStringProperty(applicantSubType);
+        this.applicantSubType = applicantSubType;
     }
 
     public String getApplicantAddress() {
-        return applicantAddress.get();
+        return applicantAddress;
     }
 
     public void setApplicantAddress(String applicantAddress) {
-        this.applicantAddress = new SimpleStringProperty(applicantAddress);
+        this.applicantAddress = applicantAddress;
     }
 
     public String getApplicantPhoneNumber() {
-        return applicantPhoneNumber.get();
+        return applicantPhoneNumber;
     }
 
     public void setApplicantPhoneNumber(String applicantPhoneNumber) {
-        this.applicantPhoneNumber = new SimpleStringProperty(applicantPhoneNumber);
+        this.applicantPhoneNumber = applicantPhoneNumber;
     }
 
     public String getApplicantCategory() {
-        return applicantCategory.get();
+        return applicantCategory;
     }
 
     public void setApplicantCategory(String applicantCategory) {
-        this.applicantCategory = new SimpleStringProperty(applicantCategory);
+        this.applicantCategory = applicantCategory;
     }
 
     public String getRepresentiveType() {
-        return representiveType.get();
+        return representiveType;
     }
 
     public void setRepresentiveType(String representiveType) {
-        this.representiveType = new SimpleStringProperty(representiveType);
+        this.representiveType = representiveType;
     }
 
     public String getConfirmAuthorRepres() {
-        return confirmAuthorRepres.get();
+        return confirmAuthorRepres;
     }
 
     public void setConfirmAuthorRepres(String confirmAuthorRepres) {
-        this.confirmAuthorRepres = new SimpleStringProperty(confirmAuthorRepres);
+        this.confirmAuthorRepres = confirmAuthorRepres;
     }
 
     public String getApplicantOrg() {
-         return applicantOrg.get();
-     }
+        return applicantOrg;
+    }
 
     public void setApplicantOrg(String applicantOrg) {
-        this.applicantOrg = new SimpleStringProperty(applicantOrg);
+        this.applicantOrg = applicantOrg;
     }
+
     public String getNameOrg() {
-        return nameOrg.get();
+        return nameOrg;
     }
 
     public void setNameOrg(String nameOrg) {
-        this.nameOrg = new SimpleStringProperty(nameOrg);
+        this.nameOrg = nameOrg;
     }
 
     public String getOgrnOrg() {
-        return ogrnOrg.get();
+        return ogrnOrg;
     }
 
     public void setOgrnOrg(String ogrnOrg) {
-        this.ogrnOrg = new SimpleStringProperty(ogrnOrg);
+        this.ogrnOrg = ogrnOrg;
     }
 
     public String getInnOrg() {
-        return innOrg.get();
+        return innOrg;
     }
 
     public void setInnOrg(String innOrg) {
-        this.innOrg = new SimpleStringProperty(innOrg);
+        this.innOrg = innOrg;
     }
 
     public String getKppOrg() {
-        return kppOrg.get();
+        return kppOrg;
     }
 
     public void setKppOrg(String kppOrg) {
-        this.kppOrg = new SimpleStringProperty(kppOrg);
+        this.kppOrg = kppOrg;
     }
 
     public String getAddressOrg() {
-        return addressOrg.get();
+        return addressOrg;
     }
 
     public void setAddressOrg(String addressOrg) {
-        this.addressOrg = new SimpleStringProperty(addressOrg);
+        this.addressOrg = addressOrg;
     }
 
     public String getClasstypeOrg() {
-        return classtypeOrg.get();
+        return classtypeOrg;
     }
 
     public void setClasstypeOrg(String classtypeOrg) {
-        this.classtypeOrg = new SimpleStringProperty(classtypeOrg);
+        this.classtypeOrg = classtypeOrg;
     }
-
 }
