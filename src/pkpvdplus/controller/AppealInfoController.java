@@ -354,7 +354,7 @@ public class AppealInfoController {
         String inn_organiz=applicantInfoArr.get(0).getInnOrg();
         String kpp_organiz=applicantInfoArr.get(0).getKppOrg();
         String address_organiz=applicantInfoArr.get(0).getAddressOrg();
-        String category_applicant_organiz=applicantInfoArr.get(0).getClasstypeOrg();
+        String category_applicant_organiz=applicantInfoArr.get(0).getCategoryOrg();
 
         applicant_organiz_textf.setText(applicant_organiz);
         type_sub_applicant_organiz_textf.setText(type_sub_applicant_organiz);

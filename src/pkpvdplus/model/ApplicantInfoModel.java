@@ -22,12 +22,13 @@ public class ApplicantInfoModel {
     private String innOrg; // ИНН организации
     private String kppOrg; // КПП организации
     private String addressOrg; // Адрес организации
-    private String classtypeOrg; // Категория заявителя (организация)
+    private String categoryOrg; // Категория заявителя (организация)
+
 
     public ApplicantInfoModel(String typeOfApplicant, String applicantFIO, String applicantSubjectType, String applicantDocumentNumberSeries,
                               String applicantDocumentWhenIssuedAndWhoIssued, String applicantSnils, String applicantSubType, String applicantAddress,
                               String applicantPhoneNumber, String applicantCategory, String representiveType, String confirmAuthorRepres, String applicantOrg,
-                              String nameOrg, String ogrnOrg, String innOrg, String kppOrg, String addressOrg, String classtypeOrg) {
+                              String nameOrg, String ogrnOrg, String innOrg, String kppOrg, String addressOrg, String categoryOrg) {
         this.typeOfApplicant = typeOfApplicant;
         this.applicantFIO = applicantFIO;
         this.applicantSubjectType = applicantSubjectType;
@@ -46,7 +47,7 @@ public class ApplicantInfoModel {
         this.innOrg = innOrg;
         this.kppOrg = kppOrg;
         this.addressOrg = addressOrg;
-        this.classtypeOrg = classtypeOrg;
+        this.categoryOrg = categoryOrg;
     }
 
     public String getTypeOfApplicant() {
@@ -193,11 +194,11 @@ public class ApplicantInfoModel {
         this.addressOrg = addressOrg;
     }
 
-    public String getClasstypeOrg() {
-        return classtypeOrg;
+    public String getCategoryOrg() {
+        return categoryOrg;
     }
 
-    public void setClasstypeOrg(String classtypeOrg) {
-        this.classtypeOrg = classtypeOrg;
+    public void setCategoryOrg(String categoryOrg) {
+        this.categoryOrg = categoryOrg;
     }
 }

@@ -16,6 +16,7 @@ import pkpvdplus.model.ApplicantInfoModel;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,6 +29,7 @@ public class GetAppealInfoController {
             AppealGeneralInfoModel appealGeneralInfoModel=null;
             ArrayList<String> Applicant_and_Representive=new ArrayList<String>();
             String IdApplicant="";
+            String applicantTypeRequest=""; // Категория заявителя
             String IdRepresentative="";
             String representiveType="";
             String represDocumentTypeID="";
@@ -63,34 +65,42 @@ public class GetAppealInfoController {
                     JsonArray content= element.getAsJsonObject().get("content").getAsJsonArray();
                     String idAppeal=content.get(0).getAsJsonObject().get("id").getAsString();
                     String idStatement=GetStatementID(cookie, idAppeal);
-                    appealGeneralInfoModel= appealGeneralInfoModel= GetAppealGeneralInformation(cookie, idAppeal, idStatement);
+                    appealGeneralInfoModel= GetAppealGeneralInformation(cookie, idAppeal, idStatement);
                     Applicant_and_Representive=GetApplicantSubjects(cookie, idAppeal, idStatement);
 
                     switch (Applicant_and_Representive.size()){
                         case 1:
                             IdApplicant=Applicant_and_Representive.get(0);
-                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdApplicant,"",""));
+                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdApplicant, "","",""));
                             break;
                         case 2:
                             IdApplicant=Applicant_and_Representive.get(0);
-                            IdRepresentative=Applicant_and_Representive.get(1);
-                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdApplicant,"",""));
-                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdRepresentative, "", ""));
+                            applicantTypeRequest=Applicant_and_Representive.get(1);
+                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdApplicant,applicantTypeRequest,"",""));
                             break;
                         case 3:
                             IdApplicant=Applicant_and_Representive.get(0);
-                            IdRepresentative=Applicant_and_Representive.get(1);
-                            representiveType=Applicant_and_Representive.get(2);
-                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdApplicant,"",""));
-                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdRepresentative, representiveType, ""));
+                            applicantTypeRequest=Applicant_and_Representive.get(1);
+                            IdRepresentative=Applicant_and_Representive.get(2);
+                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdApplicant,applicantTypeRequest,"",""));
+                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdRepresentative,"","",""));
                             break;
                         case 4:
                             IdApplicant=Applicant_and_Representive.get(0);
-                            IdRepresentative=Applicant_and_Representive.get(1);
-                            representiveType=Applicant_and_Representive.get(2);
-                            represDocumentTypeID=Applicant_and_Representive.get(3);
-                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdApplicant,"",""));
-                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdRepresentative, representiveType, represDocumentTypeID));
+                            applicantTypeRequest=Applicant_and_Representive.get(1);
+                            IdRepresentative=Applicant_and_Representive.get(2);
+                            representiveType=Applicant_and_Representive.get(3);
+                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdApplicant,applicantTypeRequest,"",""));
+                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdRepresentative,"", representiveType,""));
+                            break;
+                        case 5:
+                            IdApplicant=Applicant_and_Representive.get(0);
+                            applicantTypeRequest=Applicant_and_Representive.get(1);
+                            IdRepresentative=Applicant_and_Representive.get(2);
+                            representiveType=Applicant_and_Representive.get(3);
+                            represDocumentTypeID=Applicant_and_Representive.get(4);
+                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdApplicant,applicantTypeRequest,"",""));
+                            applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdRepresentative,"",representiveType,represDocumentTypeID));
                             break;
                         default:
                             return null;
@@ -224,6 +234,19 @@ public class GetAppealInfoController {
         return formattedDate;
     }
 
+    public String convertDateToCorrect(String dateFromSever){
+        Date date=null;
+        try {
+            date = new SimpleDateFormat("yyyy-MM-dd").parse(dateFromSever);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd.MM.yyyy");
+        // give a timezone reference for formatting (see comment at the bottom)
+        String formattedDate = sdf.format(date);
+        return  formattedDate;
+    }
+
     public AppealGeneralInfoModel Parsing_result_GetAppealGeneralInformation(String jsonMain, String jsonAdvanced){
         // Переменные для главной информации об обращении
         // Наименование, внутренний номер, дата создания, кем обработан: фио
@@ -283,6 +306,9 @@ public class GetAppealInfoController {
                 case "processed":
                     statusPPOZ="обновлен";
                     break;
+                case "awaitingPayment":
+                    statusPPOZ="обновлен";
+                    break;
                 default:
                     statusPPOZ="неизвестно";
                     break;
@@ -321,6 +347,9 @@ public class GetAppealInfoController {
                     break;
                 case "WAIT_OUT_11":
                     currentStepAdvanced="Ожидается выдача";
+                    break;
+                case "PKG_IMG_WAIT_PPOZ_43":
+                    currentStepAdvanced="Обработка документов в ППОЗ";
                     break;
                 default:
                     currentStepAdvanced="Неизвестно";
@@ -365,6 +394,7 @@ public class GetAppealInfoController {
     public ArrayList<String> GetApplicantSubjects(String cookie, String idAppeal, String idStatement) throws IOException {
         ArrayList<String> Applicant_and_Representive=new ArrayList<String>();
         String IdApplicant="";
+        String applicantTypeRequest=""; // Категория заявителя
         String IdRepresentative="";
         String representiveType="";
         String represDocumentTypeID="";
@@ -394,7 +424,9 @@ public class GetAppealInfoController {
                 JsonArray content= element.getAsJsonObject().get("content").getAsJsonArray();
                 IdApplicant=content.get(0).getAsJsonObject().get("subject").getAsString();
                 Applicant_and_Representive.add(IdApplicant);
-
+                applicantTypeRequest=content.get(0).getAsJsonObject().get("applicantTypeRequest").getAsString();
+                Applicant_and_Representive.add(applicantTypeRequest);
+                //357039000000
                 if (!content.get(0).getAsJsonObject().get("agent1").isJsonNull()) {
                     IdRepresentative=content.get(0).getAsJsonObject().get("agent1").getAsString();
                     Applicant_and_Representive.add(IdRepresentative);
@@ -409,6 +441,9 @@ public class GetAppealInfoController {
                                 break;
                             case "356003000000":
                                 representiveType= "Законный представитель";
+                                break;
+                            case "356005000000":
+                                representiveType="Уполномоченное лицо";
                                 break;
                             default:
                                 representiveType="Иной представитель";
@@ -435,7 +470,7 @@ public class GetAppealInfoController {
         return Applicant_and_Representive; // Возвращаем значение куки
     }
 
-    public ApplicantInfoModel  GetSubjectInfo(String cookie, String idAppeal, String idSubject, String representiveType, String represDocumentTypeID) throws IOException {
+    public ApplicantInfoModel  GetSubjectInfo(String cookie, String idAppeal, String idSubject, String applicantTypeRequest, String representiveType, String represDocumentTypeID) throws IOException {
         String nameDoc="";
         String dateDoc="";
         ApplicantInfoModel applicantInfoModel;
@@ -463,9 +498,9 @@ public class GetAppealInfoController {
                     ArrayList<String> infoDocTypeRepres =getRepresentiveDocInfo(cookie,idAppeal,represDocumentTypeID);
                     nameDoc=infoDocTypeRepres.get(0);
                     dateDoc=infoDocTypeRepres.get(1);
-                    applicantInfoModel = Parsing_result_GetSubjectInfo(result_of_req,representiveType, nameDoc, dateDoc);
+                    applicantInfoModel = Parsing_result_GetSubjectInfo(result_of_req,"",representiveType, nameDoc, dateDoc);
                 } else {
-                    applicantInfoModel = Parsing_result_GetSubjectInfo(result_of_req, "","","");
+                    applicantInfoModel = Parsing_result_GetSubjectInfo(result_of_req,applicantTypeRequest, "","","");
                 }
                 return applicantInfoModel;
             case 401: // Запрос завершился с ошибкой
@@ -506,6 +541,7 @@ public class GetAppealInfoController {
                 JsonElement element = parser.parse(result_of_req); // Получение главного элемента
                 if (!element.getAsJsonObject().get("name").isJsonNull()) {nameDoc = element.getAsJsonObject().get("name").getAsString();}
                 if (!element.getAsJsonObject().get("date").isJsonNull()) {dateDoc = element.getAsJsonObject().get("date").getAsString();}
+                dateDoc=convertDateToCorrect(dateDoc);
                 infoDocRepres.add(nameDoc);
                 infoDocRepres.add(dateDoc);
                 return infoDocRepres;
@@ -516,7 +552,7 @@ public class GetAppealInfoController {
         }
 
     }
-    public ApplicantInfoModel Parsing_result_GetSubjectInfo(String json, String representiveType, String nameDoc, String dateDoc){
+    public ApplicantInfoModel Parsing_result_GetSubjectInfo(String json, String applicantTypeRequest, String representiveType, String nameDoc, String dateDoc){
         // Тип заявителя (Физ лицо или организация)
         String typeOfApplicant="";
         // Тип субъекта (Гражданин РФ или юр лицо)
@@ -534,7 +570,7 @@ public class GetAppealInfoController {
         // Переменные для контактной информации
         String address=""; String phone="";
         // Категория заявителя
-        String classtype="";
+        String applicantCategory="";
 
         // Переменные для данных о заявителе (Организация)
         String descriptionBaseFormatOrg=""; String nameOrg=""; String ogrnOrg=""; String innOrg=""; String kppOrg="";
@@ -544,7 +580,7 @@ public class GetAppealInfoController {
         // Переменные для контактной информации
         String addressOrg="";
         // Категория заявителя
-        String classtypeOrg="";
+        String categoryOrg="";
 
         // Создания экземпляра парсинга
         JsonParser parser = new JsonParser();
@@ -553,7 +589,7 @@ public class GetAppealInfoController {
         if (!element.getAsJsonObject().get("subjectType").isJsonNull()) {
             subjectType = element.getAsJsonObject().get("subjectType").getAsString();
             switch (subjectType){
-                case ("007003001000"):
+                case "007003001000":
                     subjectType="Гражданин РФ";
                     break;
                 case "007002001000":
@@ -566,6 +602,32 @@ public class GetAppealInfoController {
                     subjectType="Иной субъект";
                     break;
             }
+        }
+        switch (applicantTypeRequest){
+            case "357039000000":
+                applicantCategory="Правообладатель или его законный представитель";
+                break;
+            case "357018000000":
+                applicantCategory="Федеральные органы исполнительной власти и их территориальные органы";
+                break;
+            case "357006004000":
+                applicantCategory="Органы внутренних дел, имеющие в производстве дела, связанные с объектами недвижимого имущества и (или) их правообладателями";
+                break;
+            case "357014000000":
+                applicantCategory="Органы местного самоуправления";
+                break;
+            case "357006005000":
+                applicantCategory="Органы Федеральной службы безопасности Российской Федерации, имеющие в производстве дела, связанные с объектами недвижимого имущества и (или) их правообладателями";
+                break;
+            case "357023000000":
+                applicantCategory="Иные определенные федеральным законом органы и организации, имеющие право на бесплатное получение информации";
+                break;
+            case "357099000000":
+                applicantCategory="Иное лицо";
+                break;
+            default:
+                applicantCategory="Неизвестно";
+                break;
         }
         switch (typeOfApplicant){
             case "Person":
@@ -595,6 +657,7 @@ public class GetAppealInfoController {
                 if (!element.getAsJsonObject().get("codeIssued").isJsonNull()) {codeIssued = element.getAsJsonObject().get("codeIssued").getAsString();}
                 if (!element.getAsJsonObject().get("snils").isJsonNull()) {snils = element.getAsJsonObject().get("snils").getAsString();}
                 documentInfoBase= documentType+" "+documentSeries+" "+documentNum;
+                whenIssued=convertDateToCorrect(whenIssued);
                 documentInfoWhenWho=whenIssued+" "+whoIssued+" "+codeIssued;
                 // Адрес заявителя
                 if (!element.getAsJsonObject().get("address").getAsJsonObject().get("region").getAsJsonObject().get("name").isJsonNull() ||
@@ -641,21 +704,21 @@ public class GetAppealInfoController {
                 if (!element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("phone").isJsonNull()) {
                     phone=element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("phone").getAsString();
                 }
-                if (!element.getAsJsonObject().get("classtype").isJsonNull()) {
+                // Need to fix!!!
+                /*if (!element.getAsJsonObject().get("classtype").isJsonNull()) {
                     classtype=element.getAsJsonObject().get("classtype").getAsString();
                     if (classtype.equals("Person")){classtype="Иное лицо";}
-                }
-
+                }*/
                 // Если есть представитель
                 if (!representiveType.equals("") || !nameDoc.equals("") || !dateDoc.equals("")){
                     String confirmAuthorRepres=nameDoc+" от "+dateDoc;
                     ApplicantInfoModel applicantInfoModel=new ApplicantInfoModel(typeOfApplicant, descriptionBaseFormat,subjectType,documentInfoBase,
-                            documentInfoWhenWho,snils,"",residenceAddress,phone,classtype,representiveType,confirmAuthorRepres,
+                            documentInfoWhenWho,snils,"",residenceAddress,phone,applicantCategory,representiveType,confirmAuthorRepres,
                             "","","","","","","");
                     return  applicantInfoModel;
                 } else { // Если нет представителя
                     ApplicantInfoModel applicantInfoModel=new ApplicantInfoModel(typeOfApplicant, descriptionBaseFormat,subjectType,documentInfoBase,
-                            documentInfoWhenWho,snils,"",residenceAddress,phone,classtype,"","",
+                            documentInfoWhenWho,snils,"",residenceAddress,phone,applicantCategory,"","",
                             "", "","","","","","");
                     return  applicantInfoModel;
                 }
@@ -712,7 +775,7 @@ public class GetAppealInfoController {
                     addressOrg= regionOrg+", "+districtOrg+", "+cityOrg+", "+streetOrg+", "+houseTypeOrg+". "+houseOrg+", "+flatTypeOrg+". "+flatOrg;
                 }
                 // Need to FIX!!!
-                switch (subjectType){
+                /*switch (subjectType){
                     case "Российское юридическое лицо":
                         classtypeOrg="Правообладатель или его законный представитель";
                         break;
@@ -722,11 +785,11 @@ public class GetAppealInfoController {
                     default:
                         classtypeOrg="Другое";
                         break;
-                }
-
+                }*/
+                categoryOrg=applicantCategory;
                 ApplicantInfoModel applicantInfoModel=new ApplicantInfoModel(typeOfApplicant,"",subjectType,"",
                         "","","","","","","","",
-                        descriptionBaseFormatOrg, nameOrg,ogrnOrg,innOrg,kppOrg,addressOrg,classtypeOrg);
+                        descriptionBaseFormatOrg, nameOrg,ogrnOrg,innOrg,kppOrg,addressOrg,categoryOrg);
                 return  applicantInfoModel;
 
             default:
