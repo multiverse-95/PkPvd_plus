@@ -566,9 +566,9 @@ public class GetAppealInfoController {
         String snils="";
         // Переменные для адреса
         String region=""; String district=""; String city=""; String street=""; String houseType=""; String house=""; String flatType=""; String flat="";
-        String residenceAddress="";
+        String residenceAddress=""; // Адрес места жительства
         // Переменные для контактной информации
-        String address=""; String phone="";
+        String registrAddress=""; String phone=""; // Адрес по прописке, телефон
         // Категория заявителя
         String applicantCategory="";
 
@@ -622,6 +622,9 @@ public class GetAppealInfoController {
             case "357023000000":
                 applicantCategory="Иные определенные федеральным законом органы и организации, имеющие право на бесплатное получение информации";
                 break;
+            case "357002000000":
+                applicantCategory="Лицо, имеющее право на наследование имущества правообладателя по завещанию или по закону";
+                break;
             case "357099000000":
                 applicantCategory="Иное лицо";
                 break;
@@ -659,7 +662,8 @@ public class GetAppealInfoController {
                 documentInfoBase= documentType+" "+documentSeries+" "+documentNum;
                 whenIssued=convertDateToCorrect(whenIssued);
                 documentInfoWhenWho=whenIssued+" "+whoIssued+" "+codeIssued;
-                // Адрес заявителя
+
+                // Адрес заявителя по месту жительства
                 if (!element.getAsJsonObject().get("address").getAsJsonObject().get("region").getAsJsonObject().get("name").isJsonNull() ||
                         !element.getAsJsonObject().get("address").getAsJsonObject().get("region").getAsJsonObject().get("type").isJsonNull()) {
                     region=element.getAsJsonObject().get("address").getAsJsonObject().get("region").getAsJsonObject().get("name").getAsString()+" "+
@@ -701,6 +705,48 @@ public class GetAppealInfoController {
                     residenceAddress= region+", "+district+", "+city+", "+street+", "+houseType+". "+house+", "+flatType+". "+flat;
                 }
 
+                // Адрес заявителя по прописке
+                if (!element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("region").getAsJsonObject().get("name").isJsonNull() ||
+                        !element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("region").getAsJsonObject().get("type").isJsonNull()) {
+                    region=element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("region").getAsJsonObject().get("name").getAsString()+" "+
+                            element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("region").getAsJsonObject().get("type").getAsString();
+                } else {region="";}
+                if (!element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("district").getAsJsonObject().get("name").isJsonNull() ||
+                        !element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("district").getAsJsonObject().get("type").isJsonNull()) {
+                    district=element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("district").getAsJsonObject().get("name").getAsString()+" "+
+                            element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("district").getAsJsonObject().get("type").getAsString();
+                } else {district="";}
+                if (!element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("city").getAsJsonObject().get("name").isJsonNull() ||
+                        !element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("city").getAsJsonObject().get("type").isJsonNull()) {
+                    city=element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("city").getAsJsonObject().get("name").getAsString()+" "+
+                            element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("city").getAsJsonObject().get("type").getAsString();
+                } else {city="";}
+                if (!element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("street").getAsJsonObject().get("name").isJsonNull() ||
+                        !element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("street").getAsJsonObject().get("type").isJsonNull()) {
+                    street=element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("street").getAsJsonObject().get("name").getAsString()+" "+
+                            element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("street").getAsJsonObject().get("type").getAsString();
+                } else {street="";}
+
+                if (!element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("houseType").isJsonNull()) {
+                    houseType=element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("houseType").getAsString();
+                } else {houseType="";}
+                if (!element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("house").isJsonNull()) {
+                    house=element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("house").getAsString();
+                } else {house="";}
+
+                if (!element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("flatType").isJsonNull()) {
+                    flatType=element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("flatType").getAsString();
+                } else {flatType="";}
+                if (!element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("flat").isJsonNull()) {
+                    flat=element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("address").getAsJsonObject().get("flat").getAsString();
+                } else {flat="";}
+
+                if (flatType.equals("") || flat.equals("")){
+                    registrAddress= region+", "+district+", "+city+", "+street+", "+houseType+". "+house;
+                } else {
+                    registrAddress= region+", "+district+", "+city+", "+street+", "+houseType+". "+house+", "+flatType+". "+flat;
+                }
+                // Телефон заявителя
                 if (!element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("phone").isJsonNull()) {
                     phone=element.getAsJsonObject().get("contactInformation").getAsJsonObject().get("phone").getAsString();
                 }
@@ -713,12 +759,12 @@ public class GetAppealInfoController {
                 if (!representiveType.equals("") || !nameDoc.equals("") || !dateDoc.equals("")){
                     String confirmAuthorRepres=nameDoc+" от "+dateDoc;
                     ApplicantInfoModel applicantInfoModel=new ApplicantInfoModel(typeOfApplicant, descriptionBaseFormat,subjectType,documentInfoBase,
-                            documentInfoWhenWho,snils,"",residenceAddress,phone,applicantCategory,representiveType,confirmAuthorRepres,
+                            documentInfoWhenWho,snils,"",residenceAddress,registrAddress, phone,applicantCategory,representiveType,confirmAuthorRepres,
                             "","","","","","","");
                     return  applicantInfoModel;
                 } else { // Если нет представителя
                     ApplicantInfoModel applicantInfoModel=new ApplicantInfoModel(typeOfApplicant, descriptionBaseFormat,subjectType,documentInfoBase,
-                            documentInfoWhenWho,snils,"",residenceAddress,phone,applicantCategory,"","",
+                            documentInfoWhenWho,snils,"",residenceAddress, registrAddress, phone,applicantCategory,"","",
                             "", "","","","","","");
                     return  applicantInfoModel;
                 }
@@ -788,7 +834,8 @@ public class GetAppealInfoController {
                 }*/
                 categoryOrg=applicantCategory;
                 ApplicantInfoModel applicantInfoModel=new ApplicantInfoModel(typeOfApplicant,"",subjectType,"",
-                        "","","","","","","","",
+                        "","","","","","",
+                        "","","",
                         descriptionBaseFormatOrg, nameOrg,ogrnOrg,innOrg,kppOrg,addressOrg,categoryOrg);
                 return  applicantInfoModel;
 

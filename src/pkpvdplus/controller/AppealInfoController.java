@@ -330,7 +330,8 @@ public class AppealInfoController {
         String document_applicant_num_ser =applicantInfoArr.get(0).getApplicantDocumentNumberSeries();
         String document_who_when_iss_appl=applicantInfoArr.get(0).getApplicantDocumentWhenIssuedAndWhoIssued();
         String snils_applicant = applicantInfoArr.get(0).getApplicantSnils();
-        String residenceAddress=applicantInfoArr.get(0).getApplicantAddress();
+        String residenceAddress=applicantInfoArr.get(0).getApplicantResidenceAddress();
+        String registrAddress=applicantInfoArr.get(0).getApplicantRegistrAddress();
         String phoneNumber=applicantInfoArr.get(0).getApplicantPhoneNumber();
         String categoryApplic=applicantInfoArr.get(0).getApplicantCategory();
 
@@ -340,7 +341,7 @@ public class AppealInfoController {
         whowheniss_applicant_textf.setText(document_who_when_iss_appl);
         snils_applicant_textf.setText(snils_applicant);
         res_address_applicant_textf.setText(residenceAddress);
-        address_applicant_textf.setText(residenceAddress);
+        address_applicant_textf.setText(registrAddress);
         phone_applicant_textf.setText(phoneNumber);
         category_applicant_textf.setText(categoryApplic);
     }
@@ -375,7 +376,8 @@ public class AppealInfoController {
         String document_representive_num_ser =applicantInfoArr.get(1).getApplicantDocumentNumberSeries();
         String document_who_when_iss_repres=applicantInfoArr.get(1).getApplicantDocumentWhenIssuedAndWhoIssued();
         String snils_repres = applicantInfoArr.get(1).getApplicantSnils();
-        String residenceAddressRepres=applicantInfoArr.get(1).getApplicantAddress();
+        String residenceAddressRepres=applicantInfoArr.get(1).getApplicantResidenceAddress();
+        String registrAddressRepres=applicantInfoArr.get(1).getApplicantRegistrAddress();
         String phoneNumberRepres=applicantInfoArr.get(1).getApplicantPhoneNumber();
         String categoryRepres=applicantInfoArr.get(1).getRepresentiveType();
         String confirmAuthorRepres=applicantInfoArr.get(1).getConfirmAuthorRepres();
@@ -387,7 +389,7 @@ public class AppealInfoController {
         snils_applicant_repres_textf.setText(snils_repres);
         //region_applicant_repres_textf.setText();
         res_address_applicant_repres_textf.setText(residenceAddressRepres);
-        address_applicant_repres_textf.setText(residenceAddressRepres);
+        address_applicant_repres_textf.setText(registrAddressRepres);
         phone_applicant_repres_textf.setText(phoneNumberRepres);
         category_applicant_repres_textf.setText(categoryRepres);
         //position_applicant_repres_textf.setText();

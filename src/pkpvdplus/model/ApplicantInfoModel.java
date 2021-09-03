@@ -10,7 +10,8 @@ public class ApplicantInfoModel {
     private String applicantDocumentWhenIssuedAndWhoIssued; // Документ заявителя: когда и кем выдан (представителя)
     private String applicantSnils; // Снилс заявителя (представителя)
     private String applicantSubType; // Гражданство заявителя (представителя)
-    private String applicantAddress; // Адрес заявителя (представителя)
+    private String applicantResidenceAddress; // Адрес заявителя по месту жительства (представителя)
+    private String applicantRegistrAddress; // Адрес заявителя по прописке (представителя)
     private String applicantPhoneNumber; // Номер телефона заявителя (представителя)
     private String applicantCategory; // Категория заявителя (представителя)
     private String representiveType; // Тип представителя
@@ -24,11 +25,10 @@ public class ApplicantInfoModel {
     private String addressOrg; // Адрес организации
     private String categoryOrg; // Категория заявителя (организация)
 
-
-    public ApplicantInfoModel(String typeOfApplicant, String applicantFIO, String applicantSubjectType, String applicantDocumentNumberSeries,
-                              String applicantDocumentWhenIssuedAndWhoIssued, String applicantSnils, String applicantSubType, String applicantAddress,
-                              String applicantPhoneNumber, String applicantCategory, String representiveType, String confirmAuthorRepres, String applicantOrg,
-                              String nameOrg, String ogrnOrg, String innOrg, String kppOrg, String addressOrg, String categoryOrg) {
+    public ApplicantInfoModel(String typeOfApplicant, String applicantFIO, String applicantSubjectType, String applicantDocumentNumberSeries, String applicantDocumentWhenIssuedAndWhoIssued,
+                              String applicantSnils, String applicantSubType, String applicantResidenceAddress, String applicantRegistrAddress, String applicantPhoneNumber,
+                              String applicantCategory, String representiveType, String confirmAuthorRepres, String applicantOrg, String nameOrg, String ogrnOrg, String innOrg,
+                              String kppOrg, String addressOrg, String categoryOrg) {
         this.typeOfApplicant = typeOfApplicant;
         this.applicantFIO = applicantFIO;
         this.applicantSubjectType = applicantSubjectType;
@@ -36,7 +36,8 @@ public class ApplicantInfoModel {
         this.applicantDocumentWhenIssuedAndWhoIssued = applicantDocumentWhenIssuedAndWhoIssued;
         this.applicantSnils = applicantSnils;
         this.applicantSubType = applicantSubType;
-        this.applicantAddress = applicantAddress;
+        this.applicantResidenceAddress = applicantResidenceAddress;
+        this.applicantRegistrAddress = applicantRegistrAddress;
         this.applicantPhoneNumber = applicantPhoneNumber;
         this.applicantCategory = applicantCategory;
         this.representiveType = representiveType;
@@ -106,12 +107,20 @@ public class ApplicantInfoModel {
         this.applicantSubType = applicantSubType;
     }
 
-    public String getApplicantAddress() {
-        return applicantAddress;
+    public String getApplicantResidenceAddress() {
+        return applicantResidenceAddress;
     }
 
-    public void setApplicantAddress(String applicantAddress) {
-        this.applicantAddress = applicantAddress;
+    public void setApplicantResidenceAddress(String applicantResidenceAddress) {
+        this.applicantResidenceAddress = applicantResidenceAddress;
+    }
+
+    public String getApplicantRegistrAddress() {
+        return applicantRegistrAddress;
+    }
+
+    public void setApplicantRegistrAddress(String applicantRegistrAddress) {
+        this.applicantRegistrAddress = applicantRegistrAddress;
     }
 
     public String getApplicantPhoneNumber() {

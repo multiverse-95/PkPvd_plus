@@ -277,15 +277,15 @@ public class appController {
         ArrayList<ReportModel> datFind_modelArr = new ArrayList<ReportModel>();
         // Идем по циклу ведомства и если есть совпадение, то записываем в список найденных ведомств
         switch (typeFilter){
-            case "Фильтр по заявителям":
-                for (int i=0; i<dataReportList.size(); i++){
-                    if (dataReportList.get(i).getApplicant().toLowerCase().contains(search_text)){
-                        datFind_modelArr.add((new ReportModel("", dataReportList.get(i).getNameCompany(), dataReportList.get(i).getNumberAppeal(),
-                                dataReportList.get(i).getNameAppeal(), dataReportList.get(i).getDateCreate(), dataReportList.get(i).getStatus(),
-                                dataReportList.get(i).getApplicant(), dataReportList.get(i).getDateEnd(), dataReportList.get(i).getCurrentStep())));
+                case "Фильтр по заявителям":
+                    for (int i=0; i<dataReportList.size(); i++){
+                        if (dataReportList.get(i).getApplicant().toLowerCase().contains(search_text)){
+                            datFind_modelArr.add((new ReportModel("", dataReportList.get(i).getNameCompany(), dataReportList.get(i).getNumberAppeal(),
+                                    dataReportList.get(i).getNameAppeal(), dataReportList.get(i).getDateCreate(), dataReportList.get(i).getStatus(),
+                                    dataReportList.get(i).getApplicant(), dataReportList.get(i).getDateEnd(), dataReportList.get(i).getCurrentStep())));
+                        }
                     }
-                }
-                break;
+                    break;
                 case "Фильтр по организациям":
                     for (int i=0; i<dataReportList.size(); i++){
                         if (dataReportList.get(i).getNameCompany().toLowerCase().contains(search_text)){
@@ -295,18 +295,18 @@ public class appController {
                         }
                     }
                     break;
-                    case "Фильтр по обращениям":
-                        for (int i=0; i<dataReportList.size(); i++){
+                case "Фильтр по обращениям":
+                    for (int i=0; i<dataReportList.size(); i++){
                             if (dataReportList.get(i).getNumberAppeal().toLowerCase().contains(search_text)){
                                 datFind_modelArr.add((new ReportModel("", dataReportList.get(i).getNameCompany(), dataReportList.get(i).getNumberAppeal(),
                                         dataReportList.get(i).getNameAppeal(), dataReportList.get(i).getDateCreate(), dataReportList.get(i).getStatus(),
                                         dataReportList.get(i).getApplicant(), dataReportList.get(i).getDateEnd(), dataReportList.get(i).getCurrentStep())));
                             }
                         }
-                        break;
-            default:
-                datFind_modelArr=null;
-                break;
+                    break;
+        default:
+        datFind_modelArr=null;
+        break;
         }
 
         ObservableList<ReportModel> data =FXCollections.observableArrayList(datFind_modelArr);
