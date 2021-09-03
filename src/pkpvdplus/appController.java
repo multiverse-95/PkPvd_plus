@@ -10,12 +10,15 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -25,6 +28,7 @@ import javafx.collections.transformation.SortedList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -36,9 +40,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.input.ContextMenuEvent;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.input.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -130,7 +132,8 @@ public class appController {
 
     @FXML
     void initialize() {
-
+        date_start_d.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
+        date_finish_d.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
     }
 
     public void Show_Appeal_Info(String cookie, String numberAppeal){
@@ -231,6 +234,7 @@ public class appController {
         });
     }
 
+
     // Фильтр для обработки обращений (Такое же, что и для заявителей)
     public void FilterAppeal(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
@@ -267,11 +271,85 @@ public class appController {
         });
     }
 
+    public  void FilterByButton(String typeFilter, ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
+        String search_text=search_t.getText().toLowerCase();
+        // Список найденных ведомств
+        ArrayList<ReportModel> datFind_modelArr = new ArrayList<ReportModel>();
+        // Идем по циклу ведомства и если есть совпадение, то записываем в список найденных ведомств
+        switch (typeFilter){
+            case "Фильтр по заявителям":
+                for (int i=0; i<dataReportList.size(); i++){
+                    if (dataReportList.get(i).getApplicant().toLowerCase().contains(search_text)){
+                        datFind_modelArr.add((new ReportModel("", dataReportList.get(i).getNameCompany(), dataReportList.get(i).getNumberAppeal(),
+                                dataReportList.get(i).getNameAppeal(), dataReportList.get(i).getDateCreate(), dataReportList.get(i).getStatus(),
+                                dataReportList.get(i).getApplicant(), dataReportList.get(i).getDateEnd(), dataReportList.get(i).getCurrentStep())));
+                    }
+                }
+                break;
+                case "Фильтр по организациям":
+                    for (int i=0; i<dataReportList.size(); i++){
+                        if (dataReportList.get(i).getNameCompany().toLowerCase().contains(search_text)){
+                            datFind_modelArr.add((new ReportModel("", dataReportList.get(i).getNameCompany(), dataReportList.get(i).getNumberAppeal(),
+                                    dataReportList.get(i).getNameAppeal(), dataReportList.get(i).getDateCreate(), dataReportList.get(i).getStatus(),
+                                    dataReportList.get(i).getApplicant(), dataReportList.get(i).getDateEnd(), dataReportList.get(i).getCurrentStep())));
+                        }
+                    }
+                    break;
+                    case "Фильтр по обращениям":
+                        for (int i=0; i<dataReportList.size(); i++){
+                            if (dataReportList.get(i).getNumberAppeal().toLowerCase().contains(search_text)){
+                                datFind_modelArr.add((new ReportModel("", dataReportList.get(i).getNameCompany(), dataReportList.get(i).getNumberAppeal(),
+                                        dataReportList.get(i).getNameAppeal(), dataReportList.get(i).getDateCreate(), dataReportList.get(i).getStatus(),
+                                        dataReportList.get(i).getApplicant(), dataReportList.get(i).getDateEnd(), dataReportList.get(i).getCurrentStep())));
+                            }
+                        }
+                        break;
+            default:
+                datFind_modelArr=null;
+                break;
+        }
+
+        ObservableList<ReportModel> data =FXCollections.observableArrayList(datFind_modelArr);
+        data_rep_table.setItems(data);
+        if (datFind_modelArr.isEmpty()){
+            Label label_search=new Label();
+            label_search.setText("Нет данных по указанному фильтру.");
+            label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+            data_rep_table.setPlaceholder(label_search);
+        } else {
+            ArrayList<ReportModel> finalDatFind_modelArr = datFind_modelArr;
+            download_report_b.setOnAction(event1 -> {
+                ReportController reportController_new=new ReportController();
+                reportController_new.Download_report(finalDatFind_modelArr, dateStart, dateFinish);
+            });
+        }
+
+    }
+
+    public void setTableByDefault(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
+        ObservableList<ReportModel> dataTable=FXCollections.observableArrayList(dataReportList);
+        data_rep_table.setItems(dataTable);
+
+        if (dataReportList.isEmpty()){
+            Label label_search=new Label();
+            label_search.setText("Нет данных по указанному фильтру.");
+            label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+            data_rep_table.setPlaceholder(label_search);
+        } else {
+            download_report_b.setOnAction(event1 -> {
+                ReportController reportController_new=new ReportController();
+                reportController_new.Download_report(dataReportList, dateStart, dateFinish);
+            });
+        }
+    }
+
     // Функция для установки фильтра
     public void SetFilter(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         System.out.println("Заявитель");
         // Ставим фильтр для заявителей по-умолчанию
         FilterApplicants(dataReportList, dateStart, dateFinish);
+        show_rep_b.setOnAction(event -> {FilterByButton("Фильтр по заявителям",dataReportList,dateStart,dateFinish);});
+        createContextMenuFilterField("Фильтр по заявителям", dataReportList,dateStart,dateFinish);
         // Событие для переключателя фильтров
         choiceFilter_box.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
             @Override
@@ -279,25 +357,34 @@ public class appController {
                 String selectedItemFilter=choiceFilter_box.getItems().get((Integer) number2);
                 switch (selectedItemFilter){
                     case "Фильтр по заявителям": // Если выбраны заявители
+                        setTableByDefault(dataReportList, dateStart, dateFinish);
+
                         System.out.println("Заявитель");
                         search_t.setPromptText("Введите ФИО заявителя");
                         search_t.setText("");
                         FilterApplicants(dataReportList, dateStart, dateFinish); // Запустить фильтр для заявителей
-                        show_rep_b.setOnAction(event -> {});
+                        show_rep_b.setOnAction(event -> {FilterByButton("Фильтр по заявителям",dataReportList,dateStart,dateFinish);});
+                        createContextMenuFilterField("Фильтр по заявителям", dataReportList,dateStart,dateFinish);
                         break;
                     case "Фильтр по организациям": // Если выбраны организации
+                        setTableByDefault(dataReportList, dateStart, dateFinish);
+
                         System.out.println("Организация");
                         search_t.setPromptText("Введите название организации");
                         search_t.setText("");
                         FilterNameCompany(dataReportList, dateStart, dateFinish); // Запустить фильтр для организаций
-                        show_rep_b.setOnAction(event -> {});
+                        show_rep_b.setOnAction(event -> {FilterByButton("Фильтр по организациям",dataReportList,dateStart,dateFinish);});
+                        createContextMenuFilterField("Фильтр по организациям", dataReportList,dateStart,dateFinish);
                         break;
                     case "Фильтр по обращениям": // Если выбраны обращения
+                        setTableByDefault(dataReportList, dateStart, dateFinish);
+
                         System.out.println("Обращения");
                         search_t.setPromptText("Введите номер обращения");
                         search_t.setText("");
                         FilterAppeal(dataReportList, dateStart, dateFinish); // Запустить фильтр для обращений
-                        show_rep_b.setOnAction(event -> {});
+                        show_rep_b.setOnAction(event -> {FilterByButton("Фильтр по обращениям",dataReportList,dateStart,dateFinish);});
+                        createContextMenuFilterField("Фильтр по обращениям", dataReportList,dateStart,dateFinish);
                         break;
                     default:
                         System.out.println("Nooone!");
@@ -523,45 +610,8 @@ public class appController {
 
                                 SetFilter(parsed_result_arr, dateStart, dateFinish); // Установить фильтры
                                 autoResizeColumns(data_rep_table); // Выровнять колонки в таблице
+                                createContextMenuTable(cookie);
 
-                                // Create ContextMenu
-                                ContextMenu contextMenu = new ContextMenu();
-
-                                MenuItem openAppealInfo = new MenuItem("Открыть обращение");
-                                openAppealInfo.setOnAction(new EventHandler<ActionEvent>() {
-
-                                    @Override
-                                    public void handle(ActionEvent event) {
-                                        System.out.println("Number Appeal:");
-                                        ReportModel reportModel = data_rep_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
-                                        System.out.println("Number appeal selected item: "+reportModel.getNumberAppeal());
-                                        String numberAppeal=reportModel.getNumberAppeal();
-                                        Show_Appeal_Info(cookie, numberAppeal);
-                                    }
-                                });
-                                MenuItem copyNumberAppeal = new MenuItem("Копировать номер обращения");
-                                copyNumberAppeal.setOnAction(new EventHandler<ActionEvent>() {
-
-                                    @Override
-                                    public void handle(ActionEvent event) {
-                                        System.out.println("Number Appeal:");
-                                        ReportModel reportModel = data_rep_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
-                                        System.out.println("Number appeal selected item: "+reportModel.getNumberAppeal());
-                                    }
-                                });
-
-                                // When user right-click on Circle
-                                data_rep_table.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
-
-                                    @Override
-                                    public void handle(ContextMenuEvent event) {
-
-                                        contextMenu.show(data_rep_table, event.getScreenX(), event.getScreenY());
-                                    }
-                                });
-
-                                // Add MenuItem to ContextMenu
-                                contextMenu.getItems().addAll(openAppealInfo, copyNumberAppeal);
                             }
                         }
                     });
@@ -571,6 +621,146 @@ public class appController {
                     reportThread.setDaemon(true);
                     reportThread.start();
                 }
+            }
+        });
+    }
+
+    public void createContextMenuFilterField(String typeFilter, ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
+        search_t.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
+        // Create ContextMenu
+        ContextMenu contextMenu = new ContextMenu();
+
+        MenuItem copyTextSearch = new MenuItem("Скопировать");
+        copyTextSearch.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                String copyTextSearchBuffer=search_t.getText();
+                final Clipboard clipboard = Clipboard.getSystemClipboard();
+                final ClipboardContent content = new ClipboardContent();
+                content.putString(copyTextSearchBuffer);
+                clipboard.setContent(content);
+            }
+        });
+        MenuItem pasteTextSearch = new MenuItem("Вставить");
+        pasteTextSearch.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                final Clipboard clipboard = Clipboard.getSystemClipboard();
+                String clipboardText = clipboard.getString();
+                search_t.setText(clipboardText);
+                FilterByButton(typeFilter, dataReportList, dateStart, dateFinish);
+            }
+        });
+        MenuItem clearSearchText = new MenuItem("Очистить поле");
+        clearSearchText.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                search_t.setText("");
+                setTableByDefault(dataReportList, dateStart, dateFinish);
+            }
+        });
+
+        // When user right-click on Circle
+        /*search_t.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
+
+            @Override
+            public void handle(ContextMenuEvent event) {
+
+                contextMenu.show(search_t, event.getScreenX(), event.getScreenY());
+            }
+        });*/
+
+        // Add MenuItem to ContextMenu
+        contextMenu.getItems().addAll(copyTextSearch, pasteTextSearch, clearSearchText);
+        search_t.setOnMousePressed(e -> {
+            if (e.getButton() == MouseButton.SECONDARY) {
+                contextMenu.show(search_t, e.getScreenX(), e.getScreenY());
+            } else {
+                contextMenu.hide();
+            }
+        });
+    }
+
+    public void createContextMenuTable(String cookie){
+        // Create ContextMenu
+        ContextMenu contextMenu = new ContextMenu();
+
+        MenuItem openAppealInfo = new MenuItem("Открыть обращение");
+        openAppealInfo.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                System.out.println("Number Appeal:");
+                ReportModel reportModel = data_rep_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
+                System.out.println("Number appeal selected item: "+reportModel.getNumberAppeal());
+                String numberAppeal=reportModel.getNumberAppeal();
+                Show_Appeal_Info(cookie, numberAppeal);
+            }
+        });
+        MenuItem copyMfcOrg = new MenuItem("Скопировать название организации");
+        copyMfcOrg.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                ReportModel reportModel = data_rep_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
+                String copyMfcBuffer=reportModel.getNameCompany();
+                System.out.println("Companyselected item: "+copyMfcBuffer);
+                final Clipboard clipboard = Clipboard.getSystemClipboard();
+                final ClipboardContent content = new ClipboardContent();
+                content.putString(copyMfcBuffer);
+                clipboard.setContent(content);
+            }
+        });
+        MenuItem copyNumberAppeal = new MenuItem("Скопировать номер обращения");
+        copyNumberAppeal.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                ReportModel reportModel = data_rep_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
+                String copyNumberAppealBuffer=reportModel.getNumberAppeal();
+                System.out.println("Number appeal selected item: "+copyNumberAppealBuffer);
+                final Clipboard clipboard = Clipboard.getSystemClipboard();
+                final ClipboardContent content = new ClipboardContent();
+                content.putString(copyNumberAppealBuffer);
+                clipboard.setContent(content);
+            }
+        });
+        MenuItem copyApplicant = new MenuItem("Скопировать заявителя (заявителей)");
+        copyApplicant.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                ReportModel reportModel = data_rep_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
+                String copyApplicantBuffer=reportModel.getApplicant();
+                System.out.println("Applicant appeal selected item: "+copyApplicantBuffer);
+                final Clipboard clipboard = Clipboard.getSystemClipboard();
+                final ClipboardContent content = new ClipboardContent();
+                content.putString(copyApplicantBuffer);
+                clipboard.setContent(content);
+            }
+        });
+
+       /*
+        // When user right-click on Circle
+        data_rep_table.setOnContextMenuRequested(new EventHandler<ContextMenuEvent>() {
+
+            @Override
+            public void handle(ContextMenuEvent event) {
+
+                contextMenu.show(data_rep_table, event.getScreenX(), event.getScreenY());
+            }
+        });*/
+
+        // Add MenuItem to ContextMenu
+        contextMenu.getItems().addAll(openAppealInfo,copyMfcOrg, copyNumberAppeal, copyApplicant);
+        data_rep_table.setOnMousePressed(e -> {
+            if (e.getButton() == MouseButton.SECONDARY) {
+                contextMenu.show(data_rep_table, e.getScreenX(), e.getScreenY());
+            } else {
+                contextMenu.hide();
             }
         });
     }

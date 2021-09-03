@@ -195,7 +195,7 @@ public class AppealInfoController {
 
     @FXML
     void initialize() {
-
+        appeal_info_accord.getPanes().remove(object_info_appeal_pane);
     }
 
     public static class ShowAppealInfoTask extends Task<AllAppealInfoModel> {
