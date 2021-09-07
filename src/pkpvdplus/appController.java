@@ -511,17 +511,29 @@ public class appController {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
+
+                String DateNow_String = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+
+                Date dateNow_date=null;
+                try {
+                    dateNow_date = format.parse(DateNow_String);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                long dateNowLong=dateNow_date.getTime();
                 long dateStartLong = date1.getTime(); // Дата начала в UNIX
                 long dateFinishLong =date2.getTime(); // Дата окончания в UNIX
+                long diffNow_difStart=dateNowLong-dateStartLong;
+                long diffNow_difFinish=dateNowLong-dateFinishLong;
                 long diffDate=dateFinishLong-dateStartLong; // Разность между конечной датой и начальной датой
                 // Если разность 0 или меньше
-                if (diffDate<=0){
+                if (diffDate<=0 || diffNow_difStart<=0 || diffNow_difFinish<=0){
                     // Вывести предупреждение
                     System.out.println("Date is not correct!");
                     Alert alert =new Alert(Alert.AlertType.ERROR , "Test");
                     alert.setTitle("Вы ввели дату некорректно!");
                     alert.setHeaderText("Проверьте правильность ввода даты!");
-                    alert.setContentText("Возможно вы перепутали начало и конец периода.");
+                    alert.setContentText("Возможно вы перепутали начало и конец периода. Также отчёт нельзя взять за текущий день.");
                     alert.showAndWait().ifPresent(rs -> {
                         if (rs == ButtonType.OK){}
                     });
