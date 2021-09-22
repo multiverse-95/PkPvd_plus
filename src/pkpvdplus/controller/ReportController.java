@@ -71,18 +71,15 @@ public class ReportController {
             long dateStartLong=timelist.get(0); // Получение начальной даты
             long dateFinishLong=timelist.get(1); // Получение конечной даты
             System.out.println("start: "+dateStartLong+" finish: "+dateFinishLong);
-            String typeListOrdersPeriod="Список заявлений (PRG).jrd"; // Отчёт по заявлениям
-            String typeDocPeriod="Список поступивших выдаваемых документов за период.jrd"; // Отчёт по документам
+            String typeListOrdersPeriod="Список заявлений.jrd"; // Отчёт по заявлениям
             String typeAppealPeriod="Список обращений.jrd"; // Отчёт по обращениям
             // Получение отчёта по заявлениям с сервера
             String csvListOrdersReport=getReport(dateStartLong,dateFinishLong,cookies, typeListOrdersPeriod);
-            // Получение отчёта по документам с сервера
-            String csvDocReport=getReport(dateStartLong,dateFinishLong,cookies, typeDocPeriod);
             // Получение отчёта по обращениям с сервера
             String csvAppealReport=getReport(dateStartLong,dateFinishLong,cookies, typeAppealPeriod);
             //String csvReportMain="";
             // Обработка отчётов и получение одного общего отчёта
-            ArrayList<ReportModel> reportListFinal= parsingReport(csvListOrdersReport, csvDocReport, csvAppealReport, dateStartLong, dateFinishLong, cookies);
+            ArrayList<ReportModel> reportListFinal= parsingReport(csvListOrdersReport, csvAppealReport);
             return reportListFinal; // Возвращаем итоговый отчёт
         }
     }
@@ -194,30 +191,21 @@ public class ReportController {
     }
 
     // Функция для обработки отчётов
-    public static ArrayList<ReportModel> parsingReport(String csvListOrdersReport, String csvDocReport, String csvAppealReport,
-                                                       long dateStart, long dateFinish,String cookie) throws IOException, CsvValidationException {
-        ArrayList<ReportModel> reportListFinal=new ArrayList<ReportModel>(); // Итоговый список (Фильтрованный список по заявлениям, документам и обращениям)
+    public static ArrayList<ReportModel> parsingReport(String csvListOrdersReport, String csvAppealReport) throws IOException, CsvValidationException {
+        ArrayList<ReportModel> reportListFinal; // Итоговый список (Фильтрованный список по заявлениям, документам и обращениям)
         switch (csvListOrdersReport){
             case "":
-                String csvReportFull= getReport(dateStart, dateFinish,cookie, "Список заявлений.jrd");
-                if (csvReportFull.equals("")){
-                    reportListFinal=null;
-                    return reportListFinal;
-                } else {
-                    reportListFinal=parsingCsvData(csvReportFull,csvDocReport,csvAppealReport);
-                    return reportListFinal;
-                }
+                reportListFinal=null;
+                return reportListFinal;
             default:
-                reportListFinal=parsingCsvData(csvListOrdersReport, csvDocReport, csvAppealReport);
+                reportListFinal=parsingCsvData(csvListOrdersReport, csvAppealReport);
                 return reportListFinal;
 
         }
     }
 
-    public static ArrayList<ReportModel> parsingCsvData(String csvListOrdersReport, String csvDocReport, String csvAppealReport) throws IOException, CsvValidationException{
+    public static ArrayList<ReportModel> parsingCsvData(String csvListOrdersReport, String csvAppealReport) throws IOException, CsvValidationException{
         ArrayList<ReportModel> reportListOrders=new ArrayList<ReportModel>(); // Список по заявлениям
-        ArrayList<ReportModel> reportListDoc=new ArrayList<ReportModel>(); // Список по документам
-        ArrayList<ReportModel> reportListOrdersDoc=new ArrayList<ReportModel>(); // Фильтрованный список по заявлениям и документам
         ArrayList<ReportModel> reportListAppeal=new ArrayList<ReportModel>(); // Список по обращениям
         ArrayList<ReportModel> reportListFinal=new ArrayList<ReportModel>(); // Итоговый список (Фильтрованный список по заявлениям, документам и обращениям)
 
@@ -228,32 +216,17 @@ public class ReportController {
             String[] lineInArray;
             // Идём по csv
             while ((lineInArray = reader.readNext()) != null) {
-                //System.out.println(lineInArray[0]);
                 // Получаем период с csv
-                //reportListOrders.add(new ReportModel(lineInArray[0], "", "","", "", "","","",""));
                 reportListFinal.add(new ReportModel(lineInArray[0], "", "", "", "", "","","",""));
                 break; // После получения периода, прерываем чтение данных
-                //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
             }
             // Вновь читаем csv
             while ((lineInArray = reader.readNext()) != null) {
                 // Берём только данные по ЕГРН
                 if (lineInArray[11].equals("Предоставление сведений, содержащихся в ЕГРН, об объектах недвижимости и (или) их правообладателях")){
-                    // Записываем нужную информацию в список (Организация, номера обращений, даты создания, статус, заявители)
-                    reportListOrders.add(new ReportModel("", lineInArray[1], lineInArray[2],"", lineInArray[3], lineInArray[11],lineInArray[12],"",""));
+                    // Записываем нужную информацию в список (Организация, номера обращений, даты создания, заявители)
+                    reportListOrders.add(new ReportModel("", lineInArray[1], lineInArray[2],"", lineInArray[3], "",lineInArray[12],"",""));
                 }
-                //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
-            }
-        }
-        // Идём по отчёту документов в csv
-        try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvDocReport))
-                .withSkipLines(3)           // Пропускаем первые три строки
-                .build()) {
-            String[] lineInArray;
-            while ((lineInArray = reader.readNext()) != null) {
-                // Записываем нужные данные в список дополнительного отчёта
-                reportListDoc.add(new ReportModel("", lineInArray[1], lineInArray[2],lineInArray[3], lineInArray[5], lineInArray[6],"","",""));
-                //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
             }
         }
 
@@ -264,42 +237,22 @@ public class ReportController {
             String[] lineInArray;
             while ((lineInArray = reader.readNext()) != null) {
                 // Записываем нужные данные в список отчёта по обращениям
-                reportListAppeal.add(new ReportModel("", "", lineInArray[6],"", "","","", lineInArray[11],lineInArray[13]));
-                //System.out.println(lineInArray[1] + ","+ lineInArray[2]+","+ lineInArray[3]+","+ lineInArray[12]);
+                reportListAppeal.add(new ReportModel("", "", lineInArray[6],lineInArray[5], "",lineInArray[8],"", lineInArray[11],lineInArray[13]));
             }
         }
 
-        System.out.println("Size orders List: "+reportListOrders.size()+" Size doc list: "+reportListDoc.size());
-        // Обрабатываем отчёт по заявлениям и отчёт по документам
-        if(reportListDoc.size()>reportListOrders.size()){ // Проверяем, чтобы отчёт по документам был больше отчёта по заявлениям
-            for (int i=0; i<reportListOrders.size(); i++){ // Идём по циклу отчёта по заявлениям
-                String FilterAppeal = reportListOrders.get(i).getNumberAppeal().toLowerCase(); // Получаем номер обращения
-                for (int j=0; j<reportListDoc.size(); j++){ // Идём по циклу отчёта по документам
-                    String ListDocAppeal = reportListDoc.get(j).getNumberAppeal().toLowerCase(); // Получаем номер обращения
-                    if (FilterAppeal.contains(ListDocAppeal)){ // Сравниваем номер обращения с отчёта по заявлениям и отчёта по документам
-                        // Если совпадают, то добавить в фильтрованный отчёт информацию: Организация, номер обращения и т.д.
-                        reportListOrdersDoc.add(new ReportModel("",reportListOrders.get(i).getNameCompany(), reportListDoc.get(j).getNumberAppeal(),
-                                reportListDoc.get(j).getNameAppeal(),reportListOrders.get(i).getDateCreate(),
-                                reportListDoc.get(j).getStatus(),reportListOrders.get(i).getApplicant(), "",""));
-                    }
-                }
-            }
-        } else {
-            reportListOrdersDoc=null;
-        }
-
-        System.out.println("Size OrdersDoc List: "+reportListOrdersDoc.size()+" Size appeal list: "+reportListAppeal.size());
+        System.out.println("Size Orders List: "+reportListOrders.size()+" Size appeal list: "+reportListAppeal.size());
         // Обрабатываем отфильтрованный отчёт с отчётом по обращениям
-        if(reportListAppeal.size()>reportListOrdersDoc.size()){ // Проверяем, чтобы отчёт по обращениям был больше отчёта фильтрованного
-            for (int i=0; i<reportListOrdersDoc.size(); i++){ // Идём по циклу фильтрованного отчёта
-                String FilterNumberAppeal = reportListOrdersDoc.get(i).getNumberAppeal().toLowerCase(); // Получаем номер обращения
+        if(reportListAppeal.size()>reportListOrders.size()){ // Проверяем, чтобы отчёт по обращениям был больше отчёта фильтрованного
+            for (int i=0; i<reportListOrders.size(); i++){ // Идём по циклу фильтрованного отчёта
+                String FilterNumberAppeal = reportListOrders.get(i).getNumberAppeal().toLowerCase(); // Получаем номер обращения
                 for (int j=0; j<reportListAppeal.size(); j++){ // Идём по циклу отчёта по обращениям
                     String ListNumberAppeal = reportListAppeal.get(j).getNumberAppeal().toLowerCase(); // Получаем номер обращения
                     if (FilterNumberAppeal.contains(ListNumberAppeal)){ // Сравниваем номер обращения с фильтрованного отчёта и отчёта по обращениям
                         // Если совпадают, то добавить в финальный отчёт информацию: Организация, номер обращения и т.д.
-                        reportListFinal.add(new ReportModel("",reportListOrdersDoc.get(i).getNameCompany(), reportListOrdersDoc.get(i).getNumberAppeal(),
-                                reportListOrdersDoc.get(i).getNameAppeal(),reportListOrdersDoc.get(i).getDateCreate(),
-                                reportListOrdersDoc.get(i).getStatus(),reportListOrdersDoc.get(i).getApplicant(),
+                        reportListFinal.add(new ReportModel("",reportListOrders.get(i).getNameCompany(), reportListOrders.get(i).getNumberAppeal(),
+                                reportListAppeal.get(j).getNameAppeal(),reportListOrders.get(i).getDateCreate(),
+                                reportListAppeal.get(j).getStatus(),reportListOrders.get(i).getApplicant(),
                                 reportListAppeal.get(j).getDateEnd(), reportListAppeal.get(j).getCurrentStep()));
                     }
                 }

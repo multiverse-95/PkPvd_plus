@@ -240,35 +240,38 @@ public class AppealInfoController {
                 appealGeneralInfoModel=allAppealInfoModel.getAppealGeneralInfoModel();
                 applicantInfoArr=allAppealInfoModel.getApplicantInfoArr();
 
-
                 setTextAppealGeneralInfo(appealGeneralInfoModel);
-                //applicantInfoArr= (ArrayList<ApplicantInfoModel>) ShowAppealInfoTask.getValue();
-                switch (applicantInfoArr.get(0).getTypeOfApplicant()){
-                    case "Person":
-                        switch (applicantInfoArr.size()){
-                            case 1:
-                                setTextApplicant(applicantInfoArr);
-                                applicants_tabPane.getTabs().remove(organiz_tab);
-                                applicants_tabPane.getTabs().remove(representive_tab);
-                                break;
-                            case 2:
-                                setTextApplicant(applicantInfoArr);
-                                setTextRepresentive(applicantInfoArr);
-                                applicants_tabPane.getTabs().remove(organiz_tab);
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    case "Organization":
-                        setTextApplicantOrganization(applicantInfoArr);
-                        setTextRepresentive(applicantInfoArr);
-                        applicants_tabPane.getTabs().remove(applicant_tab);
-                        break;
-                    default:
-                        break;
+                if (applicantInfoArr.size()>0){
+                    switch (applicantInfoArr.get(0).getTypeOfApplicant()){
+                        case "Person":
+                            switch (applicantInfoArr.size()){
+                                case 1:
+                                    setTextApplicant(applicantInfoArr);
+                                    applicants_tabPane.getTabs().remove(organiz_tab);
+                                    applicants_tabPane.getTabs().remove(representive_tab);
+                                    break;
+                                case 2:
+                                    setTextApplicant(applicantInfoArr);
+                                    setTextRepresentive(applicantInfoArr);
+                                    applicants_tabPane.getTabs().remove(organiz_tab);
+                                    break;
+                                default:
+                                    break;
+                            }
+                            break;
+                        case "Organization":
+                            setTextApplicantOrganization(applicantInfoArr);
+                            setTextRepresentive(applicantInfoArr);
+                            applicants_tabPane.getTabs().remove(applicant_tab);
+                            break;
+                        default:
+                            break;
 
+                    }
+                } else {
+                    applicant_appeal_info_pane.setDisable(true);
                 }
+
 
 
                 // Закрытие прогресса индикации

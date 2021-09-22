@@ -103,7 +103,7 @@ public class GetAppealInfoController {
                             applicantInfoArr.add(GetSubjectInfo(cookie, idAppeal, IdRepresentative,"",representiveType,represDocumentTypeID));
                             break;
                         default:
-                            return null;
+                            break;
                     }
                     break;
                 case 401: // Запрос завершился с ошибкой
@@ -271,6 +271,8 @@ public class GetAppealInfoController {
         String moveStepEventDateWhenAdvanced=""; String moveStepPerformerAdvanced="";
         String moveStepSurNameAdvanced="";  String moveStepFirstNameAdvanced=""; String moveStepPatronymicAdvanced="";
         // Начало выполнения шага
+        String executeEventDateWhenAdvanced=""; String executeEventPerformerAdvanced="";
+        String executeEventSurNameAdvanced="";  String executeEventFirstNameAdvanced=""; String executeEventPatronymicAdvanced="";
         String executeEventAdvanced="";
         // Комментарий к текущей операции
         String operationCommentAdvanced="";
@@ -351,6 +353,12 @@ public class GetAppealInfoController {
                 case "PKG_IMG_WAIT_PPOZ_43":
                     currentStepAdvanced="Обработка документов в ППОЗ";
                     break;
+                case "CANCELED_114":
+                    currentStepAdvanced="Аннулировано";
+                    break;
+                case "CREATE":
+                    currentStepAdvanced="Приём обращения";
+                    break;
                 default:
                     currentStepAdvanced="Неизвестно";
                     break;
@@ -376,7 +384,28 @@ public class GetAppealInfoController {
                 moveStepPerformerAdvanced=moveStepSurNameAdvanced+" "+moveStepFirstNameAdvanced+" "+moveStepPatronymicAdvanced;
             }
         }
-        if (!elementAdvanced.getAsJsonObject().get("executeEvent").isJsonNull()) { executeEventAdvanced=elementAdvanced.getAsJsonObject().get("executeEvent").getAsString(); }
+        if (!elementAdvanced.getAsJsonObject().get("executeEvent").isJsonNull()) {
+           // executeEventAdvanced=elementAdvanced.getAsJsonObject().get("executeEvent").getAsString();
+            executeEventDateWhenAdvanced=elementAdvanced.getAsJsonObject().get("executeEvent").getAsJsonObject().get("dateWhen").getAsString();
+            executeEventDateWhenAdvanced= convertTimeFromUnix(executeEventDateWhenAdvanced, "GMT+7", "dd.MM.yyyy HH:mm");
+
+            if(!elementAdvanced.getAsJsonObject().get("executeEvent").getAsJsonObject().get("performer").getAsJsonObject().get("surName").isJsonNull()){
+                executeEventSurNameAdvanced=elementAdvanced.getAsJsonObject().get("executeEvent").getAsJsonObject().get("performer").getAsJsonObject().get("surName").getAsString();
+            }
+            if(!elementAdvanced.getAsJsonObject().get("executeEvent").getAsJsonObject().get("performer").getAsJsonObject().get("firstName").isJsonNull()){
+                executeEventFirstNameAdvanced=elementAdvanced.getAsJsonObject().get("executeEvent").getAsJsonObject().get("performer").getAsJsonObject().get("firstName").getAsString();
+            }
+            if(!elementAdvanced.getAsJsonObject().get("executeEvent").getAsJsonObject().get("performer").getAsJsonObject().get("patronymic").isJsonNull()){
+                executeEventPatronymicAdvanced=elementAdvanced.getAsJsonObject().get("executeEvent").getAsJsonObject().get("performer").getAsJsonObject().get("patronymic").getAsString();
+            }
+            if (executeEventSurNameAdvanced.equals("") && executeEventFirstNameAdvanced.equals("") && executeEventPatronymicAdvanced.equals("")){
+                executeEventAdvanced="";
+            } else {
+                executeEventAdvanced=executeEventDateWhenAdvanced+" "+ executeEventSurNameAdvanced+" "+executeEventFirstNameAdvanced+" "+executeEventPatronymicAdvanced;
+            }
+
+
+        }
         if (!elementAdvanced.getAsJsonObject().get("operationComment").isJsonNull()) { operationCommentAdvanced=elementAdvanced.getAsJsonObject().get("operationComment").getAsString(); }
 
 
@@ -421,6 +450,9 @@ public class GetAppealInfoController {
                 //SubjectApplicant=Parsing_result_getApplicant_Subject(result_of_req);
                 JsonParser parser = new JsonParser();
                 JsonElement element = parser.parse(result_of_req); // Получение главного элемента
+                if (element.getAsJsonObject().get("content").getAsJsonArray().size()==0){
+                    break;
+                }
                 JsonArray content= element.getAsJsonObject().get("content").getAsJsonArray();
                 IdApplicant=content.get(0).getAsJsonObject().get("subject").getAsString();
                 Applicant_and_Representive.add(IdApplicant);
