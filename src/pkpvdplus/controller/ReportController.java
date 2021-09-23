@@ -1,9 +1,6 @@
 package pkpvdplus.controller;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvValidationException;
@@ -22,6 +19,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -37,6 +35,7 @@ import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import pkpvdplus.appController;
+import pkpvdplus.model.MFCsInfoModel;
 import pkpvdplus.model.ReportModel;
 import pkpvdplus.model.SettingsModel;
 
@@ -81,6 +80,35 @@ public class ReportController {
             // Обработка отчётов и получение одного общего отчёта
             ArrayList<ReportModel> reportListFinal= parsingReport(csvListOrdersReport, csvAppealReport);
             return reportListFinal; // Возвращаем итоговый отчёт
+        }
+    }
+
+    // Класс для потока получения отчёта
+    public static class ReportOrgTask extends Task<ArrayList<ReportModel>> {
+        private final String cookies; // Куки
+        private final String search_text;
+        private final LocalDate dateStart; // Дата начала в юникс
+        private final LocalDate dateFinish; // Дата окончания в юникс
+
+        public ReportOrgTask(String cookies, String search_text, LocalDate dateStart, LocalDate dateFinish) {
+            this.cookies = cookies;
+            this.search_text = search_text;
+            this.dateStart = dateStart;
+            this.dateFinish = dateFinish;
+        }
+        @Override
+        protected ArrayList<ReportModel> call() throws Exception {
+            ArrayList<MFCsInfoModel> MFCsList;
+            System.out.println("start date: "+dateStart+" finish date: "+dateFinish);
+            String dateStartS = convertTimeOrgInput(String.valueOf(dateStart));
+            String dateFinishS = convertTimeOrgInput(String.valueOf(dateFinish));
+
+            // Получение отчёта по заявлениям с сервера
+            String jsonOrg= getReportOrg(cookies, dateStartS, dateFinishS);
+            MFCsList=getMFCs(cookies);
+            ArrayList<ReportModel> reportListOrg= parsingReportOrg(jsonOrg, MFCsList);
+
+            return reportListOrg; // Возвращаем итоговый отчёт
         }
     }
 
@@ -133,14 +161,37 @@ public class ReportController {
         return timelist; // Возвращаем список с датами
     }
 
-    // Функция для получения отчёта с сервера
+
+    // Функция для конвертирования времени в нужный формат (Для отчёта по юридическим лицам)
+    public static String convertTimeOrgInput(String dateInputOrg) throws ParseException {
+        SimpleDateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        SimpleDateFormat newDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+
+        Date dateServerD = oldDateFormat.parse(dateInputOrg);
+        String resultDateCorrect = newDateFormat.format(dateServerD);
+        return resultDateCorrect;
+
+    }
+
+    // Функция для конвертирования времени в нужный формат (Для отчёта по юридическим лицам)
+    public static String convertTimeOrg(String dateServerPVD) throws ParseException {
+        SimpleDateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.getDefault());
+        SimpleDateFormat newDateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
+
+        Date dateServerD = oldDateFormat.parse(dateServerPVD);
+        String resultDateCorrect = newDateFormat.format(dateServerD);
+        return resultDateCorrect;
+
+    }
+
+    // Функция для получения отчёта с сервера (Все заявители)
     public static String getReport(long dateStart, long dateFinish,String cookie, String typeReport) throws IOException {
-        Payload_user payload_user = new Payload_user();
+        Payload_report payload_report = new Payload_report();
         CookieStore httpCookieStore = new BasicCookieStore();
         //payload_user.file ="Список заявлений.jrd";
         // Заполнение json параметрами
-        payload_user.file = typeReport;
-        payload_user.output="csv";
+        payload_report.file = typeReport;
+        payload_report.output="csv";
 
         ArrayList<Params> params=new ArrayList<Params>();
         Params params1=new Params();
@@ -169,7 +220,7 @@ public class ReportController {
             params.add(params3);
         }
 
-        payload_user.params=params; // Заполняем все параметры
+        payload_report.params=params; // Заполняем все параметры
 
         String postUrl       = "http://10.42.200.207/api/rs/reports/execute";// Ссылка на сервер
         Gson gson          = new Gson();
@@ -177,8 +228,8 @@ public class ReportController {
         HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
         httpClient = builder.build();
         HttpPost post          = new HttpPost(postUrl);
-        StringEntity postingString = new StringEntity(gson.toJson(payload_user), StandardCharsets.UTF_8);// Конвертирование json в строку
-        System.out.println(gson.toJson(payload_user));
+        StringEntity postingString = new StringEntity(gson.toJson(payload_report), StandardCharsets.UTF_8);// Конвертирование json в строку
+        System.out.println(gson.toJson(payload_report));
         post.setEntity(postingString); // Установка json для запроса
         post.setHeader("Content-type", "application/json");
         post.addHeader("Cookie","JSESSIONID="+cookie);
@@ -188,6 +239,182 @@ public class ReportController {
 
         String reportCsv=EntityUtils.toString(entity);
         return reportCsv; // Возвращаем результат в формате csv
+    }
+
+    // Функция для получения отчёта с сервера (Только юридические лица)
+    public static String getReportOrg(String cookie, String dateStart, String dateFinish) throws IOException {
+        Payload_report_org payload_report_org = new Payload_report_org();
+        CookieStore httpCookieStore = new BasicCookieStore();
+
+        // Заполнение json параметрами
+
+        ArrayList<String> usedFields=new ArrayList<String>();
+        usedFields.add("subjects.subjectType"); usedFields.add("createEvent.dateWhen"); usedFields.add("name");
+        payload_report_org.usedFields =usedFields;
+
+        ArrayList<Rules_all> rules_all_arr= new ArrayList<Rules_all>();
+
+        ArrayList<Rules> rules_arr= new ArrayList<Rules>();
+        Rules_all rules_all=new Rules_all();
+        for (int i=0; i<3; i++){
+            ArrayList<Values> values_arr=new ArrayList<Values>();
+            Rules rules = new Rules();
+            Values values=new Values();
+            Values values2=new Values();
+            switch (i){
+                case 0:
+                    rules.id="8ab9b998-0123-4456-b89a-b17c0ccf7e9f";
+                    rules.field="subjects.subjectType";
+                    rules.type="cls";
+                    rules.input="cls";
+                    rules.operator="equal";
+                    values.type="cls";
+                    values.value="007002001000"; values_arr.add(values);
+                    rules.values=values_arr;
+                    rules_arr.add(rules);
+                    break;
+                case 1:
+                    rules.id="a8aa9ba9-cdef-4012-b456-717bc9b25ac4";
+                    rules.field="createEvent.dateWhen";
+                    rules.type="datetime";
+                    rules.input="datetime";
+                    rules.operator="between";
+                    values.type="datetime";
+                    values.value=dateStart;
+                    values2.type="datetime";
+                    values2.value=dateFinish;
+                    values_arr.add(values); values_arr.add(values2);
+                    rules.values=values_arr;
+                    rules_arr.add(rules);
+                    break;
+                case 2:
+                    rules.id="9b9a8ba9-89ab-4cde-b012-317bc9b49af7";
+                    rules.field="name";
+                    rules.type="text";
+                    rules.input="text";
+                    rules.operator="contains";
+                    values.type="text";
+                    values.value="Предоставление сведений об объекте недвижимости"; values_arr.add(values);
+                    rules.values=values_arr;
+                    rules_arr.add(rules);
+                    break;
+            }
+        }
+        rules_all.rules=rules_arr;
+        rules_all.condition="AND";
+        rules_all_arr.add(rules_all);
+
+        ArrayList<Rules> rules_arr2= new ArrayList<Rules>();
+        Rules_all rules_all2=new Rules_all();
+        for (int i=0; i<3; i++){
+            ArrayList<Values> values_arr=new ArrayList<Values>();
+            Rules rules = new Rules();
+            Values values=new Values();
+            Values values2=new Values();
+            switch (i){
+                case 0:
+                    rules.id="a8a88889-4567-489a-bcde-f17c0cd528f7";
+                    rules.field="subjects.subjectType";
+                    rules.type="cls";
+                    rules.input="cls";
+                    rules.operator="equal";
+                    values.type="cls";
+                    values.value="007002004000"; values_arr.add(values);
+                    rules.values=values_arr;
+                    rules_arr2.add(rules);
+                    break;
+                case 1:
+                    rules.id="989a9b88-0123-4456-b89a-b17c0cd56cd9";
+                    rules.field="createEvent.dateWhen";
+                    rules.type="datetime";
+                    rules.input="datetime";
+                    rules.operator="between";
+                    values.type="datetime";
+                    values.value=dateStart;
+                    values2.type="datetime";
+                    values2.value=dateFinish;
+                    values_arr.add(values); values_arr.add(values2);
+                    rules.values=values_arr;
+                    rules_arr2.add(rules);
+                    break;
+                case 2:
+                    rules.id="99b89998-cdef-4012-b456-717c0cd5f703";
+                    rules.field="name";
+                    rules.type="text";
+                    rules.input="text";
+                    rules.operator="contains";
+                    values.type="text";
+                    values.value="Предоставление сведений об объекте недвижимости"; values_arr.add(values);
+                    rules.values=values_arr;
+                    rules_arr2.add(rules);
+                    break;
+            }
+        }
+        rules_all2.rules=rules_arr2;
+        rules_all2.condition="AND";
+        rules_all_arr.add(rules_all2);
+
+        payload_report_org.rules=rules_all_arr;
+        payload_report_org.condition = "OR";
+        payload_report_org.not =false;
+
+        /*Gson gson = new Gson();
+        System.out.println(gson.toJson(payload_report_org));*/
+
+        String postUrl       = "http://10.42.200.207:9188/query/execute/appeal";// Ссылка на сервер
+        Gson gson          = new Gson();
+        HttpClient httpClient = null;
+        HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
+        httpClient = builder.build();
+        HttpPost post          = new HttpPost(postUrl);
+        StringEntity postingString = new StringEntity(gson.toJson(payload_report_org), StandardCharsets.UTF_8);// Конвертирование json в строку
+        //System.out.println(gson.toJson(payload_report_org));
+
+        post.setEntity(postingString); // Установка json для запроса
+        post.setHeader("Content-type", "application/json");
+        post.addHeader("Cookie","JSESSIONID="+cookie);
+        post.addHeader("Content-Search","a2VtLXZ2dnxSU19BRE1JTjtSU19TQ0FOO1JTX0RFTElWRVJZO1JTX1JFQ0VQVElPTjtSU19ESVNQO1JTX01BTjs=");
+        HttpResponse response = httpClient.execute(post); // Выполнение post запроса на сервер
+        System.out.println(response.getStatusLine());
+        HttpEntity entity = response.getEntity(); // Получение результата от сервера
+
+        String jsonResult=EntityUtils.toString(entity);
+        System.out.println("Json ORG! - \n"+jsonResult);
+        return jsonResult; // Возвращаем результат в формате csv
+    }
+
+    public static ArrayList<MFCsInfoModel> getMFCs(String cookie) throws IOException {
+        CookieStore httpCookieStore = new BasicCookieStore();
+        HttpClient httpClient = null;
+        HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
+        httpClient = builder.build();
+        String getUrl       = "http://10.42.200.207/api/rs/adm/organization";// Сервер авторизации
+        HttpGet httpGet = new HttpGet(getUrl);
+        httpGet.setHeader("Content-type", "application/json");
+        httpGet.addHeader("Cookie","JSESSIONID="+cookie);
+        HttpResponse response = httpClient.execute(httpGet); // Выполняем get запрос для проверки действительности куки
+
+        HttpEntity entity = response.getEntity();
+        String result_of_req = EntityUtils.toString(entity); // Получаем результат запроса
+
+        int status_code= response.getStatusLine().getStatusCode(); // Получаем код ответа от сервера
+        System.out.println("Status GetMFCs: "+status_code);
+        if (status_code==200){
+            ArrayList<MFCsInfoModel> MFCsList=new ArrayList<MFCsInfoModel>();
+
+            JsonParser parser = new JsonParser();
+            JsonElement element = parser.parse(result_of_req); // Получение главного элемента
+            JsonArray content= element.getAsJsonArray();
+            for (int i=0; i<content.size(); i++){
+                MFCsList.add(new MFCsInfoModel(content.get(i).getAsJsonObject().get("code").getAsString(),content.get(i).getAsJsonObject().get("name").getAsString()));
+            }
+            return MFCsList;
+
+        } else {
+            return null;
+        }
+
+
     }
 
     // Функция для обработки отчётов
@@ -289,6 +516,78 @@ public class ReportController {
             }
         }
         return setToReturn;
+    }
+
+    public static ArrayList<ReportModel> parsingReportOrg(String json, ArrayList<MFCsInfoModel> MFCsList) throws ParseException {
+        ArrayList<ReportModel> reportOrgList=new ArrayList<ReportModel>();
+
+        JsonParser parser = new JsonParser();
+        JsonElement element = parser.parse(json); // Получение главного элемента
+        JsonArray content= element.getAsJsonObject().get("list").getAsJsonObject().get("content").getAsJsonArray();
+
+        for (int i=0; i<content.size(); i++){
+            String codeOrg=""; String orgName=""; String internalNum=""; String name=""; String createDate="";
+            String statusNotePPOZ = ""; String textApplicants=""; String processingEndDate=""; String currentStep="";
+
+            if (!content.get(i).getAsJsonObject().get("codeOrg").isJsonNull()){
+                codeOrg = content.get(i).getAsJsonObject().get("codeOrg").getAsString();
+                for (MFCsInfoModel mfCsInfoModel : MFCsList) {
+                    if (codeOrg.equals(mfCsInfoModel.getCode())) {
+                        orgName = mfCsInfoModel.getName();
+                        break;
+                    }
+                }
+            }
+            if (!content.get(i).getAsJsonObject().get("internalNum").isJsonNull()){
+                internalNum = content.get(i).getAsJsonObject().get("internalNum").getAsString();
+            }
+            if (!content.get(i).getAsJsonObject().get("name").isJsonNull()){
+                name = content.get(i).getAsJsonObject().get("name").getAsString();
+            }
+            if (!content.get(i).getAsJsonObject().get("createDate").isJsonNull()){
+                createDate = content.get(i).getAsJsonObject().get("createDate").getAsString();
+                createDate=convertTimeOrg(createDate);
+            }
+            if (!content.get(i).getAsJsonObject().get("statusNotePPOZ").isJsonNull()){
+                statusNotePPOZ = content.get(i).getAsJsonObject().get("statusNotePPOZ").getAsString();
+            }
+            if (!content.get(i).getAsJsonObject().get("textApplicants").isJsonNull()){
+                textApplicants = content.get(i).getAsJsonObject().get("textApplicants").getAsString();
+            }
+            if (!content.get(i).getAsJsonObject().get("processingEndDate").isJsonNull()){
+                processingEndDate = content.get(i).getAsJsonObject().get("processingEndDate").getAsString();
+                processingEndDate =convertTimeOrg(processingEndDate);
+            }
+            if (!content.get(i).getAsJsonObject().get("currentStep").isJsonNull()){
+                currentStep = content.get(i).getAsJsonObject().get("currentStep").getAsString();
+
+                switch (currentStep){
+                    case "PROCESS_END_13":
+                        currentStep="Обработка завершена";
+                        break;
+                    case "WAIT_OUT_11":
+                        currentStep="Ожидается выдача";
+                        break;
+                    case "ATTACH_IMAGE":
+                        currentStep="Присоединение образов";
+                        break;
+                    case "PKG_IMG_WAIT_PPOZ_43":
+                        currentStep="Отправлено в ПКУРП";
+                        break;
+                    case "CANCELED_114":
+                        currentStep="Аннулировано";
+                        break;
+                    default:
+                        currentStep="Неизвестно";
+                        break;
+                }
+            }
+
+            reportOrgList.add(new ReportModel("", orgName, internalNum, name, createDate, statusNotePPOZ, textApplicants, processingEndDate, currentStep));
+        }
+
+
+        return reportOrgList;
     }
 
     // Функция для загрузки отчета
@@ -758,14 +1057,6 @@ public class ReportController {
             Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileJson), StandardCharsets.UTF_8));
             out.write(content);
             out.close();
-            /*try {
-                FileWriter fileWriter = null;
-                fileWriter = new FileWriter(fileJson);
-                fileWriter.write(content);
-                fileWriter.close();
-            } catch (IOException ex) {
-                Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-            }*/
         }
     }
 
@@ -796,8 +1087,8 @@ public class ReportController {
         return lastPathToFile;
     }
 
-    // Класс для для payload
-    static class Payload_user
+    // Класс для для payload report
+    static class Payload_report
     {
         public String file;
         public String output;
@@ -813,5 +1104,38 @@ public class ReportController {
         public Object value;
     }
 
+
+
+
+    // Класс для для payload report
+    static class Payload_report_org
+    {
+        public ArrayList<String> usedFields;
+        public ArrayList<Rules_all> rules;
+        public String condition;
+        public boolean not;
+    }
+
+    static class Rules_all
+    {
+        public ArrayList<Rules> rules;
+        public String condition;
+    }
+    static class Rules
+    {
+        public String id;
+        public String field;
+        public String type;
+        public String input;
+        public String operator;
+        public ArrayList<Values> values;
+
+    }
+
+    static class Values
+    {
+        public String type;
+        public String value;
+    }
 
 }

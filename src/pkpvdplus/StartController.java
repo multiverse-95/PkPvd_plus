@@ -369,6 +369,7 @@ public class StartController {
                     appController AppController = loader.getController();
                     //AppController.testDates();
                     AppController.Show_report(cookie); // Вызов функции заполнения отчёта
+                    AppController.Show_report_org(cookie);
 
                     // Запускаем основное окно программы ПК ПВД Плюс
                     Stage stage = new Stage();
@@ -429,9 +430,8 @@ public class StartController {
         Parent root = loader.getRoot();
         // Вызываем контроллер основного окна программы
         appController AppController = loader.getController();
-        //AppController.testDates();
         AppController.Show_report(cookie); // Вызов функции заполнения отчёта
-        //AppController.Show_Appeal_Info(cookie, "");
+        AppController.Show_report_org(cookie);
 
         // Запускаем основное окно программы ПК ПВД Плюс
         Stage stage = new Stage();
