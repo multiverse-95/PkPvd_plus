@@ -199,7 +199,6 @@ public class appController {
     }
 
     public void Show_Appeal_Info(String cookie, String numberAppeal){
-       // show_rep_b.setOnAction(event -> {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("/pkpvdplus/view/appeal_info.fxml"));
             try {
@@ -260,7 +259,47 @@ public class appController {
         });
     }
 
-    // Фильтр для обработки наименований организаций (Такое же, что и для заявителей)
+    // Фильтр для обработки заявителей (Для организаций)
+    public void FilterApplicantsOrg(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
+        ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
+        FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
+        // При вводе в поле
+        search_org_t.setOnKeyPressed(event -> {
+            search_org_t.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate((Predicate<? super ReportModel>) report_model->{
+                    if (newValue ==null || newValue.isEmpty()){ // Если значение пустое или null
+                        return true;
+                    }
+                    String lowerCaseFilter = newValue.toLowerCase(); // Получить значение с поля и привести к нижнему регистру
+                    // Если в списке отчёта есть данные, которые соответствуют фильтру
+                    if (report_model.getApplicant().toLowerCase().contains(lowerCaseFilter)){
+                        return true;
+                    }
+                    return false;
+                });
+            });
+            SortedList<ReportModel> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(data_rep_org_table.comparatorProperty());
+            data_rep_org_table.setItems(sortedData); // Установить отсортированные данные для таблицы
+            // Если нет данные в отсортированных даннных
+            if (sortedData.isEmpty()){
+                // Установить поле для таблицы
+                Label label_search=new Label();
+                label_search.setText("Нет данных по указанному фильтру.");
+                label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+                data_rep_org_table.setPlaceholder(label_search);
+            } else {
+                // Иначе назначить для кнопки "Скачать отчёт" событие на скачивание отчёта
+                download_report_org_b.setOnAction(event1 -> {
+                    ArrayList<ReportModel> sortedFinal=new ArrayList<>(sortedData);
+                    ReportController reportController_new=new ReportController();
+                    reportController_new.Download_report(sortedFinal, dateStart, dateFinish); // Вызов функции на скачивание отчёта
+                });
+            }
+        });
+    }
+
+    // Фильтр для обработки наименований МФЦ
     public void FilterNameCompany(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
         FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
@@ -296,8 +335,44 @@ public class appController {
         });
     }
 
+    // Фильтр для обработки наименований МФЦ (Для организаций)
+    public void FilterNameCompanyOrg(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
+        ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
+        FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
+        search_org_t.setOnKeyPressed(event -> {
+            search_org_t.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate((Predicate<? super ReportModel>) report_model->{
+                    if (newValue ==null || newValue.isEmpty()){
+                        return true;
+                    }
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    // Сравниваем с фильтром название организации
+                    if (report_model.getNameCompany().toLowerCase().contains(lowerCaseFilter)){
+                        return true;
+                    }
+                    return false;
+                });
+            });
+            SortedList<ReportModel> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(data_rep_org_table.comparatorProperty());
+            data_rep_org_table.setItems(sortedData);
+            if (sortedData.isEmpty()){
+                Label label_search=new Label();
+                label_search.setText("Нет данных по указанному фильтру.");
+                label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+                data_rep_org_table.setPlaceholder(label_search);
+            } else {
+                download_report_org_b.setOnAction(event1 -> {
+                    ArrayList<ReportModel> sortedFinal=new ArrayList<>(sortedData);
+                    ReportController reportController_new=new ReportController();
+                    reportController_new.Download_report(sortedFinal, dateStart, dateFinish);
+                });
+            }
+        });
+    }
 
-    // Фильтр для обработки обращений (Такое же, что и для заявителей)
+
+    // Фильтр для обработки обращений
     public void FilterAppeal(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
         FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
@@ -333,7 +408,43 @@ public class appController {
         });
     }
 
-    public  void FilterByButton(String typeFilter, ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
+    // Фильтр для обработки обращений (Для организаций)
+    public void FilterAppealOrg(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
+        ObservableList<ReportModel> data =FXCollections.observableArrayList(dataReportList);
+        FilteredList<ReportModel> filteredData = new FilteredList<>(data, e -> true);
+        search_org_t.setOnKeyPressed(event -> {
+            search_org_t.textProperty().addListener((observable, oldValue, newValue) -> {
+                filteredData.setPredicate((Predicate<? super ReportModel>) report_model->{
+                    if (newValue ==null || newValue.isEmpty()){
+                        return true;
+                    }
+                    String lowerCaseFilter = newValue.toLowerCase();
+                    // Сравниваем обращения с фильтром
+                    if (report_model.getNumberAppeal().toLowerCase().contains(lowerCaseFilter)){
+                        return true;
+                    }
+                    return false;
+                });
+            });
+            SortedList<ReportModel> sortedData = new SortedList<>(filteredData);
+            sortedData.comparatorProperty().bind(data_rep_org_table.comparatorProperty());
+            data_rep_org_table.setItems(sortedData);
+            if (sortedData.isEmpty()){
+                Label label_search=new Label();
+                label_search.setText("Нет данных по указанному фильтру.");
+                label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+                data_rep_org_table.setPlaceholder(label_search);
+            } else {
+                download_report_org_b.setOnAction(event1 -> {
+                    ArrayList<ReportModel> sortedFinal=new ArrayList<>(sortedData);
+                    ReportController reportController_new=new ReportController();
+                    reportController_new.Download_report(sortedFinal, dateStart, dateFinish);
+                });
+            }
+        });
+    }
+
+    public void FilterByButton(String typeFilter, ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         String search_text=search_t.getText().toLowerCase();
         // Список найденных ведомств
         ArrayList<ReportModel> datFind_modelArr = new ArrayList<ReportModel>();
@@ -348,7 +459,7 @@ public class appController {
                         }
                     }
                     break;
-                case "Фильтр по организациям":
+                case "Фильтр по МФЦ":
                     for (int i=0; i<dataReportList.size(); i++){
                         if (dataReportList.get(i).getNameCompany().toLowerCase().contains(search_text)){
                             datFind_modelArr.add((new ReportModel("", dataReportList.get(i).getNameCompany(), dataReportList.get(i).getNumberAppeal(),
@@ -388,6 +499,61 @@ public class appController {
 
     }
 
+    public void FilterByButtonOrg(String typeFilter, ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
+        String search_text=search_org_t.getText().toLowerCase();
+        // Список найденных ведомств
+        ArrayList<ReportModel> datFind_modelArr = new ArrayList<ReportModel>();
+        // Идем по циклу ведомства и если есть совпадение, то записываем в список найденных ведомств
+        switch (typeFilter){
+            case "Фильтр по заявителям":
+                for (int i=0; i<dataReportList.size(); i++){
+                    if (dataReportList.get(i).getApplicant().toLowerCase().contains(search_text)){
+                        datFind_modelArr.add((new ReportModel("", dataReportList.get(i).getNameCompany(), dataReportList.get(i).getNumberAppeal(),
+                                dataReportList.get(i).getNameAppeal(), dataReportList.get(i).getDateCreate(), dataReportList.get(i).getStatus(),
+                                dataReportList.get(i).getApplicant(), dataReportList.get(i).getDateEnd(), dataReportList.get(i).getCurrentStep())));
+                    }
+                }
+                break;
+            case "Фильтр по МФЦ":
+                for (int i=0; i<dataReportList.size(); i++){
+                    if (dataReportList.get(i).getNameCompany().toLowerCase().contains(search_text)){
+                        datFind_modelArr.add((new ReportModel("", dataReportList.get(i).getNameCompany(), dataReportList.get(i).getNumberAppeal(),
+                                dataReportList.get(i).getNameAppeal(), dataReportList.get(i).getDateCreate(), dataReportList.get(i).getStatus(),
+                                dataReportList.get(i).getApplicant(), dataReportList.get(i).getDateEnd(), dataReportList.get(i).getCurrentStep())));
+                    }
+                }
+                break;
+            case "Фильтр по обращениям":
+                for (int i=0; i<dataReportList.size(); i++){
+                    if (dataReportList.get(i).getNumberAppeal().toLowerCase().contains(search_text)){
+                        datFind_modelArr.add((new ReportModel("", dataReportList.get(i).getNameCompany(), dataReportList.get(i).getNumberAppeal(),
+                                dataReportList.get(i).getNameAppeal(), dataReportList.get(i).getDateCreate(), dataReportList.get(i).getStatus(),
+                                dataReportList.get(i).getApplicant(), dataReportList.get(i).getDateEnd(), dataReportList.get(i).getCurrentStep())));
+                    }
+                }
+                break;
+            default:
+                datFind_modelArr=null;
+                break;
+        }
+
+        ObservableList<ReportModel> data =FXCollections.observableArrayList(datFind_modelArr);
+        data_rep_org_table.setItems(data);
+        if (datFind_modelArr.isEmpty()){
+            Label label_search=new Label();
+            label_search.setText("Нет данных по указанному фильтру.");
+            label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+            data_rep_org_table.setPlaceholder(label_search);
+        } else {
+            ArrayList<ReportModel> finalDatFind_modelArr = datFind_modelArr;
+            download_report_org_b.setOnAction(event1 -> {
+                ReportController reportController_new=new ReportController();
+                reportController_new.Download_report(finalDatFind_modelArr, dateStart, dateFinish);
+            });
+        }
+
+    }
+
     public void setTableByDefault(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
         ObservableList<ReportModel> dataTable=FXCollections.observableArrayList(dataReportList);
         data_rep_table.setItems(dataTable);
@@ -399,6 +565,23 @@ public class appController {
             data_rep_table.setPlaceholder(label_search);
         } else {
             download_report_b.setOnAction(event1 -> {
+                ReportController reportController_new=new ReportController();
+                reportController_new.Download_report(dataReportList, dateStart, dateFinish);
+            });
+        }
+    }
+
+    public void setTableByDefaultOrg(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
+        ObservableList<ReportModel> dataTable=FXCollections.observableArrayList(dataReportList);
+        data_rep_org_table.setItems(dataTable);
+
+        if (dataReportList.isEmpty()){
+            Label label_search=new Label();
+            label_search.setText("Нет данных по указанному фильтру.");
+            label_search.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+            data_rep_org_table.setPlaceholder(label_search);
+        } else {
+            download_report_org_b.setOnAction(event1 -> {
                 ReportController reportController_new=new ReportController();
                 reportController_new.Download_report(dataReportList, dateStart, dateFinish);
             });
@@ -428,15 +611,15 @@ public class appController {
                         show_rep_b.setOnAction(event -> {FilterByButton("Фильтр по заявителям",dataReportList,dateStart,dateFinish);});
                         createContextMenuFilterField("Фильтр по заявителям", dataReportList,dateStart,dateFinish);
                         break;
-                    case "Фильтр по организациям": // Если выбраны организации
+                    case "Фильтр по МФЦ": // Если выбраны организации
                         setTableByDefault(dataReportList, dateStart, dateFinish);
 
                         System.out.println("Организация");
-                        search_t.setPromptText("Введите название организации");
+                        search_t.setPromptText("Введите название МФЦ");
                         search_t.setText("");
                         FilterNameCompany(dataReportList, dateStart, dateFinish); // Запустить фильтр для организаций
-                        show_rep_b.setOnAction(event -> {FilterByButton("Фильтр по организациям",dataReportList,dateStart,dateFinish);});
-                        createContextMenuFilterField("Фильтр по организациям", dataReportList,dateStart,dateFinish);
+                        show_rep_b.setOnAction(event -> {FilterByButton("Фильтр по МФЦ",dataReportList,dateStart,dateFinish);});
+                        createContextMenuFilterField("Фильтр по МФЦ", dataReportList,dateStart,dateFinish);
                         break;
                     case "Фильтр по обращениям": // Если выбраны обращения
                         setTableByDefault(dataReportList, dateStart, dateFinish);
@@ -447,6 +630,57 @@ public class appController {
                         FilterAppeal(dataReportList, dateStart, dateFinish); // Запустить фильтр для обращений
                         show_rep_b.setOnAction(event -> {FilterByButton("Фильтр по обращениям",dataReportList,dateStart,dateFinish);});
                         createContextMenuFilterField("Фильтр по обращениям", dataReportList,dateStart,dateFinish);
+                        break;
+                    default:
+                        System.out.println("Nooone!");
+                        break;
+                }
+            }
+        });
+    }
+
+    // Функция для установки фильтра (Для организаций)
+    public void SetFilterOrg(ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
+        System.out.println("Заявитель");
+        // Ставим фильтр для заявителей по-умолчанию
+        FilterApplicantsOrg(dataReportList, dateStart, dateFinish);
+        show_rep_org_b.setOnAction(event -> {FilterByButtonOrg("Фильтр по заявителям",dataReportList,dateStart,dateFinish);});
+        createContextMenuFilterFieldOrg("Фильтр по заявителям", dataReportList,dateStart,dateFinish);
+        // Событие для переключателя фильтров
+        choiceFilter_org_box.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number number2) {
+                String selectedItemFilter=choiceFilter_org_box.getItems().get((Integer) number2);
+                switch (selectedItemFilter){
+                    case "Фильтр по заявителям": // Если выбраны заявители
+                        setTableByDefaultOrg(dataReportList, dateStart, dateFinish);
+
+                        System.out.println("Заявитель");
+                        search_org_t.setPromptText("Введите ФИО заявителя");
+                        search_org_t.setText("");
+                        FilterApplicantsOrg(dataReportList, dateStart, dateFinish); // Запустить фильтр для заявителей
+                        show_rep_org_b.setOnAction(event -> {FilterByButtonOrg("Фильтр по заявителям",dataReportList,dateStart,dateFinish);});
+                        createContextMenuFilterFieldOrg("Фильтр по заявителям", dataReportList,dateStart,dateFinish);
+                        break;
+                    case "Фильтр по МФЦ": // Если выбраны организации
+                        setTableByDefaultOrg(dataReportList, dateStart, dateFinish);
+
+                        System.out.println("Организация");
+                        search_org_t.setPromptText("Введите название МФЦ");
+                        search_org_t.setText("");
+                        FilterNameCompanyOrg(dataReportList, dateStart, dateFinish); // Запустить фильтр для организаций
+                        show_rep_org_b.setOnAction(event -> {FilterByButtonOrg("Фильтр по МФЦ",dataReportList,dateStart,dateFinish);});
+                        createContextMenuFilterFieldOrg("Фильтр по МФЦ", dataReportList,dateStart,dateFinish);
+                        break;
+                    case "Фильтр по обращениям": // Если выбраны обращения
+                        setTableByDefaultOrg(dataReportList, dateStart, dateFinish);
+
+                        System.out.println("Обращения");
+                        search_org_t.setPromptText("Введите номер обращения");
+                        search_org_t.setText("");
+                        FilterAppealOrg(dataReportList, dateStart, dateFinish); // Запустить фильтр для обращений
+                        show_rep_org_b.setOnAction(event -> {FilterByButtonOrg("Фильтр по обращениям",dataReportList,dateStart,dateFinish);});
+                        createContextMenuFilterFieldOrg("Фильтр по обращениям", dataReportList,dateStart,dateFinish);
                         break;
                     default:
                         System.out.println("Nooone!");
@@ -474,7 +708,7 @@ public class appController {
 
         // Установить фильтры
         choiceFilter_box.setItems(FXCollections.observableArrayList(
-                "Фильтр по заявителям","Фильтр по организациям", "Фильтр по обращениям"));
+                "Фильтр по заявителям","Фильтр по МФЦ", "Фильтр по обращениям"));
         choiceFilter_box.getSelectionModel().selectFirst();
         search_t.setText("");
         search_t.setPromptText("Введите ФИО заявителя");
@@ -705,7 +939,7 @@ public class appController {
 
         // Установить фильтры
         choiceFilter_org_box.setItems(FXCollections.observableArrayList(
-                "Фильтр по заявителям","Фильтр по организациям", "Фильтр по обращениям"));
+                "Фильтр по заявителям","Фильтр по МФЦ", "Фильтр по обращениям"));
         choiceFilter_org_box.getSelectionModel().selectFirst();
         search_org_t.setText("");
         search_org_t.setPromptText("Введите ФИО заявителя");
@@ -796,12 +1030,12 @@ public class appController {
                             pi.setVisible(false);
                             vbox_rep_org_main.setDisable(false);
                             data_rep_org_table.setDisable(false);
-                            vbox_rep_org_main.setDisable(false);
+                            vbox_org_filter.setDisable(false);
 
                             // Получение данных с распарсенного поля
                             ArrayList<ReportModel> parsed_result_arr= (ArrayList<ReportModel>) ReportOrgTask.getValue();
                             if (parsed_result_arr==null){
-                                vbox_rep_org_main.setDisable(true);
+                                vbox_org_filter.setDisable(true);
                                 download_report_org_b.setDisable(true);
 
                                 Label label_load=new Label();
@@ -817,9 +1051,19 @@ public class appController {
                             } else {
                                 System.out.println(parsed_result_arr.get(0).getPeriod());
                                 // Получить период
-                                String period_report_label="Отчёт "+parsed_result_arr.get(0).getPeriod();
+                                SimpleDateFormat formatStringDate = new SimpleDateFormat("yyyy-MM-dd");
+                                Date dateStartOrg = null;
+                                Date dateFinishOrg =null;
+                                try {
+                                    dateStartOrg = formatStringDate.parse(String.valueOf(dateStart));
+                                    dateFinishOrg= formatStringDate.parse(String.valueOf(dateFinish));
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+                                String DateStartOrgString = new SimpleDateFormat("dd.MM.yyyy").format(dateStartOrg);
+                                String DateFinishOrgString = new SimpleDateFormat("dd.MM.yyyy").format(dateFinishOrg);
+                                String period_report_label="Отчёт за период с "+DateStartOrgString+" по "+DateFinishOrgString;
                                 period_org_label.setText(period_report_label);
-                                parsed_result_arr.remove(0); // Удалить период со списка
 
                                 ObservableList<ReportModel> dataReport = FXCollections.observableArrayList(parsed_result_arr);
                                 // Заполнение данными таблицы
@@ -855,9 +1099,9 @@ public class appController {
                                     reportController.Download_report(parsed_result_arr ,dateStart, dateFinish); // Скачивание отчётаа
                                 });
 
-                                //SetFilter(parsed_result_arr, dateStart, dateFinish); // Установить фильтры
+                                SetFilterOrg(parsed_result_arr, dateStart, dateFinish); // Установить фильтры
                                 autoResizeColumns(data_rep_org_table); // Выровнять колонки в таблице
-                                createContextMenuTable(cookie);
+                                createContextMenuTableOrg(cookie);
 
                             }
                         }
@@ -947,7 +1191,7 @@ public class appController {
                 Show_Appeal_Info(cookie, numberAppeal);
             }
         });
-        MenuItem copyMfcOrg = new MenuItem("Скопировать название организации");
+        MenuItem copyMfcOrg = new MenuItem("Скопировать название МФЦ");
         copyMfcOrg.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
@@ -1006,6 +1250,126 @@ public class appController {
         data_rep_table.setOnMousePressed(e -> {
             if (e.getButton() == MouseButton.SECONDARY) {
                 contextMenu.show(data_rep_table, e.getScreenX(), e.getScreenY());
+            } else {
+                contextMenu.hide();
+            }
+        });
+    }
+
+    public void createContextMenuFilterFieldOrg(String typeFilter, ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
+        search_org_t.addEventFilter(ContextMenuEvent.CONTEXT_MENU_REQUESTED, Event::consume);
+        // Create ContextMenu
+        ContextMenu contextMenu = new ContextMenu();
+
+        MenuItem copyTextSearch = new MenuItem("Скопировать");
+        copyTextSearch.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                String copyTextSearchBuffer=search_org_t.getText();
+                final Clipboard clipboard = Clipboard.getSystemClipboard();
+                final ClipboardContent content = new ClipboardContent();
+                content.putString(copyTextSearchBuffer);
+                clipboard.setContent(content);
+            }
+        });
+        MenuItem pasteTextSearch = new MenuItem("Вставить");
+        pasteTextSearch.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                final Clipboard clipboard = Clipboard.getSystemClipboard();
+                String clipboardText = clipboard.getString();
+                search_org_t.setText(clipboardText);
+                FilterByButtonOrg(typeFilter, dataReportList, dateStart, dateFinish);
+            }
+        });
+        MenuItem clearSearchText = new MenuItem("Очистить поле");
+        clearSearchText.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                search_org_t.setText("");
+                setTableByDefaultOrg(dataReportList, dateStart, dateFinish);
+            }
+        });
+
+
+        // Add MenuItem to ContextMenu
+        contextMenu.getItems().addAll(copyTextSearch, pasteTextSearch, clearSearchText);
+        search_org_t.setOnMousePressed(e -> {
+            if (e.getButton() == MouseButton.SECONDARY) {
+                contextMenu.show(search_t, e.getScreenX(), e.getScreenY());
+            } else {
+                contextMenu.hide();
+            }
+        });
+    }
+
+    public void createContextMenuTableOrg(String cookie){
+        // Create ContextMenu
+        ContextMenu contextMenu = new ContextMenu();
+
+        MenuItem openAppealInfo = new MenuItem("Открыть обращение");
+        openAppealInfo.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                System.out.println("Number Appeal:");
+                ReportModel reportModel = data_rep_org_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
+                System.out.println("Number appeal selected item: "+reportModel.getNumberAppeal());
+                String numberAppeal=reportModel.getNumberAppeal();
+                Show_Appeal_Info(cookie, numberAppeal);
+            }
+        });
+        MenuItem copyMfcOrg = new MenuItem("Скопировать название МФЦ");
+        copyMfcOrg.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                ReportModel reportModel = data_rep_org_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
+                String copyMfcBuffer=reportModel.getNameCompany();
+                System.out.println("Companyselected item: "+copyMfcBuffer);
+                final Clipboard clipboard = Clipboard.getSystemClipboard();
+                final ClipboardContent content = new ClipboardContent();
+                content.putString(copyMfcBuffer);
+                clipboard.setContent(content);
+            }
+        });
+        MenuItem copyNumberAppeal = new MenuItem("Скопировать номер обращения");
+        copyNumberAppeal.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                ReportModel reportModel = data_rep_org_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
+                String copyNumberAppealBuffer=reportModel.getNumberAppeal();
+                System.out.println("Number appeal selected item: "+copyNumberAppealBuffer);
+                final Clipboard clipboard = Clipboard.getSystemClipboard();
+                final ClipboardContent content = new ClipboardContent();
+                content.putString(copyNumberAppealBuffer);
+                clipboard.setContent(content);
+            }
+        });
+        MenuItem copyApplicant = new MenuItem("Скопировать заявителя (заявителей)");
+        copyApplicant.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                ReportModel reportModel = data_rep_org_table.getSelectionModel().getSelectedItem(); // Получить выделенный элемент
+                String copyApplicantBuffer=reportModel.getApplicant();
+                System.out.println("Applicant appeal selected item: "+copyApplicantBuffer);
+                final Clipboard clipboard = Clipboard.getSystemClipboard();
+                final ClipboardContent content = new ClipboardContent();
+                content.putString(copyApplicantBuffer);
+                clipboard.setContent(content);
+            }
+        });
+
+        // Add MenuItem to ContextMenu
+        contextMenu.getItems().addAll(openAppealInfo,copyMfcOrg, copyNumberAppeal, copyApplicant);
+        data_rep_org_table.setOnMousePressed(e -> {
+            if (e.getButton() == MouseButton.SECONDARY) {
+                contextMenu.show(data_rep_org_table, e.getScreenX(), e.getScreenY());
             } else {
                 contextMenu.hide();
             }

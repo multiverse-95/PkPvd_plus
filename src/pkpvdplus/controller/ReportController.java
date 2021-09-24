@@ -243,132 +243,29 @@ public class ReportController {
 
     // Функция для получения отчёта с сервера (Только юридические лица)
     public static String getReportOrg(String cookie, String dateStart, String dateFinish) throws IOException {
-        Payload_report_org payload_report_org = new Payload_report_org();
         CookieStore httpCookieStore = new BasicCookieStore();
-
         // Заполнение json параметрами
-
-        ArrayList<String> usedFields=new ArrayList<String>();
-        usedFields.add("subjects.subjectType"); usedFields.add("createEvent.dateWhen"); usedFields.add("name");
-        payload_report_org.usedFields =usedFields;
-
-        ArrayList<Rules_all> rules_all_arr= new ArrayList<Rules_all>();
-
-        ArrayList<Rules> rules_arr= new ArrayList<Rules>();
-        Rules_all rules_all=new Rules_all();
-        for (int i=0; i<3; i++){
-            ArrayList<Values> values_arr=new ArrayList<Values>();
-            Rules rules = new Rules();
-            Values values=new Values();
-            Values values2=new Values();
-            switch (i){
-                case 0:
-                    rules.id="8ab9b998-0123-4456-b89a-b17c0ccf7e9f";
-                    rules.field="subjects.subjectType";
-                    rules.type="cls";
-                    rules.input="cls";
-                    rules.operator="equal";
-                    values.type="cls";
-                    values.value="007002001000"; values_arr.add(values);
-                    rules.values=values_arr;
-                    rules_arr.add(rules);
-                    break;
-                case 1:
-                    rules.id="a8aa9ba9-cdef-4012-b456-717bc9b25ac4";
-                    rules.field="createEvent.dateWhen";
-                    rules.type="datetime";
-                    rules.input="datetime";
-                    rules.operator="between";
-                    values.type="datetime";
-                    values.value=dateStart;
-                    values2.type="datetime";
-                    values2.value=dateFinish;
-                    values_arr.add(values); values_arr.add(values2);
-                    rules.values=values_arr;
-                    rules_arr.add(rules);
-                    break;
-                case 2:
-                    rules.id="9b9a8ba9-89ab-4cde-b012-317bc9b49af7";
-                    rules.field="name";
-                    rules.type="text";
-                    rules.input="text";
-                    rules.operator="contains";
-                    values.type="text";
-                    values.value="Предоставление сведений об объекте недвижимости"; values_arr.add(values);
-                    rules.values=values_arr;
-                    rules_arr.add(rules);
-                    break;
-            }
-        }
-        rules_all.rules=rules_arr;
-        rules_all.condition="AND";
-        rules_all_arr.add(rules_all);
-
-        ArrayList<Rules> rules_arr2= new ArrayList<Rules>();
-        Rules_all rules_all2=new Rules_all();
-        for (int i=0; i<3; i++){
-            ArrayList<Values> values_arr=new ArrayList<Values>();
-            Rules rules = new Rules();
-            Values values=new Values();
-            Values values2=new Values();
-            switch (i){
-                case 0:
-                    rules.id="a8a88889-4567-489a-bcde-f17c0cd528f7";
-                    rules.field="subjects.subjectType";
-                    rules.type="cls";
-                    rules.input="cls";
-                    rules.operator="equal";
-                    values.type="cls";
-                    values.value="007002004000"; values_arr.add(values);
-                    rules.values=values_arr;
-                    rules_arr2.add(rules);
-                    break;
-                case 1:
-                    rules.id="989a9b88-0123-4456-b89a-b17c0cd56cd9";
-                    rules.field="createEvent.dateWhen";
-                    rules.type="datetime";
-                    rules.input="datetime";
-                    rules.operator="between";
-                    values.type="datetime";
-                    values.value=dateStart;
-                    values2.type="datetime";
-                    values2.value=dateFinish;
-                    values_arr.add(values); values_arr.add(values2);
-                    rules.values=values_arr;
-                    rules_arr2.add(rules);
-                    break;
-                case 2:
-                    rules.id="99b89998-cdef-4012-b456-717c0cd5f703";
-                    rules.field="name";
-                    rules.type="text";
-                    rules.input="text";
-                    rules.operator="contains";
-                    values.type="text";
-                    values.value="Предоставление сведений об объекте недвижимости"; values_arr.add(values);
-                    rules.values=values_arr;
-                    rules_arr2.add(rules);
-                    break;
-            }
-        }
-        rules_all2.rules=rules_arr2;
-        rules_all2.condition="AND";
-        rules_all_arr.add(rules_all2);
-
-        payload_report_org.rules=rules_all_arr;
-        payload_report_org.condition = "OR";
-        payload_report_org.not =false;
-
-        /*Gson gson = new Gson();
-        System.out.println(gson.toJson(payload_report_org));*/
-
+        String JsonToServer="{\"usedFields\":[\"subjects.subjectType\",\"createEvent.dateWhen\",\"name\"],\"rules\":[{\"rules\":[{\"id\":\"8ab9b998-0123-4456-b89a-b17c0ccf7e9f\"," +
+                "\"field\":\"subjects.subjectType\",\"type\":\"cls\",\"input\":\"cls\",\"operator\":\"equal\",\"values\":[{\"type\":\"cls\",\"value\":\"007002001000\"}]}," +
+                "{\"id\":\"a8aa9ba9-cdef-4012-b456-717bc9b25ac4\",\"field\":\"createEvent.dateWhen\",\"type\":\"datetime\",\"input\":\"datetime\",\"operator\":\"between\"," +
+                "\"values\":[{\"type\":\"datetime\",\"value\":\""+dateStart+"\"},{\"type\":\"datetime\",\"value\":\""+dateFinish+"\"}]}," +
+                "{\"rules\":[{\"id\":\"9b9a8ba9-89ab-4cde-b012-317bc9b49af7\",\"field\":\"name\",\"type\":\"text\",\"input\":\"text\",\"operator\":\"contains\"," +
+                "\"values\":[{\"type\":\"text\",\"value\":\"Предоставление сведений об объекте недвижимости\"}]},{\"id\":\"b98b8a9b-cdef-4012-b456-717c12247e04\"," +
+                "\"field\":\"name\",\"type\":\"text\",\"input\":\"text\",\"operator\":\"contains\",\"values\":[{\"type\":\"text\"," +
+                "\"value\":\"Предоставление сведений о правообладателе\"}]}],\"condition\":\"OR\"}],\"condition\":\"AND\"},{\"rules\":[{\"id\":\"a8a88889-4567-489a-bcde-f17c0cd528f7\"," +
+                "\"field\":\"subjects.subjectType\",\"type\":\"cls\",\"input\":\"cls\",\"operator\":\"equal\",\"values\":[{\"type\":\"cls\",\"value\":\"007002004000\"}]}," +
+                "{\"id\":\"989a9b88-0123-4456-b89a-b17c0cd56cd9\",\"field\":\"createEvent.dateWhen\",\"type\":\"datetime\",\"input\":\"datetime\",\"operator\":\"between\"," +
+                "\"values\":[{\"type\":\"datetime\",\"value\":\""+dateStart+"\"},{\"type\":\"datetime\",\"value\":\""+dateFinish+"\"}]}," +
+                "{\"rules\":[{\"id\":\"99b89998-cdef-4012-b456-717c0cd5f703\",\"field\":\"name\",\"type\":\"text\",\"input\":\"text\",\"operator\":\"contains\"," +
+                "\"values\":[{\"type\":\"text\",\"value\":\"Предоставление сведений об объекте недвижимости\"}]},{\"id\":\"9aa9aa9a-4567-489a-bcde-f17c12254bb8\"," +
+                "\"field\":\"name\",\"type\":\"text\",\"input\":\"text\",\"operator\":\"contains\",\"values\":[{\"type\":\"text\"," +
+                "\"value\":\"Предоставление сведений о правообладателе\"}]}],\"condition\":\"OR\"}],\"condition\":\"AND\"}],\"condition\":\"OR\",\"not\":false}";
         String postUrl       = "http://10.42.200.207:9188/query/execute/appeal";// Ссылка на сервер
-        Gson gson          = new Gson();
         HttpClient httpClient = null;
         HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
         httpClient = builder.build();
         HttpPost post          = new HttpPost(postUrl);
-        StringEntity postingString = new StringEntity(gson.toJson(payload_report_org), StandardCharsets.UTF_8);// Конвертирование json в строку
-        //System.out.println(gson.toJson(payload_report_org));
+        StringEntity postingString = new StringEntity(JsonToServer, StandardCharsets.UTF_8);// Конвертирование json в строку
 
         post.setEntity(postingString); // Установка json для запроса
         post.setHeader("Content-type", "application/json");
@@ -379,7 +276,8 @@ public class ReportController {
         HttpEntity entity = response.getEntity(); // Получение результата от сервера
 
         String jsonResult=EntityUtils.toString(entity);
-        System.out.println("Json ORG! - \n"+jsonResult);
+
+        //System.out.println("Json ORG! - \n"+jsonResult);
         return jsonResult; // Возвращаем результат в формате csv
     }
 
@@ -576,6 +474,9 @@ public class ReportController {
                         break;
                     case "CANCELED_114":
                         currentStep="Аннулировано";
+                        break;
+                    case "CREATE":
+                        currentStep="Приём обращения";
                         break;
                     default:
                         currentStep="Неизвестно";
@@ -794,7 +695,7 @@ public class ReportController {
 
         // Создание столбца "Название организации"
         cell = row.createCell(0, CellType.STRING);
-        cell.setCellValue("Наименование организации");
+        cell.setCellValue("Наименование МФЦ");
         cell.setCellStyle(style);
         // Создание столбца "Номер обращения"
         cell = row.createCell(1, CellType.STRING);
@@ -903,7 +804,7 @@ public class ReportController {
 
         // Создание столбца "Название организации"
         cell = row.createCell(0, CellType.STRING);
-        cell.setCellValue("Наименование организации");
+        cell.setCellValue("Наименование МФЦ");
         cell.setCellStyle(style);
         // Создание столбца "Номер обращения"
         cell = row.createCell(1, CellType.STRING);
@@ -1104,38 +1005,5 @@ public class ReportController {
         public Object value;
     }
 
-
-
-
-    // Класс для для payload report
-    static class Payload_report_org
-    {
-        public ArrayList<String> usedFields;
-        public ArrayList<Rules_all> rules;
-        public String condition;
-        public boolean not;
-    }
-
-    static class Rules_all
-    {
-        public ArrayList<Rules> rules;
-        public String condition;
-    }
-    static class Rules
-    {
-        public String id;
-        public String field;
-        public String type;
-        public String input;
-        public String operator;
-        public ArrayList<Values> values;
-
-    }
-
-    static class Values
-    {
-        public String type;
-        public String value;
-    }
 
 }

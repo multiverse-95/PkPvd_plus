@@ -260,8 +260,14 @@ public class AppealInfoController {
                             }
                             break;
                         case "Organization":
-                            setTextApplicantOrganization(applicantInfoArr);
-                            setTextRepresentive(applicantInfoArr);
+                            if (applicantInfoArr.size()==1) {
+                                setTextApplicantOrganization(applicantInfoArr);
+                                applicants_tabPane.getTabs().remove(representive_tab);
+                            }
+                            if (applicantInfoArr.size()==2) {
+                                setTextApplicantOrganization(applicantInfoArr);
+                                setTextRepresentive(applicantInfoArr);
+                            }
                             applicants_tabPane.getTabs().remove(applicant_tab);
                             break;
                         default:

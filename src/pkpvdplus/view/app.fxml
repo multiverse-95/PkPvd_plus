@@ -163,7 +163,7 @@
                            <children>
                               <VBox fx:id="vbox_rep_org_main" alignment="CENTER" maxHeight="1.7976931348623157E308" prefWidth="1031.0">
                                  <children>
-                                    <Label alignment="TOP_CENTER" style="-fx-text-fill: #2F4F4F;" text="Список заявлений (только юридические лица)">
+                                    <Label alignment="TOP_CENTER" style="-fx-text-fill: #2F4F4F;" text="Список заявлений (юридические лица)">
                                        <font>
                                           <Font name="Arial Rounded MT Bold" size="24.0" />
                                        </font>
@@ -270,7 +270,7 @@
                               <TableColumn fx:id="date_end_org_col" prefWidth="108.0" styleClass="leftAlignedTableColumnHeader" text="Дата окончания" />
                               <TableColumn fx:id="status_org_col" prefWidth="57.0" styleClass="leftAlignedTableColumnHeader" text="Статус" />
                               <TableColumn fx:id="cur_step_org_col" prefWidth="108.0" styleClass="leftAlignedTableColumnHeader" text="Текущий шаг" />
-                              <TableColumn fx:id="applicant_org_col" prefWidth="78.0" styleClass="leftAlignedTableColumnHeader" text="Юр.лицо и представитель" />
+                              <TableColumn fx:id="applicant_org_col" prefWidth="78.0" styleClass="leftAlignedTableColumnHeader" text="Заявители" />
                            </columns>
                         </TableView>
                      </center>
