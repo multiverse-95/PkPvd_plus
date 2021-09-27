@@ -167,13 +167,32 @@
                                        <font>
                                           <Font name="Arial Rounded MT Bold" size="24.0" />
                                        </font>
+                                       <VBox.margin>
+                                          <Insets bottom="10.0" />
+                                       </VBox.margin>
                                     </Label>
+                                    <HBox alignment="CENTER" layoutX="10.0" layoutY="100.0" prefWidth="200.0">
+                                       <VBox.margin>
+                                          <Insets bottom="5.0" />
+                                       </VBox.margin>
+                                       <children>
+                                          <Label alignment="TOP_CENTER" style="-fx-text-fill: #2F4F4F;" text="Способ получения документов:">
+                                             <font>
+                                                <Font name="Arial Rounded MT Bold" size="18.0" />
+                                             </font>
+                                             <HBox.margin>
+                                                <Insets right="5.0" />
+                                             </HBox.margin>
+                                          </Label>
+                                          <ChoiceBox fx:id="type_getDoc_box" prefWidth="170.0" />
+                                       </children>
+                                    </HBox>
                                     <Label alignment="TOP_CENTER" style="-fx-text-fill: #2F4F4F;" text="Период:">
                                        <font>
                                           <Font name="Arial Rounded MT Bold" size="18.0" />
                                        </font>
                                        <VBox.margin>
-                                          <Insets top="5.0" />
+                                          <Insets />
                                        </VBox.margin>
                                     </Label>
                                     <HBox alignment="CENTER" prefWidth="200.0">

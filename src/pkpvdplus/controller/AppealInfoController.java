@@ -6,6 +6,8 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import pkpvdplus.model.AllAppealInfoModel;
@@ -187,6 +189,39 @@ public class AppealInfoController {
 
     @FXML
     private TextArea confirm_author_applicant_repr_textarea;
+
+    // Вкладка: способ представления и получения документов
+
+    @FXML
+    private AnchorPane anchor_getDoc;
+
+    @FXML
+    private TitledPane given_present_doc_pane;
+
+    @FXML
+    private RadioButton pres_on_MFC_rb;
+
+    @FXML
+    private RadioButton pres_mail_rb;
+
+    @FXML
+    private RadioButton pres_indiv_rb;
+
+    @FXML
+    private RadioButton output_doc_MFC_rb;
+
+    @FXML
+    private RadioButton output_doc_mail_rb;
+
+    @FXML
+    private HBox hbox_getDocMail;
+
+    @FXML
+    private RadioButton output_doc_email_rb;
+
+    @FXML
+    private TextField email_adress_getDoc_textf;
+
     // Вкладка об объектах
     @FXML
     private TitledPane object_info_appeal_pane;
@@ -241,6 +276,7 @@ public class AppealInfoController {
                 applicantInfoArr=allAppealInfoModel.getApplicantInfoArr();
 
                 setTextAppealGeneralInfo(appealGeneralInfoModel);
+                setPresentOutputDocInfo(appealGeneralInfoModel);
                 if (applicantInfoArr.size()>0){
                     switch (applicantInfoArr.get(0).getTypeOfApplicant()){
                         case "Person":
@@ -276,6 +312,7 @@ public class AppealInfoController {
                     }
                 } else {
                     applicant_appeal_info_pane.setDisable(true);
+                    given_present_doc_pane.setDisable(true);
                 }
 
 
@@ -327,6 +364,61 @@ public class AppealInfoController {
             operationCommentAdvanced_appeal_textf.setText("Комментарий отсутствует");
         } else {
             operationCommentAdvanced_appeal_textf.setText(operationCommentAdvanced_appeal);
+        }
+
+    }
+
+    public void setPresentOutputDocInfo(AppealGeneralInfoModel appealGeneralInfoModel){
+
+        if (appealGeneralInfoModel.isPres_on_MFC()){
+            pres_on_MFC_rb.setSelected(true);
+            pres_on_MFC_rb.setOnAction(event -> {
+                pres_on_MFC_rb.setSelected(true);
+            });
+            pres_mail_rb.setDisable(true);
+            pres_indiv_rb.setDisable(true);
+        }
+        if (appealGeneralInfoModel.isPres_mail()) {
+            pres_mail_rb.setSelected(true);
+            pres_mail_rb.setOnAction(event -> {
+                pres_mail_rb.setSelected(true);
+            });
+            pres_on_MFC_rb.setDisable(true);
+            pres_indiv_rb.setDisable(true);
+        }
+        if (appealGeneralInfoModel.isPres_indiv()) {
+            pres_indiv_rb.setSelected(true);
+            pres_indiv_rb.setOnAction(event -> {
+                pres_indiv_rb.setSelected(true);
+            });
+            pres_on_MFC_rb.setDisable(true);
+            pres_mail_rb.setDisable(true);
+        }
+        if (appealGeneralInfoModel.isOutput_doc_MFC()) {
+            output_doc_MFC_rb.setSelected(true);
+            hbox_getDocMail.getChildren().clear();
+            output_doc_MFC_rb.setOnAction(event -> {
+                output_doc_MFC_rb.setSelected(true);
+            });
+            output_doc_mail_rb.setDisable(true);
+            output_doc_email_rb.setDisable(true);
+        }
+        if (appealGeneralInfoModel.isOutput_doc_mail()){
+            output_doc_mail_rb.setSelected(true);
+            output_doc_mail_rb.setOnAction(event -> {
+                output_doc_mail_rb.setSelected(true);
+            });
+            output_doc_MFC_rb.setDisable(true);
+            output_doc_email_rb.setDisable(true);
+        }
+        if (appealGeneralInfoModel.isOutput_doc_email()){
+            output_doc_email_rb.setSelected(true);
+            email_adress_getDoc_textf.setText(appealGeneralInfoModel.getOutput_email());
+            output_doc_email_rb.setOnAction(event -> {
+                output_doc_email_rb.setSelected(true);
+            });
+            output_doc_MFC_rb.setDisable(true);
+            output_doc_mail_rb.setDisable(true);
         }
 
     }

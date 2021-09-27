@@ -277,6 +277,15 @@ public class GetAppealInfoController {
         // Комментарий к текущей операции
         String operationCommentAdvanced="";
 
+        // Переменные для отображения информации о способе получения и представления документов
+        boolean pres_on_MFC=false; // Представление документов В МФЦ
+        boolean pres_mail=false; // Представление документов почтой
+        boolean pres_indiv=false; // Представление документов индивидуально
+        boolean output_doc_MFC=false; // Получение документов в МФЦ
+        boolean output_doc_mail=false; // Получение документов почтой
+        boolean output_doc_email=false; // Получение документов на электронную почту
+        String email_output="";
+
         // Парсинг главной информации об обращении
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(jsonMain); // Получение главного элемента
@@ -408,12 +417,50 @@ public class GetAppealInfoController {
         }
         if (!elementAdvanced.getAsJsonObject().get("operationComment").isJsonNull()) { operationCommentAdvanced=elementAdvanced.getAsJsonObject().get("operationComment").getAsString(); }
 
+        // Парсинг информации по получению и представлению документов
+
+        if (!element.getAsJsonObject().get("givenRequestDocumentType").isJsonNull()) {
+            if (!element.getAsJsonObject().get("givenRequestDocumentType").getAsJsonObject().get("typePresentation").isJsonNull()){
+                String typePresentation= element.getAsJsonObject().get("givenRequestDocumentType").getAsJsonObject().get("typePresentation").getAsString();
+                String typeOutputDoc = element.getAsJsonObject().get("givenRequestDocumentType").getAsJsonObject().get("typeOutputDoc").getAsString();
+
+                switch (typePresentation){
+                    case "787003000000":
+                        pres_on_MFC=true;
+                        break;
+                    case "787001000000":
+                        pres_mail=true;
+                        break;
+                    default:
+                        pres_indiv=true;
+                        break;
+                }
+
+                switch (typeOutputDoc){
+                    case "785007000000":
+                        output_doc_MFC=true;
+                        break;
+                    case "785003000000":
+                        output_doc_email=true;
+                        if (!element.getAsJsonObject().get("givenRequestDocumentType").getAsJsonObject().get("email").isJsonNull()){
+                            email_output=element.getAsJsonObject().get("givenRequestDocumentType").getAsJsonObject().get("email").getAsString();
+                        }
+                        break;
+                    default:
+                        output_doc_mail=true;
+                        break;
+                }
+            }
+
+        }
+
 
         // Добавление в модель по обращению всех переменных
         AppealGeneralInfoModel appealGeneralInfoModel = new AppealGeneralInfoModel(statementType,internalNum,createEventDateWhen,createEventPerformer,packageNum,
                 numPPOZ, createPPOZDate, statusNotePPOZ, statusPPOZ, statusPPOZDate, routineExecutionDays,processingEndDate,
                 nameAdvanced, internalNumAdvanced, createEventDateWhenAdvanced, createEventPerformerAdvanced, currentStepAdvanced, moveStepEventDateWhenAdvanced,
-                moveStepPerformerAdvanced, executeEventAdvanced, operationCommentAdvanced);
+                moveStepPerformerAdvanced, executeEventAdvanced, operationCommentAdvanced, pres_on_MFC, pres_mail, pres_indiv, output_doc_MFC, output_doc_mail,
+                output_doc_email, email_output);
         return appealGeneralInfoModel;
 
     }

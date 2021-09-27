@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Accordion?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
@@ -924,6 +925,99 @@
                                           <Font name="Cambria Math" size="18.0" />
                                        </font>
                                   </TitledPane>
+                                    <TitledPane fx:id="given_present_doc_pane" animated="false" focusTraversable="false" layoutX="10.0" layoutY="74.0" text="Представление и получение документов">
+                                       <content>
+                                          <AnchorPane fx:id="anchor_getDoc" minHeight="0.0" minWidth="0.0">
+                                             <children>
+                                                <VBox prefHeight="234.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                   <children>
+                                                      <Label text="Способ представления запроса:">
+                                                         <font>
+                                                            <Font name="Cambria Math" size="18.0" />
+                                                         </font>
+                                                         <VBox.margin>
+                                                            <Insets bottom="10.0" />
+                                                         </VBox.margin>
+                                                      </Label>
+                                                      <RadioButton fx:id="pres_on_MFC_rb" mnemonicParsing="false" text="Лично в МФЦ">
+                                                         <font>
+                                                            <Font name="Cambria Math" size="18.0" />
+                                                         </font>
+                                                         <VBox.margin>
+                                                            <Insets bottom="7.0" />
+                                                         </VBox.margin>
+                                                      </RadioButton>
+                                                      <RadioButton fx:id="pres_mail_rb" layoutX="10.0" layoutY="35.0" mnemonicParsing="false" text="Почтовым отправлением">
+                                                         <font>
+                                                            <Font name="Cambria Math" size="18.0" />
+                                                         </font>
+                                                         <VBox.margin>
+                                                            <Insets bottom="7.0" />
+                                                         </VBox.margin>
+                                                      </RadioButton>
+                                                      <RadioButton fx:id="pres_indiv_rb" layoutX="10.0" layoutY="64.0" mnemonicParsing="false" text="Лично при выездном обслуживании">
+                                                         <font>
+                                                            <Font name="Cambria Math" size="18.0" />
+                                                         </font>
+                                                         <VBox.margin>
+                                                            <Insets bottom="15.0" />
+                                                         </VBox.margin>
+                                                      </RadioButton>
+                                                      <Label layoutX="10.0" layoutY="10.0" text="Способ получения документов:">
+                                                         <font>
+                                                            <Font name="Cambria Math" size="18.0" />
+                                                         </font>
+                                                         <VBox.margin>
+                                                            <Insets bottom="10.0" />
+                                                         </VBox.margin>
+                                                      </Label>
+                                                      <RadioButton fx:id="output_doc_MFC_rb" layoutX="10.0" layoutY="93.0" mnemonicParsing="false" text="В МФЦ на основе электронного документа">
+                                                         <font>
+                                                            <Font name="Cambria Math" size="18.0" />
+                                                         </font>
+                                                         <VBox.margin>
+                                                            <Insets bottom="7.0" />
+                                                         </VBox.margin>
+                                                      </RadioButton>
+                                                      <RadioButton fx:id="output_doc_mail_rb" layoutX="10.0" layoutY="147.0" mnemonicParsing="false" text="Почтовым отправлением">
+                                                         <font>
+                                                            <Font name="Cambria Math" size="18.0" />
+                                                         </font>
+                                                         <VBox.margin>
+                                                            <Insets bottom="7.0" />
+                                                         </VBox.margin>
+                                                      </RadioButton>
+                                                      <RadioButton fx:id="output_doc_email_rb" layoutX="10.0" layoutY="176.0" mnemonicParsing="false" text="По адресу электронной почты">
+                                                         <font>
+                                                            <Font name="Cambria Math" size="18.0" />
+                                                         </font>
+                                                         <VBox.margin>
+                                                            <Insets bottom="10.0" />
+                                                         </VBox.margin>
+                                                      </RadioButton>
+                                                      <HBox fx:id="hbox_getDocMail">
+                                                         <children>
+                                                            <Label text="Адрес почты:">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </Label>
+                                                            <TextField fx:id="email_adress_getDoc_textf" layoutX="118.0" layoutY="10.0" prefHeight="32.0" prefWidth="652.0">
+                                                               <font>
+                                                                  <Font name="Cambria Math" size="18.0" />
+                                                               </font>
+                                                            </TextField>
+                                                         </children>
+                                                      </HBox>
+                                                   </children>
+                                                </VBox>
+                                             </children>
+                                          </AnchorPane>
+                                       </content>
+                                       <font>
+                                          <Font name="Cambria Math" size="18.0" />
+                                       </font>
+                                    </TitledPane>
                                   <TitledPane fx:id="object_info_appeal_pane" animated="false" focusTraversable="false" text="Объекты">
                                     <content>
                                       <AnchorPane minHeight="0.0" minWidth="0.0">

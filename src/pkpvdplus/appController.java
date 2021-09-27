@@ -71,6 +71,9 @@ public class appController {
     private MenuItem menu_item_change_user;
 
     @FXML
+    private ChoiceBox<String> type_getDoc_box;
+
+    @FXML
     private StackPane root_report;
 
     @FXML
@@ -690,6 +693,41 @@ public class appController {
         });
     }
 
+    // Функция для установки способа получения документов
+    public void TypeGetDocGenerateReport(String cookie){
+        // По-умолчанию
+        generate_report_org_b.setOnAction(event -> {
+            GenerateReportOrg(cookie, "ALL");
+        });
+        // Событие для переключателя фильтров
+        type_getDoc_box.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number number2) {
+                String selectedItemFilter=type_getDoc_box.getItems().get((Integer) number2);
+                switch (selectedItemFilter){
+                    case "Все": // Если выбраны заявители
+                        System.out.println("ALL");
+                        generate_report_org_b.setOnAction(event -> {
+                            GenerateReportOrg(cookie, "ALL");
+                        });
+                        break;
+                    case "В МФЦ": // Если выбраны организации
+                        System.out.println("MFC");
+                        generate_report_org_b.setOnAction(event -> {
+                            GenerateReportOrg(cookie, "MFC");
+                        });
+                        break;
+                    case "По электронной почте": // Если выбраны обращения
+                        System.out.println("EMAIL");
+                        generate_report_org_b.setOnAction(event -> {
+                            GenerateReportOrg(cookie, "EMAIL");
+                        });
+                        break;
+                }
+            }
+        });
+    }
+
     // Функция для отображения отчёта
     public void Show_report(String cookie){
         // Установить курсор при наведении на кнопки
@@ -949,171 +987,180 @@ public class appController {
         label_onStart.setText("Выберите параметры для отчёта.");
         label_onStart.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
         data_rep_org_table.setPlaceholder(label_onStart);
-        // Установить событие на кнопку "Сформировать отчёт"
-        generate_report_org_b.setOnAction(event -> {
-            // Выбрать для переключателя фильтров первый элемент
-            choiceFilter_org_box.getSelectionModel().selectFirst();
-            search_org_t.setText("");
-            search_org_t.setPromptText("Введите ФИО заявителя");
-            // Получить начальную дату и конечную дату
-            LocalDate dateStart=date_start_org_d.getValue();
-            LocalDate dateFinish=date_finish_org_d.getValue();
-            // Если начальная дата или конечная дата пустые
-            if (dateStart==null || dateFinish==null){
+
+        // Установить выбор получения документов
+        type_getDoc_box.setItems(FXCollections.observableArrayList(
+                "Все","В МФЦ", "По электронной почте"));
+        type_getDoc_box.getSelectionModel().selectFirst();
+        // Определить тип получения документа и на основании этого сформировать отчёт
+        TypeGetDocGenerateReport(cookie);
+
+    }
+
+    public void GenerateReportOrg(String cookie, String typeGetDoc){
+        // Выбрать для переключателя фильтров первый элемент
+        choiceFilter_org_box.getSelectionModel().selectFirst();
+        search_org_t.setText("");
+        search_org_t.setPromptText("Введите ФИО заявителя");
+        // Получить начальную дату и конечную дату
+        LocalDate dateStart=date_start_org_d.getValue();
+        LocalDate dateFinish=date_finish_org_d.getValue();
+        // Если начальная дата или конечная дата пустые
+        if (dateStart==null || dateFinish==null){
+            // Вывести предупреждение
+            System.out.println("Date is not correct!");
+            Alert alert =new Alert(Alert.AlertType.WARNING , "Test");
+            alert.setTitle("Вы не ввели дату!");
+            alert.setHeaderText("Необходимо ввести дату!");
+            alert.setContentText("Введите начало и конец периода.");
+            alert.showAndWait().ifPresent(rs -> {
+                if (rs == ButtonType.OK){}
+            });
+        } else { // Иначе
+            // Получить начальную и конечную дату в Unix формате
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            Date date1 = null;
+            Date date2 =null;
+            try {
+                date1 = format.parse(String.valueOf(dateStart));
+                date2= format.parse(String.valueOf(dateFinish));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            String DateNow_String = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+
+            Date dateNow_date=null;
+            try {
+                dateNow_date = format.parse(DateNow_String);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            long dateNowLong=dateNow_date.getTime();
+            long dateStartLong = date1.getTime(); // Дата начала в UNIX
+            long dateFinishLong =date2.getTime(); // Дата окончания в UNIX
+            long diffNow_difStart=dateNowLong-dateStartLong;
+            long diffNow_difFinish=dateNowLong-dateFinishLong;
+            long diffDate=dateFinishLong-dateStartLong; // Разность между конечной датой и начальной датой
+            // Если разность 0 или меньше
+            if (diffDate<=0 || diffNow_difStart<=0 || diffNow_difFinish<=0){
                 // Вывести предупреждение
                 System.out.println("Date is not correct!");
-                Alert alert =new Alert(Alert.AlertType.WARNING , "Test");
-                alert.setTitle("Вы не ввели дату!");
-                alert.setHeaderText("Необходимо ввести дату!");
-                alert.setContentText("Введите начало и конец периода.");
+                Alert alert =new Alert(Alert.AlertType.ERROR , "Test");
+                alert.setTitle("Вы ввели дату некорректно!");
+                alert.setHeaderText("Проверьте правильность ввода даты!");
+                alert.setContentText("Возможно вы перепутали начало и конец периода. Также отчёт нельзя взять за текущий день.");
                 alert.showAndWait().ifPresent(rs -> {
                     if (rs == ButtonType.OK){}
                 });
-            } else { // Иначе
-                // Получить начальную и конечную дату в Unix формате
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                Date date1 = null;
-                Date date2 =null;
-                try {
-                    date1 = format.parse(String.valueOf(dateStart));
-                    date2= format.parse(String.valueOf(dateFinish));
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
+            } else { // Иначе, если дата в порядке
+                data_rep_org_table.setItems(null); // Обнулить данные в таблице
+                ProgressIndicator pi = new ProgressIndicator(); // Запуск прогресс индикатора
+                VBox box = new VBox(pi);
+                box.setAlignment(Pos.CENTER);
+                data_rep_org_table.setDisable(true);
+                // Установить текст для таблицы
+                Label label_load=new Label();
+                label_load.setText("Загрузка данных...");
+                label_load.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 18));
+                data_rep_org_table.setPlaceholder(label_load);
+                vbox_rep_org_main.setDisable(true);
+                root_org_report.getChildren().add(box);
+                // Запустить поток для получения отчёта с сервера
+                Task ReportOrgTask = new ReportController.ReportOrgTask(cookie, "",dateStart,dateFinish, typeGetDoc);
 
-                String DateNow_String = new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+                //  После выполнения потока
+                ReportOrgTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+                    @Override
+                    public void handle(WorkerStateEvent event) {
+                        box.setDisable(true);
+                        pi.setVisible(false);
+                        vbox_rep_org_main.setDisable(false);
+                        data_rep_org_table.setDisable(false);
+                        vbox_org_filter.setDisable(false);
 
-                Date dateNow_date=null;
-                try {
-                    dateNow_date = format.parse(DateNow_String);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                long dateNowLong=dateNow_date.getTime();
-                long dateStartLong = date1.getTime(); // Дата начала в UNIX
-                long dateFinishLong =date2.getTime(); // Дата окончания в UNIX
-                long diffNow_difStart=dateNowLong-dateStartLong;
-                long diffNow_difFinish=dateNowLong-dateFinishLong;
-                long diffDate=dateFinishLong-dateStartLong; // Разность между конечной датой и начальной датой
-                // Если разность 0 или меньше
-                if (diffDate<=0 || diffNow_difStart<=0 || diffNow_difFinish<=0){
-                    // Вывести предупреждение
-                    System.out.println("Date is not correct!");
-                    Alert alert =new Alert(Alert.AlertType.ERROR , "Test");
-                    alert.setTitle("Вы ввели дату некорректно!");
-                    alert.setHeaderText("Проверьте правильность ввода даты!");
-                    alert.setContentText("Возможно вы перепутали начало и конец периода. Также отчёт нельзя взять за текущий день.");
-                    alert.showAndWait().ifPresent(rs -> {
-                        if (rs == ButtonType.OK){}
-                    });
-                } else { // Иначе, если дата в порядке
-                    data_rep_org_table.setItems(null); // Обнулить данные в таблице
-                    ProgressIndicator pi = new ProgressIndicator(); // Запуск прогресс индикатора
-                    VBox box = new VBox(pi);
-                    box.setAlignment(Pos.CENTER);
-                    data_rep_org_table.setDisable(true);
-                    // Установить текст для таблицы
-                    Label label_load=new Label();
-                    label_load.setText("Загрузка данных...");
-                    label_load.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 18));
-                    data_rep_org_table.setPlaceholder(label_load);
-                    vbox_rep_org_main.setDisable(true);
-                    root_org_report.getChildren().add(box);
-                    // Запустить поток для получения отчёта с сервера
-                    Task ReportOrgTask = new ReportController.ReportOrgTask(cookie, "",dateStart,dateFinish);
+                        // Получение данных с распарсенного поля
+                        ArrayList<ReportModel> parsed_result_arr= (ArrayList<ReportModel>) ReportOrgTask.getValue();
+                        if (parsed_result_arr==null){
+                            vbox_org_filter.setDisable(true);
+                            download_report_org_b.setDisable(true);
 
-                    //  После выполнения потока
-                    ReportOrgTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
-                        @Override
-                        public void handle(WorkerStateEvent event) {
-                            box.setDisable(true);
-                            pi.setVisible(false);
-                            vbox_rep_org_main.setDisable(false);
-                            data_rep_org_table.setDisable(false);
-                            vbox_org_filter.setDisable(false);
-
-                            // Получение данных с распарсенного поля
-                            ArrayList<ReportModel> parsed_result_arr= (ArrayList<ReportModel>) ReportOrgTask.getValue();
-                            if (parsed_result_arr==null){
-                                vbox_org_filter.setDisable(true);
-                                download_report_org_b.setDisable(true);
-
-                                Label label_load=new Label();
-                                label_load.setText("Выберите параметры для отчёта.");
-                                label_load.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
-                                data_rep_org_table.setPlaceholder(label_load);
-                                period_org_label.setText("Отчёт не существует.");
-                                Alert alert =new Alert(Alert.AlertType.ERROR , "Test");
-                                alert.setTitle("Отчёт не сформирован!");
-                                alert.setHeaderText("За данный период отчёт ещё не был сформирован на сервере!");
-                                alert.setContentText("Выберите другой период!");
-                                alert.showAndWait().ifPresent(rs -> {if (rs == ButtonType.OK){}});
-                            } else {
-                                System.out.println(parsed_result_arr.get(0).getPeriod());
-                                // Получить период
-                                SimpleDateFormat formatStringDate = new SimpleDateFormat("yyyy-MM-dd");
-                                Date dateStartOrg = null;
-                                Date dateFinishOrg =null;
-                                try {
-                                    dateStartOrg = formatStringDate.parse(String.valueOf(dateStart));
-                                    dateFinishOrg= formatStringDate.parse(String.valueOf(dateFinish));
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
-                                }
-                                String DateStartOrgString = new SimpleDateFormat("dd.MM.yyyy").format(dateStartOrg);
-                                String DateFinishOrgString = new SimpleDateFormat("dd.MM.yyyy").format(dateFinishOrg);
-                                String period_report_label="Отчёт за период с "+DateStartOrgString+" по "+DateFinishOrgString;
-                                period_org_label.setText(period_report_label);
-
-                                ObservableList<ReportModel> dataReport = FXCollections.observableArrayList(parsed_result_arr);
-                                // Заполнение данными таблицы
-                                name_company_org_col.setCellValueFactory(new PropertyValueFactory<>("nameCompany"));
-                                name_company_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-                                number_appeal_org_col.setCellValueFactory(new PropertyValueFactory<>("numberAppeal"));
-                                number_appeal_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-                                name_appeal_org_col.setCellValueFactory(new PropertyValueFactory<>("nameAppeal"));
-                                name_appeal_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-                                date_create_org_col.setCellValueFactory(new PropertyValueFactory<>("dateCreate"));
-                                date_create_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-                                date_end_org_col.setCellValueFactory(new PropertyValueFactory<>("dateEnd"));
-                                date_end_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-                                status_org_col.setCellValueFactory(new PropertyValueFactory<>("status"));
-                                status_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-                                cur_step_org_col.setCellValueFactory(new PropertyValueFactory<>("currentStep"));
-                                cur_step_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-                                applicant_org_col.setCellValueFactory(new PropertyValueFactory<>("applicant"));
-                                applicant_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
-
-                                data_rep_org_table.setItems(dataReport);
-                                download_report_org_b.setDisable(false);
-                                // Вызов события для кнопки скачивания отчета
-                                download_report_org_b.setOnAction(event1 -> {
-                                    ReportController reportController=new ReportController();
-                                    reportController.Download_report(parsed_result_arr ,dateStart, dateFinish); // Скачивание отчётаа
-                                });
-
-                                SetFilterOrg(parsed_result_arr, dateStart, dateFinish); // Установить фильтры
-                                autoResizeColumns(data_rep_org_table); // Выровнять колонки в таблице
-                                createContextMenuTableOrg(cookie);
-
+                            Label label_load=new Label();
+                            label_load.setText("Выберите параметры для отчёта.");
+                            label_load.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+                            data_rep_org_table.setPlaceholder(label_load);
+                            period_org_label.setText("Отчёт не существует.");
+                            Alert alert =new Alert(Alert.AlertType.ERROR , "Test");
+                            alert.setTitle("Отчёт не сформирован!");
+                            alert.setHeaderText("За данный период отчёт ещё не был сформирован на сервере!");
+                            alert.setContentText("Выберите другой период!");
+                            alert.showAndWait().ifPresent(rs -> {if (rs == ButtonType.OK){}});
+                        } else {
+                            System.out.println(parsed_result_arr.get(0).getPeriod());
+                            // Получить период
+                            SimpleDateFormat formatStringDate = new SimpleDateFormat("yyyy-MM-dd");
+                            Date dateStartOrg = null;
+                            Date dateFinishOrg =null;
+                            try {
+                                dateStartOrg = formatStringDate.parse(String.valueOf(dateStart));
+                                dateFinishOrg= formatStringDate.parse(String.valueOf(dateFinish));
+                            } catch (ParseException e) {
+                                e.printStackTrace();
                             }
-                        }
-                    });
+                            String DateStartOrgString = new SimpleDateFormat("dd.MM.yyyy").format(dateStartOrg);
+                            String DateFinishOrgString = new SimpleDateFormat("dd.MM.yyyy").format(dateFinishOrg);
+                            String period_report_label="Отчёт за период с "+DateStartOrgString+" по "+DateFinishOrgString;
+                            period_org_label.setText(period_report_label);
 
-                    // Запуск потока
-                    Thread reportOrgThread = new Thread(ReportOrgTask);
-                    reportOrgThread.setDaemon(true);
-                    reportOrgThread.start();
-                }
+                            ObservableList<ReportModel> dataReport = FXCollections.observableArrayList(parsed_result_arr);
+                            // Заполнение данными таблицы
+                            name_company_org_col.setCellValueFactory(new PropertyValueFactory<>("nameCompany"));
+                            name_company_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+                            number_appeal_org_col.setCellValueFactory(new PropertyValueFactory<>("numberAppeal"));
+                            number_appeal_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+                            name_appeal_org_col.setCellValueFactory(new PropertyValueFactory<>("nameAppeal"));
+                            name_appeal_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+                            date_create_org_col.setCellValueFactory(new PropertyValueFactory<>("dateCreate"));
+                            date_create_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+                            date_end_org_col.setCellValueFactory(new PropertyValueFactory<>("dateEnd"));
+                            date_end_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+                            status_org_col.setCellValueFactory(new PropertyValueFactory<>("status"));
+                            status_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+                            cur_step_org_col.setCellValueFactory(new PropertyValueFactory<>("currentStep"));
+                            cur_step_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+                            applicant_org_col.setCellValueFactory(new PropertyValueFactory<>("applicant"));
+                            applicant_org_col.setCellFactory(TextFieldTableCell.<ReportModel>forTableColumn());
+
+                            data_rep_org_table.setItems(dataReport);
+                            download_report_org_b.setDisable(false);
+                            // Вызов события для кнопки скачивания отчета
+                            download_report_org_b.setOnAction(event1 -> {
+                                ReportController reportController=new ReportController();
+                                reportController.Download_report(parsed_result_arr ,dateStart, dateFinish); // Скачивание отчётаа
+                            });
+
+                            SetFilterOrg(parsed_result_arr, dateStart, dateFinish); // Установить фильтры
+                            autoResizeColumns(data_rep_org_table); // Выровнять колонки в таблице
+                            createContextMenuTableOrg(cookie);
+
+                        }
+                    }
+                });
+
+                // Запуск потока
+                Thread reportOrgThread = new Thread(ReportOrgTask);
+                reportOrgThread.setDaemon(true);
+                reportOrgThread.start();
             }
-        });
+        }
+
     }
 
     public void createContextMenuFilterField(String typeFilter, ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){

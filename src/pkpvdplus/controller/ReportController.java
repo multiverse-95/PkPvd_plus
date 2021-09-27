@@ -89,12 +89,14 @@ public class ReportController {
         private final String search_text;
         private final LocalDate dateStart; // Дата начала в юникс
         private final LocalDate dateFinish; // Дата окончания в юникс
+        private final String typeGetDoc;
 
-        public ReportOrgTask(String cookies, String search_text, LocalDate dateStart, LocalDate dateFinish) {
+        public ReportOrgTask(String cookies, String search_text, LocalDate dateStart, LocalDate dateFinish, String typeGetDoc) {
             this.cookies = cookies;
             this.search_text = search_text;
             this.dateStart = dateStart;
             this.dateFinish = dateFinish;
+            this.typeGetDoc=typeGetDoc;
         }
         @Override
         protected ArrayList<ReportModel> call() throws Exception {
@@ -102,11 +104,28 @@ public class ReportController {
             System.out.println("start date: "+dateStart+" finish date: "+dateFinish);
             String dateStartS = convertTimeOrgInput(String.valueOf(dateStart));
             String dateFinishS = convertTimeOrgInput(String.valueOf(dateFinish));
-
+            ArrayList<ReportModel> reportListOrg=new ArrayList<ReportModel>();
             // Получение отчёта по заявлениям с сервера
-            String jsonOrg= getReportOrg(cookies, dateStartS, dateFinishS);
-            MFCsList=getMFCs(cookies);
-            ArrayList<ReportModel> reportListOrg= parsingReportOrg(jsonOrg, MFCsList);
+            switch (typeGetDoc){
+                case "ALL":
+                    System.out.println("Chosen ALL DOC");
+                    String jsonOrgALL= getReportOrgTypeDocALL(cookies, dateStartS, dateFinishS);
+                    MFCsList=getMFCs(cookies);
+                    reportListOrg= parsingReportOrg(jsonOrgALL, MFCsList);
+                    break;
+                case "MFC":
+                    System.out.println("Chosen MFC DOC");
+                    String jsonOrgMFC= getReportOrgTypeDocMFC(cookies, dateStartS, dateFinishS);
+                    MFCsList=getMFCs(cookies);
+                    reportListOrg= parsingReportOrg(jsonOrgMFC, MFCsList);
+                    break;
+                case "EMAIL":
+                    System.out.println("Chosen EMAIL DOC");
+                    String jsonOrgEMAIL= getReportOrgTypeDocEMAIL(cookies, dateStartS, dateFinishS);
+                    MFCsList=getMFCs(cookies);
+                    reportListOrg= parsingReportOrg(jsonOrgEMAIL, MFCsList);
+                    break;
+            }
 
             return reportListOrg; // Возвращаем итоговый отчёт
         }
@@ -242,7 +261,7 @@ public class ReportController {
     }
 
     // Функция для получения отчёта с сервера (Только юридические лица)
-    public static String getReportOrg(String cookie, String dateStart, String dateFinish) throws IOException {
+    public static String getReportOrgTypeDocALL(String cookie, String dateStart, String dateFinish) throws IOException {
         CookieStore httpCookieStore = new BasicCookieStore();
         // Заполнение json параметрами
         String JsonToServer="{\"usedFields\":[\"subjects.subjectType\",\"createEvent.dateWhen\",\"name\"],\"rules\":[{\"rules\":[{\"id\":\"8ab9b998-0123-4456-b89a-b17c0ccf7e9f\"," +
@@ -260,6 +279,96 @@ public class ReportController {
                 "\"values\":[{\"type\":\"text\",\"value\":\"Предоставление сведений об объекте недвижимости\"}]},{\"id\":\"9aa9aa9a-4567-489a-bcde-f17c12254bb8\"," +
                 "\"field\":\"name\",\"type\":\"text\",\"input\":\"text\",\"operator\":\"contains\",\"values\":[{\"type\":\"text\"," +
                 "\"value\":\"Предоставление сведений о правообладателе\"}]}],\"condition\":\"OR\"}],\"condition\":\"AND\"}],\"condition\":\"OR\",\"not\":false}";
+        String postUrl       = "http://10.42.200.207:9188/query/execute/appeal";// Ссылка на сервер
+        HttpClient httpClient = null;
+        HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
+        httpClient = builder.build();
+        HttpPost post          = new HttpPost(postUrl);
+        StringEntity postingString = new StringEntity(JsonToServer, StandardCharsets.UTF_8);// Конвертирование json в строку
+
+        post.setEntity(postingString); // Установка json для запроса
+        post.setHeader("Content-type", "application/json");
+        post.addHeader("Cookie","JSESSIONID="+cookie);
+        post.addHeader("Content-Search","a2VtLXZ2dnxSU19BRE1JTjtSU19TQ0FOO1JTX0RFTElWRVJZO1JTX1JFQ0VQVElPTjtSU19ESVNQO1JTX01BTjs=");
+        HttpResponse response = httpClient.execute(post); // Выполнение post запроса на сервер
+        System.out.println(response.getStatusLine());
+        HttpEntity entity = response.getEntity(); // Получение результата от сервера
+
+        String jsonResult=EntityUtils.toString(entity);
+
+        //System.out.println("Json ORG! - \n"+jsonResult);
+        return jsonResult; // Возвращаем результат в формате csv
+    }
+
+    // Функция для получения отчёта с сервера (Только юридические лица)
+    public static String getReportOrgTypeDocMFC(String cookie, String dateStart, String dateFinish) throws IOException {
+        CookieStore httpCookieStore = new BasicCookieStore();
+        // Заполнение json параметрами
+        String JsonToServer="{\"usedFields\":[\"subjects.subjectType\",\"createEvent.dateWhen\",\"statements.givenRequestDocumentType.typeOutputDoc\",\"name\"]," +
+                "\"rules\":[{\"rules\":[{\"id\":\"8ab9b998-0123-4456-b89a-b17c0ccf7e9f\",\"field\":\"subjects.subjectType\",\"type\":\"cls\",\"input\":\"cls\"," +
+                "\"operator\":\"equal\",\"values\":[{\"type\":\"cls\",\"value\":\"007002001000\"}]},{\"id\":\"a8aa9ba9-cdef-4012-b456-717bc9b25ac4\"," +
+                "\"field\":\"createEvent.dateWhen\",\"type\":\"datetime\",\"input\":\"datetime\",\"operator\":\"between\",\"values\":[{\"type\":\"datetime\"," +
+                "\"value\":\""+dateStart+"\"},{\"type\":\"datetime\",\"value\":\""+dateFinish+"\"}]},{\"id\":\"aa8a9a8b-0123-4456-b89a-b17c26474d50\"," +
+                "\"field\":\"statements.givenRequestDocumentType.typeOutputDoc\",\"type\":\"cls\",\"input\":\"cls\",\"operator\":\"equal\",\"values\":[{\"type\":\"cls\"," +
+                "\"value\":\"785007000000\"}]},{\"rules\":[{\"id\":\"9b9a8ba9-89ab-4cde-b012-317bc9b49af7\",\"field\":\"name\",\"type\":\"text\",\"input\":\"text\"," +
+                "\"operator\":\"contains\",\"values\":[{\"type\":\"text\",\"value\":\"Предоставление сведений об объекте недвижимости\"}]}," +
+                "{\"id\":\"b98b8a9b-cdef-4012-b456-717c12247e04\",\"field\":\"name\",\"type\":\"text\",\"input\":\"text\",\"operator\":\"contains\"," +
+                "\"values\":[{\"type\":\"text\",\"value\":\"Предоставление сведений о правообладателе\"}]}],\"condition\":\"OR\"}],\"condition\":\"AND\"}," +
+                "{\"rules\":[{\"id\":\"a8a88889-4567-489a-bcde-f17c0cd528f7\",\"field\":\"subjects.subjectType\",\"type\":\"cls\",\"input\":\"cls\"," +
+                "\"operator\":\"equal\",\"values\":[{\"type\":\"cls\",\"value\":\"007002004000\"}]},{\"id\":\"989a9b88-0123-4456-b89a-b17c0cd56cd9\"," +
+                "\"field\":\"createEvent.dateWhen\",\"type\":\"datetime\",\"input\":\"datetime\",\"operator\":\"between\",\"values\":[{\"type\":\"datetime\"," +
+                "\"value\":\""+dateStart+"\"},{\"type\":\"datetime\",\"value\":\""+dateFinish+"\"}]},{\"id\":\"989ab98b-cdef-4012-b456-717c26477219\"," +
+                "\"field\":\"statements.givenRequestDocumentType.typeOutputDoc\",\"type\":\"cls\",\"input\":\"cls\",\"operator\":\"equal\"," +
+                "\"values\":[{\"type\":\"cls\",\"value\":\"785007000000\"}]},{\"rules\":[{\"id\":\"99b89998-cdef-4012-b456-717c0cd5f703\",\"field\":\"name\"," +
+                "\"type\":\"text\",\"input\":\"text\",\"operator\":\"contains\",\"values\":[{\"type\":\"text\",\"value\":\"Предоставление сведений об объекте недвижимости\"}]}," +
+                "{\"id\":\"9aa9aa9a-4567-489a-bcde-f17c12254bb8\",\"field\":\"name\",\"type\":\"text\",\"input\":\"text\",\"operator\":\"contains\"," +
+                "\"values\":[{\"type\":\"text\",\"value\":\"Предоставление сведений о правообладателе\"}]}],\"condition\":\"OR\"}],\"condition\":\"AND\"}]," +
+                "\"condition\":\"OR\",\"not\":false}";
+        String postUrl       = "http://10.42.200.207:9188/query/execute/appeal";// Ссылка на сервер
+        HttpClient httpClient = null;
+        HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
+        httpClient = builder.build();
+        HttpPost post          = new HttpPost(postUrl);
+        StringEntity postingString = new StringEntity(JsonToServer, StandardCharsets.UTF_8);// Конвертирование json в строку
+
+        post.setEntity(postingString); // Установка json для запроса
+        post.setHeader("Content-type", "application/json");
+        post.addHeader("Cookie","JSESSIONID="+cookie);
+        post.addHeader("Content-Search","a2VtLXZ2dnxSU19BRE1JTjtSU19TQ0FOO1JTX0RFTElWRVJZO1JTX1JFQ0VQVElPTjtSU19ESVNQO1JTX01BTjs=");
+        HttpResponse response = httpClient.execute(post); // Выполнение post запроса на сервер
+        System.out.println(response.getStatusLine());
+        HttpEntity entity = response.getEntity(); // Получение результата от сервера
+
+        String jsonResult=EntityUtils.toString(entity);
+
+        //System.out.println("Json ORG! - \n"+jsonResult);
+        return jsonResult; // Возвращаем результат в формате csv
+    }
+
+    // Функция для получения отчёта с сервера (Только юридические лица)
+    public static String getReportOrgTypeDocEMAIL(String cookie, String dateStart, String dateFinish) throws IOException {
+        CookieStore httpCookieStore = new BasicCookieStore();
+        // Заполнение json параметрами
+        String JsonToServer="{\"usedFields\":[\"subjects.subjectType\",\"createEvent.dateWhen\",\"statements.givenRequestDocumentType.typeOutputDoc\",\"name\"]," +
+                "\"rules\":[{\"rules\":[{\"id\":\"8ab9b998-0123-4456-b89a-b17c0ccf7e9f\",\"field\":\"subjects.subjectType\",\"type\":\"cls\",\"input\":\"cls\"," +
+                "\"operator\":\"equal\",\"values\":[{\"type\":\"cls\",\"value\":\"007002001000\"}]},{\"id\":\"a8aa9ba9-cdef-4012-b456-717bc9b25ac4\"," +
+                "\"field\":\"createEvent.dateWhen\",\"type\":\"datetime\",\"input\":\"datetime\",\"operator\":\"between\",\"values\":[{\"type\":\"datetime\"," +
+                "\"value\":\""+dateStart+"\"},{\"type\":\"datetime\",\"value\":\""+dateFinish+"\"}]},{\"id\":\"aa8a9a8b-0123-4456-b89a-b17c26474d50\"," +
+                "\"field\":\"statements.givenRequestDocumentType.typeOutputDoc\",\"type\":\"cls\",\"input\":\"cls\",\"operator\":\"equal\",\"values\":[{\"type\":\"cls\"," +
+                "\"value\":\"785003000000\"}]},{\"rules\":[{\"id\":\"9b9a8ba9-89ab-4cde-b012-317bc9b49af7\",\"field\":\"name\",\"type\":\"text\",\"input\":\"text\"," +
+                "\"operator\":\"contains\",\"values\":[{\"type\":\"text\",\"value\":\"Предоставление сведений об объекте недвижимости\"}]}," +
+                "{\"id\":\"b98b8a9b-cdef-4012-b456-717c12247e04\",\"field\":\"name\",\"type\":\"text\",\"input\":\"text\",\"operator\":\"contains\"," +
+                "\"values\":[{\"type\":\"text\",\"value\":\"Предоставление сведений о правообладателе\"}]}],\"condition\":\"OR\"}],\"condition\":\"AND\"}," +
+                "{\"rules\":[{\"id\":\"a8a88889-4567-489a-bcde-f17c0cd528f7\",\"field\":\"subjects.subjectType\",\"type\":\"cls\",\"input\":\"cls\"," +
+                "\"operator\":\"equal\",\"values\":[{\"type\":\"cls\",\"value\":\"007002004000\"}]},{\"id\":\"989a9b88-0123-4456-b89a-b17c0cd56cd9\"," +
+                "\"field\":\"createEvent.dateWhen\",\"type\":\"datetime\",\"input\":\"datetime\",\"operator\":\"between\",\"values\":[{\"type\":\"datetime\"," +
+                "\"value\":\""+dateStart+"\"},{\"type\":\"datetime\",\"value\":\""+dateFinish+"\"}]},{\"id\":\"989ab98b-cdef-4012-b456-717c26477219\"," +
+                "\"field\":\"statements.givenRequestDocumentType.typeOutputDoc\",\"type\":\"cls\",\"input\":\"cls\",\"operator\":\"equal\",\"values\":[{\"type\":\"cls\"," +
+                "\"value\":\"785003000000\"}]},{\"rules\":[{\"id\":\"99b89998-cdef-4012-b456-717c0cd5f703\",\"field\":\"name\",\"type\":\"text\",\"input\":\"text\"," +
+                "\"operator\":\"contains\",\"values\":[{\"type\":\"text\",\"value\":\"Предоставление сведений об объекте недвижимости\"}]}," +
+                "{\"id\":\"9aa9aa9a-4567-489a-bcde-f17c12254bb8\",\"field\":\"name\",\"type\":\"text\",\"input\":\"text\",\"operator\":\"contains\"," +
+                "\"values\":[{\"type\":\"text\",\"value\":\"Предоставление сведений о правообладателе\"}]}],\"condition\":\"OR\"}],\"condition\":\"AND\"}]," +
+                "\"condition\":\"OR\",\"not\":false}";
         String postUrl       = "http://10.42.200.207:9188/query/execute/appeal";// Ссылка на сервер
         HttpClient httpClient = null;
         HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);

@@ -26,10 +26,21 @@ public class AppealGeneralInfoModel {
     private String executeEventAdvanced; // Начало выполнения шага
     private String operationCommentAdvanced; // Комментарий к текущей операции
 
+    // Способ представления и получения документов
+    private boolean pres_on_MFC; // Представление документов В МФЦ
+    private boolean pres_mail; // Представление документов почтой
+    private boolean pres_indiv; // Представление документов индивидуально
+    private boolean output_doc_MFC; // Получение документов в МФЦ
+    private boolean output_doc_mail; // Получение документов почтой
+    private boolean output_doc_email; // Получение документов на электронную почту
+    private String output_email; // Адрес эл. почты (если есть)
+
     public AppealGeneralInfoModel(String statementType, String internalNum, String createEventDateWhen, String createEventPerformer, String packageNum, String numPPOZ,
                                   String createPPOZDate, String statusNotePPOZ, String statusPPOZ, String statusPPOZDate, String routineExecutionDays, String processingEndDate,
                                   String nameAdvanced, String internalNumAdvanced, String createEventDateWhenAdvanced, String createEventPerformerAdvanced, String currentStepAdvanced,
-                                  String moveStepEventDateWhenAdvanced, String moveStepPerformerAdvanced, String executeEventAdvanced, String operationCommentAdvanced) {
+                                  String moveStepEventDateWhenAdvanced, String moveStepPerformerAdvanced, String executeEventAdvanced, String operationCommentAdvanced,
+                                  boolean pres_on_MFC, boolean pres_mail, boolean pres_indiv, boolean output_doc_MFC, boolean output_doc_mail, boolean output_doc_email,
+                                  String output_email) {
         this.statementType = statementType;
         this.internalNum = internalNum;
         this.createEventDateWhen = createEventDateWhen;
@@ -51,6 +62,13 @@ public class AppealGeneralInfoModel {
         this.moveStepPerformerAdvanced = moveStepPerformerAdvanced;
         this.executeEventAdvanced = executeEventAdvanced;
         this.operationCommentAdvanced = operationCommentAdvanced;
+        this.pres_on_MFC = pres_on_MFC;
+        this.pres_mail = pres_mail;
+        this.pres_indiv = pres_indiv;
+        this.output_doc_MFC = output_doc_MFC;
+        this.output_doc_mail = output_doc_mail;
+        this.output_doc_email = output_doc_email;
+        this.output_email = output_email;
     }
 
     public String getStatementType() {
@@ -219,5 +237,61 @@ public class AppealGeneralInfoModel {
 
     public void setOperationCommentAdvanced(String operationCommentAdvanced) {
         this.operationCommentAdvanced = operationCommentAdvanced;
+    }
+
+    public boolean isPres_on_MFC() {
+        return pres_on_MFC;
+    }
+
+    public void setPres_on_MFC(boolean pres_on_MFC) {
+        this.pres_on_MFC = pres_on_MFC;
+    }
+
+    public boolean isPres_mail() {
+        return pres_mail;
+    }
+
+    public void setPres_mail(boolean pres_mail) {
+        this.pres_mail = pres_mail;
+    }
+
+    public boolean isPres_indiv() {
+        return pres_indiv;
+    }
+
+    public void setPres_indiv(boolean pres_indiv) {
+        this.pres_indiv = pres_indiv;
+    }
+
+    public boolean isOutput_doc_MFC() {
+        return output_doc_MFC;
+    }
+
+    public void setOutput_doc_MFC(boolean output_doc_MFC) {
+        this.output_doc_MFC = output_doc_MFC;
+    }
+
+    public boolean isOutput_doc_mail() {
+        return output_doc_mail;
+    }
+
+    public void setOutput_doc_mail(boolean output_doc_mail) {
+        this.output_doc_mail = output_doc_mail;
+    }
+
+    public boolean isOutput_doc_email() {
+        return output_doc_email;
+    }
+
+    public void setOutput_doc_email(boolean output_doc_email) {
+        this.output_doc_email = output_doc_email;
+    }
+
+    public String getOutput_email() {
+        return output_email;
+    }
+
+    public void setOutput_email(String output_email) {
+        this.output_email = output_email;
     }
 }
