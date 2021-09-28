@@ -459,7 +459,7 @@ public class ReportController {
                 // Берём только данные по ЕГРН
                 if (lineInArray[11].equals("Предоставление сведений, содержащихся в ЕГРН, об объектах недвижимости и (или) их правообладателях")){
                     // Записываем нужную информацию в список (Организация, номера обращений, даты создания, заявители)
-                    reportListOrders.add(new ReportModel("", lineInArray[1], lineInArray[2],"", lineInArray[3], "",lineInArray[12],"",""));
+                    reportListOrders.add(new ReportModel("", lineInArray[1], lineInArray[2],lineInArray[11], lineInArray[3], "",lineInArray[12],"",""));
                 }
             }
         }
@@ -476,24 +476,35 @@ public class ReportController {
         }
 
         System.out.println("Size Orders List: "+reportListOrders.size()+" Size appeal list: "+reportListAppeal.size());
-        // Обрабатываем отфильтрованный отчёт с отчётом по обращениям
-        if(reportListAppeal.size()>reportListOrders.size()){ // Проверяем, чтобы отчёт по обращениям был больше отчёта фильтрованного
-            for (int i=0; i<reportListOrders.size(); i++){ // Идём по циклу фильтрованного отчёта
-                String FilterNumberAppeal = reportListOrders.get(i).getNumberAppeal().toLowerCase(); // Получаем номер обращения
-                for (int j=0; j<reportListAppeal.size(); j++){ // Идём по циклу отчёта по обращениям
-                    String ListNumberAppeal = reportListAppeal.get(j).getNumberAppeal().toLowerCase(); // Получаем номер обращения
-                    if (FilterNumberAppeal.contains(ListNumberAppeal)){ // Сравниваем номер обращения с фильтрованного отчёта и отчёта по обращениям
-                        // Если совпадают, то добавить в финальный отчёт информацию: Организация, номер обращения и т.д.
-                        reportListFinal.add(new ReportModel("",reportListOrders.get(i).getNameCompany(), reportListOrders.get(i).getNumberAppeal(),
-                                reportListAppeal.get(j).getNameAppeal(),reportListOrders.get(i).getDateCreate(),
-                                reportListAppeal.get(j).getStatus(),reportListOrders.get(i).getApplicant(),
-                                reportListAppeal.get(j).getDateEnd(), reportListAppeal.get(j).getCurrentStep()));
+        if (reportListAppeal.size() == 0) {
+            for (int i=0; i<reportListOrders.size(); i++){
+                reportListFinal.add(new ReportModel("",reportListOrders.get(i).getNameCompany(), reportListOrders.get(i).getNumberAppeal(),
+                        reportListOrders.get(i).getNameAppeal(),reportListOrders.get(i).getDateCreate(),
+                        reportListOrders.get(i).getStatus(),reportListOrders.get(i).getApplicant(),
+                        reportListOrders.get(i).getDateEnd(), reportListOrders.get(i).getCurrentStep()));
+            }
+
+        } else {
+            // Обрабатываем отфильтрованный отчёт с отчётом по обращениям
+            if(reportListAppeal.size()>reportListOrders.size()){ // Проверяем, чтобы отчёт по обращениям был больше отчёта фильтрованного
+                for (int i=0; i<reportListOrders.size(); i++){ // Идём по циклу фильтрованного отчёта
+                    String FilterNumberAppeal = reportListOrders.get(i).getNumberAppeal().toLowerCase(); // Получаем номер обращения
+                    for (int j=0; j<reportListAppeal.size(); j++){ // Идём по циклу отчёта по обращениям
+                        String ListNumberAppeal = reportListAppeal.get(j).getNumberAppeal().toLowerCase(); // Получаем номер обращения
+                        if (FilterNumberAppeal.contains(ListNumberAppeal)){ // Сравниваем номер обращения с фильтрованного отчёта и отчёта по обращениям
+                            // Если совпадают, то добавить в финальный отчёт информацию: Организация, номер обращения и т.д.
+                            reportListFinal.add(new ReportModel("",reportListOrders.get(i).getNameCompany(), reportListOrders.get(i).getNumberAppeal(),
+                                    reportListAppeal.get(j).getNameAppeal(),reportListOrders.get(i).getDateCreate(),
+                                    reportListAppeal.get(j).getStatus(),reportListOrders.get(i).getApplicant(),
+                                    reportListAppeal.get(j).getDateEnd(), reportListAppeal.get(j).getCurrentStep()));
+                        }
                     }
                 }
+            } else {
+                reportListFinal=null;
             }
-        } else {
-            reportListFinal=null;
         }
+
 
         System.out.println("Size Final List: "+reportListFinal.size());
 

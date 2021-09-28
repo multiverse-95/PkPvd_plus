@@ -971,6 +971,9 @@ public class appController {
         show_rep_org_b.setOnMouseEntered(event_mouse -> {
             ((Node) event_mouse.getSource()).setCursor(Cursor.HAND);
         });
+        type_getDoc_box.setOnMouseEntered(event_mouse -> {
+            ((Node) event_mouse.getSource()).setCursor(Cursor.HAND);
+        });
         choiceFilter_org_box.setOnMouseEntered(event_mouse -> {
             ((Node) event_mouse.getSource()).setCursor(Cursor.HAND);
         });
@@ -1149,6 +1152,9 @@ public class appController {
                             SetFilterOrg(parsed_result_arr, dateStart, dateFinish); // Установить фильтры
                             autoResizeColumns(data_rep_org_table); // Выровнять колонки в таблице
                             createContextMenuTableOrg(cookie);
+                            System.out.println("Result of org: " +parsed_result_arr.size());
+                            if (parsed_result_arr.size()>=200) ShowWarningIfOutRangeOrg();
+
 
                         }
                     }
@@ -1161,6 +1167,17 @@ public class appController {
             }
         }
 
+    }
+
+    public void ShowWarningIfOutRangeOrg(){
+        // Вывести предупреждение
+        Alert alert =new Alert(Alert.AlertType.WARNING , "Test");
+        alert.setTitle("Превышено ограничение сервера!");
+        alert.setHeaderText("Количество обращений больше 200!");
+        alert.setContentText("Выберите период поменьше.");
+        alert.showAndWait().ifPresent(rs -> {
+            if (rs == ButtonType.OK){}
+        });
     }
 
     public void createContextMenuFilterField(String typeFilter, ArrayList<ReportModel> dataReportList, LocalDate dateStart, LocalDate dateFinish){
