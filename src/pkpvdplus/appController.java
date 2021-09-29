@@ -905,9 +905,21 @@ public class appController {
                             } else {
                                 System.out.println(parsed_result_arr.get(0).getPeriod());
                                 // Получить период
-                                String period_report_label="Отчёт "+parsed_result_arr.get(0).getPeriod();
+                                SimpleDateFormat formatStringDate = new SimpleDateFormat("yyyy-MM-dd");
+                                Date dateStartOrg = null;
+                                Date dateFinishOrg =null;
+                                try {
+                                    dateStartOrg = formatStringDate.parse(String.valueOf(dateStart));
+                                    dateFinishOrg= formatStringDate.parse(String.valueOf(dateFinish));
+                                } catch (ParseException e) {
+                                    e.printStackTrace();
+                                }
+                                String DateStartOrgString = new SimpleDateFormat("dd.MM.yyyy").format(dateStartOrg);
+                                String DateFinishOrgString = new SimpleDateFormat("dd.MM.yyyy").format(dateFinishOrg);
+                                String period_report_label="Отчёт за период с "+DateStartOrgString+" по "+DateFinishOrgString;
+
                                 period_label.setText(period_report_label);
-                                parsed_result_arr.remove(0); // Удалить период со списка
+                                //parsed_result_arr.remove(0); // Удалить период со списка
 
                                 ObservableList<ReportModel> dataReport = FXCollections.observableArrayList(parsed_result_arr);
                                 // Заполнение данными таблицы

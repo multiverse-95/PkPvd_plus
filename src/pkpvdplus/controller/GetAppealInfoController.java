@@ -368,6 +368,9 @@ public class GetAppealInfoController {
                 case "CREATE":
                     currentStepAdvanced="Приём обращения";
                     break;
+                case "ATTACH_IMAGE":
+                    currentStepAdvanced="Присоединение образов";
+                    break;
                 default:
                     currentStepAdvanced="Неизвестно";
                     break;

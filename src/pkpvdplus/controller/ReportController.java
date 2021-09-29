@@ -65,20 +65,14 @@ public class ReportController {
         }
         @Override
         protected ArrayList<ReportModel> call() throws Exception {
-            System.out.println("start date: "+dateStart+" finish date: "+dateFinish);
-            List<Long> timelist=convertTime(dateStart, dateFinish);// Конвертируем время в UNIX формат
-            long dateStartLong=timelist.get(0); // Получение начальной даты
-            long dateFinishLong=timelist.get(1); // Получение конечной даты
-            System.out.println("start: "+dateStartLong+" finish: "+dateFinishLong);
-            String typeListOrdersPeriod="Список заявлений.jrd"; // Отчёт по заявлениям
-            String typeAppealPeriod="Список обращений.jrd"; // Отчёт по обращениям
-            // Получение отчёта по заявлениям с сервера
-            String csvListOrdersReport=getReport(dateStartLong,dateFinishLong,cookies, typeListOrdersPeriod);
-            // Получение отчёта по обращениям с сервера
-            String csvAppealReport=getReport(dateStartLong,dateFinishLong,cookies, typeAppealPeriod);
-            //String csvReportMain="";
-            // Обработка отчётов и получение одного общего отчёта
-            ArrayList<ReportModel> reportListFinal= parsingReport(csvListOrdersReport, csvAppealReport);
+            //System.out.println("start date: "+dateStart+" finish date: "+dateFinish);
+            String dateStartStr= String.valueOf(dateStart);
+            String dateFinishStr=String.valueOf(dateFinish);
+            System.out.println("start date: "+dateStartStr+" finish date: "+dateFinishStr);
+            ArrayList<MFCsInfoModel> MFCsList=getMFCs(cookies);
+            // получение одного общего отчёта
+
+            ArrayList<ReportModel> reportListFinal= GetReportAll(cookies,dateStartStr,dateFinishStr, MFCsList);
             return reportListFinal; // Возвращаем итоговый отчёт
         }
     }
@@ -167,17 +161,19 @@ public class ReportController {
         }
     }
 
-    // Функция для конвертирования времени в UNIX формат
-    public static List<Long> convertTime(LocalDate dateStart, LocalDate dateFinish) throws ParseException {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd"); // Получение времени по шаблону
-        Date date1 = format.parse(String.valueOf(dateStart));
-        Date date2 = format.parse(String.valueOf(dateFinish));
-        long timestamp1 = date1.getTime(); // Конвертирование даты начала в UNIX формат
-        long timestamp2 =date2.getTime(); // Конвертирование даты окончания в UNIX формат
-        List<Long> timelist=new ArrayList<Long>(); // Добавление даты начала и даты окончания в список
-        timelist.add(timestamp1);
-        timelist.add(timestamp2);
-        return timelist; // Возвращаем список с датами
+    // Конвертирование времени с UNIX формата
+    public static String convertTimeFromUnix(String timeUnix, String timeZone, String dateFormat){
+
+        long unixSeconds = Long.parseLong(timeUnix);
+        // convert seconds to milliseconds
+        Date date = new java.util.Date(unixSeconds);
+        // the format of your date
+        SimpleDateFormat sdf = new java.text.SimpleDateFormat(dateFormat);
+        // give a timezone reference for formatting (see comment at the bottom)
+        sdf.setTimeZone(java.util.TimeZone.getTimeZone(timeZone));
+        String formattedDate = sdf.format(date);
+        //System.out.println("FORMAT DATE FROM UNIX: "+ formattedDate);
+        return formattedDate;
     }
 
 
@@ -203,62 +199,91 @@ public class ReportController {
 
     }
 
-    // Функция для получения отчёта с сервера (Все заявители)
-    public static String getReport(long dateStart, long dateFinish,String cookie, String typeReport) throws IOException {
-        Payload_report payload_report = new Payload_report();
+    public static String GetReportFirst(String cookie, String dateStart, String dateFinish) throws IOException {
         CookieStore httpCookieStore = new BasicCookieStore();
-        //payload_user.file ="Список заявлений.jrd";
-        // Заполнение json параметрами
-        payload_report.file = typeReport;
-        payload_report.output="csv";
-
-        ArrayList<Params> params=new ArrayList<Params>();
-        Params params1=new Params();
-        params1.name="start";
-        params1.label="Начало периода";
-        params1.type="DATE";
-        params1.required=true;
-        params1.value=dateStart;
-        params.add(params1);
-
-        Params params2=new Params();
-        params2.name="end";
-        params2.label="Конец периода";
-        params2.type="DATE";
-        params2.required=true;
-        params2.value=dateFinish;
-        params.add(params2);
-        // Если тип отчёта Список обращений.jrd, то добавляем ещё одни параметры для запроса
-        if (typeReport.equals("Список обращений.jrd")){
-            Params params3=new Params();
-            params3.name="num";
-            params3.label="Код организации";
-            params3.type="STRING";
-            params3.required=false;
-            params3.value="";
-            params.add(params3);
-        }
-
-        payload_report.params=params; // Заполняем все параметры
-
-        String postUrl       = "http://10.42.200.207/api/rs/reports/execute";// Ссылка на сервер
-        Gson gson          = new Gson();
         HttpClient httpClient = null;
         HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
         httpClient = builder.build();
-        HttpPost post          = new HttpPost(postUrl);
-        StringEntity postingString = new StringEntity(gson.toJson(payload_report), StandardCharsets.UTF_8);// Конвертирование json в строку
-        System.out.println(gson.toJson(payload_report));
-        post.setEntity(postingString); // Установка json для запроса
-        post.setHeader("Content-type", "application/json");
-        post.addHeader("Cookie","JSESSIONID="+cookie);
-        HttpResponse response = httpClient.execute(post); // Выполнение post запроса на сервер
-        System.out.println(response.getStatusLine());
-        HttpEntity entity = response.getEntity(); // Получение результата от сервера
+        String getUrl       = "http://10.42.200.207/api/rs/appeal/search2?page=0&size=5&sort=createDate,desc&startWith=false&internalNum=" +
+                "&packageNum=&statusNotePPOZ=&currentStep=&createDateFrom="+dateStart+"&createDateTill="+dateFinish+"&createWho=&moveStepDate=" +
+                "&kudNum=&routineExecutionDays=&processingEndDateFrom=&processingEndDateTill=&typeGosUslug=&cn=&textApplicants=";// Сервер авторизации
+        HttpGet httpGet = new HttpGet(getUrl);
+        httpGet.setHeader("Content-type", "application/json");
+        httpGet.addHeader("Cookie","JSESSIONID="+cookie);
+        HttpResponse response = httpClient.execute(httpGet); // Выполняем get запрос для проверки действительности куки
 
-        String reportCsv=EntityUtils.toString(entity);
-        return reportCsv; // Возвращаем результат в формате csv
+        HttpEntity entity = response.getEntity();
+        String resultJson = EntityUtils.toString(entity); // Получаем результат запроса
+
+        int status_code= response.getStatusLine().getStatusCode(); // Получаем код ответа от сервера
+        System.out.println("Status GetOrder: "+status_code);
+        // Если код ответа 200, значит куки действителен, если 401 или другой, то недействителен
+        switch (status_code){
+            case 200:
+                return resultJson; // Возвращаем значение куки
+            default:
+                resultJson="";
+                return resultJson;
+        }
     }
+
+    public static ArrayList<ReportModel> GetReportAll(String cookie, String dateStart, String dateFinish, ArrayList<MFCsInfoModel> MFCsList) throws IOException, ParseException {
+        ArrayList<ReportModel> listAllReport=new ArrayList<ReportModel>();
+        ArrayList<ReportModel> filteredReport=new ArrayList<ReportModel>();
+        ArrayList<ReportModel> reportList=new ArrayList<ReportModel>();
+        String JsonFirst= GetReportFirst(cookie, dateStart, dateFinish);
+        JsonParser parser = new JsonParser();
+        JsonElement element = parser.parse(JsonFirst); // Получение главного элемента
+        System.out.println("ALL DATA: "+element.getAsJsonObject().get("totalElements").getAsInt());
+        //System.out.println("NumberOfElements: "+element.getAsJsonObject().get("numberOfElements").getAsInt());
+
+        double allDataRep=element.getAsJsonObject().get("totalElements").getAsInt();
+        double result=allDataRep/2000;
+        int page=(int)Math.ceil(result);
+        System.out.println("ALL PAGES: "+page);
+        for (int i_page=0; i_page<page; i_page++){
+            CookieStore httpCookieStore = new BasicCookieStore();
+            HttpClient httpClient = null;
+            HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
+            httpClient = builder.build();
+            String getUrl       = "http://10.42.200.207/api/rs/appeal/search2?page="+i_page+"&size=2000&sort=createDate,desc&startWith=false&internalNum=&packageNum=" +
+                    "&statusNotePPOZ=&currentStep=&createDateFrom="+dateStart+"&createDateTill="+dateFinish+"&createWho=&moveStepDate=&kudNum=&routineExecutionDays" +
+                    "=&processingEndDateFrom=&processingEndDateTill=&typeGosUslug=&cn=&textApplicants=";// Сервер авторизации
+            HttpGet httpGet = new HttpGet(getUrl);
+            httpGet.setHeader("Content-type", "application/json");
+            httpGet.addHeader("Cookie","JSESSIONID="+cookie);
+            HttpResponse response = httpClient.execute(httpGet); // Выполняем get запрос для проверки действительности куки
+
+            HttpEntity entity = response.getEntity();
+            String resultJson = EntityUtils.toString(entity); // Получаем результат запроса
+
+            int status_code= response.getStatusLine().getStatusCode(); // Получаем код ответа от сервера
+            System.out.println("Status GetOrder: "+status_code);
+            // Если код ответа 200, значит куки действителен, если 401 или другой, то недействителен
+            switch (status_code){
+                case 200:
+                    reportList= parsingReportAll(resultJson, MFCsList);
+                    listAllReport.addAll(reportList);
+                    break;
+                default:
+                    reportList=null;
+                    listAllReport=null;
+                    break;
+            }
+        }
+
+        for (ReportModel reportModel : listAllReport) {
+            if (reportModel.getNameAppeal().equals("Предоставление сведений об объекте недвижимости") ||
+                    reportModel.getNameAppeal().equals("Предоставление сведений о правообладателе")) {
+                filteredReport.add(reportModel);
+            }
+        }
+
+        Collections.reverse(filteredReport);
+        return filteredReport;
+    }
+
+
 
     // Функция для получения отчёта с сервера (Только юридические лица)
     public static String getReportOrgTypeDocALL(String cookie, String dateStart, String dateFinish) throws IOException {
@@ -420,120 +445,81 @@ public class ReportController {
         } else {
             return null;
         }
-
-
     }
 
-    // Функция для обработки отчётов
-    public static ArrayList<ReportModel> parsingReport(String csvListOrdersReport, String csvAppealReport) throws IOException, CsvValidationException {
-        ArrayList<ReportModel> reportListFinal; // Итоговый список (Фильтрованный список по заявлениям, документам и обращениям)
-        switch (csvListOrdersReport){
-            case "":
-                reportListFinal=null;
-                return reportListFinal;
-            default:
-                reportListFinal=parsingCsvData(csvListOrdersReport, csvAppealReport);
-                return reportListFinal;
+    public static ArrayList<ReportModel> parsingReportAll(String json, ArrayList<MFCsInfoModel> MFCsList) throws ParseException {
+        ArrayList<ReportModel> reportAllList=new ArrayList<ReportModel>();
+        JsonParser parser = new JsonParser();
+        JsonElement element = parser.parse(json); // Получение главного элемента
+        JsonArray content= element.getAsJsonObject().get("content").getAsJsonArray();
 
-        }
-    }
+        for (int i=0; i<content.size(); i++){
+            String codeOrg=""; String orgName=""; String internalNum=""; String name=""; String createDate="";
+            String statusNotePPOZ = ""; String textApplicants=""; String processingEndDate=""; String currentStep="";
 
-    public static ArrayList<ReportModel> parsingCsvData(String csvListOrdersReport, String csvAppealReport) throws IOException, CsvValidationException{
-        ArrayList<ReportModel> reportListOrders=new ArrayList<ReportModel>(); // Список по заявлениям
-        ArrayList<ReportModel> reportListAppeal=new ArrayList<ReportModel>(); // Список по обращениям
-        ArrayList<ReportModel> reportListFinal=new ArrayList<ReportModel>(); // Итоговый список (Фильтрованный список по заявлениям, документам и обращениям)
-
-        // Обрабатываем csv результат для отчёта по заявлениям
-        try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvListOrdersReport))
-                .withSkipLines(1)           // Пропускаем первую строку
-                .build()) {
-            String[] lineInArray;
-            // Идём по csv
-            while ((lineInArray = reader.readNext()) != null) {
-                // Получаем период с csv
-                reportListFinal.add(new ReportModel(lineInArray[0], "", "", "", "", "","","",""));
-                break; // После получения периода, прерываем чтение данных
-            }
-            // Вновь читаем csv
-            while ((lineInArray = reader.readNext()) != null) {
-                // Берём только данные по ЕГРН
-                if (lineInArray[11].equals("Предоставление сведений, содержащихся в ЕГРН, об объектах недвижимости и (или) их правообладателях")){
-                    // Записываем нужную информацию в список (Организация, номера обращений, даты создания, заявители)
-                    reportListOrders.add(new ReportModel("", lineInArray[1], lineInArray[2],lineInArray[11], lineInArray[3], "",lineInArray[12],"",""));
-                }
-            }
-        }
-
-        // Идём по отчёту обращений в csv
-        try (CSVReader reader = new CSVReaderBuilder(new StringReader(csvAppealReport))
-                .withSkipLines(3)           // Пропускаем первые три строки
-                .build()) {
-            String[] lineInArray;
-            while ((lineInArray = reader.readNext()) != null) {
-                // Записываем нужные данные в список отчёта по обращениям
-                reportListAppeal.add(new ReportModel("", "", lineInArray[6],lineInArray[5], "",lineInArray[8],"", lineInArray[11],lineInArray[13]));
-            }
-        }
-
-        System.out.println("Size Orders List: "+reportListOrders.size()+" Size appeal list: "+reportListAppeal.size());
-        if (reportListAppeal.size() == 0) {
-            for (int i=0; i<reportListOrders.size(); i++){
-                reportListFinal.add(new ReportModel("",reportListOrders.get(i).getNameCompany(), reportListOrders.get(i).getNumberAppeal(),
-                        reportListOrders.get(i).getNameAppeal(),reportListOrders.get(i).getDateCreate(),
-                        reportListOrders.get(i).getStatus(),reportListOrders.get(i).getApplicant(),
-                        reportListOrders.get(i).getDateEnd(), reportListOrders.get(i).getCurrentStep()));
-            }
-
-        } else {
-            // Обрабатываем отфильтрованный отчёт с отчётом по обращениям
-            if(reportListAppeal.size()>reportListOrders.size()){ // Проверяем, чтобы отчёт по обращениям был больше отчёта фильтрованного
-                for (int i=0; i<reportListOrders.size(); i++){ // Идём по циклу фильтрованного отчёта
-                    String FilterNumberAppeal = reportListOrders.get(i).getNumberAppeal().toLowerCase(); // Получаем номер обращения
-                    for (int j=0; j<reportListAppeal.size(); j++){ // Идём по циклу отчёта по обращениям
-                        String ListNumberAppeal = reportListAppeal.get(j).getNumberAppeal().toLowerCase(); // Получаем номер обращения
-                        if (FilterNumberAppeal.contains(ListNumberAppeal)){ // Сравниваем номер обращения с фильтрованного отчёта и отчёта по обращениям
-                            // Если совпадают, то добавить в финальный отчёт информацию: Организация, номер обращения и т.д.
-                            reportListFinal.add(new ReportModel("",reportListOrders.get(i).getNameCompany(), reportListOrders.get(i).getNumberAppeal(),
-                                    reportListAppeal.get(j).getNameAppeal(),reportListOrders.get(i).getDateCreate(),
-                                    reportListAppeal.get(j).getStatus(),reportListOrders.get(i).getApplicant(),
-                                    reportListAppeal.get(j).getDateEnd(), reportListAppeal.get(j).getCurrentStep()));
-                        }
+            if (!content.get(i).getAsJsonObject().get("codeOrg").isJsonNull()){
+                codeOrg = content.get(i).getAsJsonObject().get("codeOrg").getAsString();
+                for (MFCsInfoModel mfCsInfoModel : MFCsList) {
+                    if (codeOrg.equals(mfCsInfoModel.getCode())) {
+                        orgName = mfCsInfoModel.getName();
+                        break;
                     }
                 }
-            } else {
-                reportListFinal=null;
             }
-        }
-
-
-        System.out.println("Size Final List: "+reportListFinal.size());
-
-        /*ArrayList<String> columnOrder=new ArrayList<String>();
-        for (int i=0; i<reportListFinal.size(); i++){
-            columnOrder.add(reportListFinal.get(i).getNumberAppeal());
-        }
-
-        Set<String> uniqueReport = new HashSet<String>(columnOrder);
-        System.out.println("Unique report count: " + uniqueReport.size());
-
-        System.out.println("\nHere are the duplicate elements from list : " + findDuplicates(columnOrder));*/
-
-
-        return reportListFinal; // Возвращаем итоговый отчёт
-
-    }
-    // Функция для проверки на наличие дупликатов в списке
-    public static Set<String> findDuplicates(List<String> listContainingDuplicates) {
-
-        final Set<String> setToReturn = new HashSet<String>();
-        final Set<String> set1 = new HashSet<String>();
-
-        for (String yourInt : listContainingDuplicates) {
-            if (!set1.add(yourInt)) {
-                setToReturn.add(yourInt);
+            if (!content.get(i).getAsJsonObject().get("internalNum").isJsonNull()){
+                internalNum = content.get(i).getAsJsonObject().get("internalNum").getAsString();
             }
+            if (!content.get(i).getAsJsonObject().get("name").isJsonNull()){
+                name = content.get(i).getAsJsonObject().get("name").getAsString();
+            }
+            if (!content.get(i).getAsJsonObject().get("createDate").isJsonNull()){
+                createDate = content.get(i).getAsJsonObject().get("createDate").getAsString();
+                createDate=convertTimeFromUnix(createDate, "GMT+7", "dd.MM.yyyy");
+            }
+            if (!content.get(i).getAsJsonObject().get("statusNotePPOZ").isJsonNull()){
+                statusNotePPOZ = content.get(i).getAsJsonObject().get("statusNotePPOZ").getAsString();
+            }
+            if (!content.get(i).getAsJsonObject().get("textApplicants").isJsonNull()){
+                textApplicants = content.get(i).getAsJsonObject().get("textApplicants").getAsString();
+            }
+            if (!content.get(i).getAsJsonObject().get("processingEndDate").isJsonNull()){
+                processingEndDate = content.get(i).getAsJsonObject().get("processingEndDate").getAsString();
+                processingEndDate =convertTimeFromUnix(processingEndDate, "GMT+7", "dd.MM.yyyy");
+            }
+            if (!content.get(i).getAsJsonObject().get("currentStep").isJsonNull()){
+                currentStep = content.get(i).getAsJsonObject().get("currentStep").getAsString();
+
+                switch (currentStep){
+                    case "PROCESS_END_13":
+                        currentStep="Обработка завершена";
+                        break;
+                    case "WAIT_OUT_11":
+                        currentStep="Ожидается выдача";
+                        break;
+                    case "ATTACH_IMAGE":
+                        currentStep="Присоединение образов";
+                        break;
+                    case "PKG_IMG_WAIT_PPOZ_43":
+                        currentStep="Обработка документов в ППОЗ";
+                        break;
+                    case "CANCELED_114":
+                        currentStep="Аннулировано";
+                        break;
+                    case "CREATE":
+                        currentStep="Приём обращения";
+                        break;
+                    default:
+                        currentStep="Неизвестно";
+                        break;
+                }
+            }
+
+            reportAllList.add(new ReportModel("", orgName, internalNum, name, createDate, statusNotePPOZ, textApplicants, processingEndDate, currentStep));
         }
-        return setToReturn;
+
+
+
+        return reportAllList;
     }
 
     public static ArrayList<ReportModel> parsingReportOrg(String json, ArrayList<MFCsInfoModel> MFCsList) throws ParseException {
@@ -590,7 +576,7 @@ public class ReportController {
                         currentStep="Присоединение образов";
                         break;
                     case "PKG_IMG_WAIT_PPOZ_43":
-                        currentStep="Отправлено в ПКУРП";
+                        currentStep="Обработка документов в ППОЗ";
                         break;
                     case "CANCELED_114":
                         currentStep="Аннулировано";
