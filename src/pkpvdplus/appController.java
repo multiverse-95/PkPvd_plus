@@ -899,7 +899,7 @@ public class appController {
                                 period_label.setText("Отчёт не существует.");
                                 Alert alert =new Alert(Alert.AlertType.ERROR , "Test");
                                 alert.setTitle("Отчёт не сформирован!");
-                                alert.setHeaderText("За данный период отчёт ещё не был сформирован на сервере!");
+                                alert.setHeaderText("За данный период отчёт не был сформирован на сервере!");
                                 alert.setContentText("Выберите другой период!");
                                 alert.showAndWait().ifPresent(rs -> {if (rs == ButtonType.OK){}});
                             } else {
@@ -1107,8 +1107,8 @@ public class appController {
                             period_org_label.setText("Отчёт не существует.");
                             Alert alert =new Alert(Alert.AlertType.ERROR , "Test");
                             alert.setTitle("Отчёт не сформирован!");
-                            alert.setHeaderText("За данный период отчёт ещё не был сформирован на сервере!");
-                            alert.setContentText("Выберите другой период!");
+                            alert.setHeaderText("За данный период отчёт не сформирован на сервере!");
+                            alert.setContentText("Выберите другой период! Или измените другие параметры запроса.");
                             alert.showAndWait().ifPresent(rs -> {if (rs == ButtonType.OK){}});
                         } else {
                             System.out.println(parsed_result_arr.get(0).getPeriod());

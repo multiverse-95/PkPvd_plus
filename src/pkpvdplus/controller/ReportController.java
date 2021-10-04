@@ -249,6 +249,7 @@ public class ReportController {
             String getUrl       = "http://10.42.200.207/api/rs/appeal/search2?page="+i_page+"&size=2000&sort=createDate,desc&startWith=false&internalNum=&packageNum=" +
                     "&statusNotePPOZ=&currentStep=&createDateFrom="+dateStart+"&createDateTill="+dateFinish+"&createWho=&moveStepDate=&kudNum=&routineExecutionDays" +
                     "=&processingEndDateFrom=&processingEndDateTill=&typeGosUslug=&cn=&textApplicants=";// Сервер авторизации
+            //String getUrl="http://10.42.200.207/api/rs/appeal/search2?page=0&size=5&sort=createDate,desc&startWith=false&internalNum=MFC-0561%2F2021-309dsada&packageNum=&statusNotePPOZ=&currentStep=&createDateFrom=2021-08-01&createDateTill=&createWho=&moveStepDate=&kudNum=&routineExecutionDays=&processingEndDateFrom=&processingEndDateTill=&typeGosUslug=&cn=&textApplicants=";
             HttpGet httpGet = new HttpGet(getUrl);
             httpGet.setHeader("Content-type", "application/json");
             httpGet.addHeader("Cookie","JSESSIONID="+cookie);
@@ -263,7 +264,11 @@ public class ReportController {
             switch (status_code){
                 case 200:
                     reportList= parsingReportAll(resultJson, MFCsList);
-                    listAllReport.addAll(reportList);
+                    if (reportList!=null) {
+                        listAllReport.addAll(reportList);
+                    } else {
+                        listAllReport=null;
+                    }
                     break;
                 default:
                     reportList=null;
@@ -271,15 +276,19 @@ public class ReportController {
                     break;
             }
         }
-
-        for (ReportModel reportModel : listAllReport) {
-            if (reportModel.getNameAppeal().equals("Предоставление сведений об объекте недвижимости") ||
-                    reportModel.getNameAppeal().equals("Предоставление сведений о правообладателе")) {
-                filteredReport.add(reportModel);
+        if (listAllReport!=null){
+            for (ReportModel reportModel : listAllReport) {
+                if (reportModel.getNameAppeal().equals("Предоставление сведений об объекте недвижимости") ||
+                        reportModel.getNameAppeal().equals("Предоставление сведений о правообладателе")) {
+                    filteredReport.add(reportModel);
+                }
             }
+
+            Collections.reverse(filteredReport);
+        } else {
+            filteredReport=null;
         }
 
-        Collections.reverse(filteredReport);
         return filteredReport;
     }
 
@@ -452,72 +461,73 @@ public class ReportController {
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(json); // Получение главного элемента
         JsonArray content= element.getAsJsonObject().get("content").getAsJsonArray();
+        if (content.size()==0){
+            reportAllList=null;
+        } else {
+            for (int i=0; i<content.size(); i++){
+                String codeOrg=""; String orgName=""; String internalNum=""; String name=""; String createDate="";
+                String statusNotePPOZ = ""; String textApplicants=""; String processingEndDate=""; String currentStep="";
 
-        for (int i=0; i<content.size(); i++){
-            String codeOrg=""; String orgName=""; String internalNum=""; String name=""; String createDate="";
-            String statusNotePPOZ = ""; String textApplicants=""; String processingEndDate=""; String currentStep="";
-
-            if (!content.get(i).getAsJsonObject().get("codeOrg").isJsonNull()){
-                codeOrg = content.get(i).getAsJsonObject().get("codeOrg").getAsString();
-                for (MFCsInfoModel mfCsInfoModel : MFCsList) {
-                    if (codeOrg.equals(mfCsInfoModel.getCode())) {
-                        orgName = mfCsInfoModel.getName();
-                        break;
+                if (!content.get(i).getAsJsonObject().get("codeOrg").isJsonNull()){
+                    codeOrg = content.get(i).getAsJsonObject().get("codeOrg").getAsString();
+                    for (MFCsInfoModel mfCsInfoModel : MFCsList) {
+                        if (codeOrg.equals(mfCsInfoModel.getCode())) {
+                            orgName = mfCsInfoModel.getName();
+                            break;
+                        }
                     }
                 }
-            }
-            if (!content.get(i).getAsJsonObject().get("internalNum").isJsonNull()){
-                internalNum = content.get(i).getAsJsonObject().get("internalNum").getAsString();
-            }
-            if (!content.get(i).getAsJsonObject().get("name").isJsonNull()){
-                name = content.get(i).getAsJsonObject().get("name").getAsString();
-            }
-            if (!content.get(i).getAsJsonObject().get("createDate").isJsonNull()){
-                createDate = content.get(i).getAsJsonObject().get("createDate").getAsString();
-                createDate=convertTimeFromUnix(createDate, "GMT+7", "dd.MM.yyyy");
-            }
-            if (!content.get(i).getAsJsonObject().get("statusNotePPOZ").isJsonNull()){
-                statusNotePPOZ = content.get(i).getAsJsonObject().get("statusNotePPOZ").getAsString();
-            }
-            if (!content.get(i).getAsJsonObject().get("textApplicants").isJsonNull()){
-                textApplicants = content.get(i).getAsJsonObject().get("textApplicants").getAsString();
-            }
-            if (!content.get(i).getAsJsonObject().get("processingEndDate").isJsonNull()){
-                processingEndDate = content.get(i).getAsJsonObject().get("processingEndDate").getAsString();
-                processingEndDate =convertTimeFromUnix(processingEndDate, "GMT+7", "dd.MM.yyyy");
-            }
-            if (!content.get(i).getAsJsonObject().get("currentStep").isJsonNull()){
-                currentStep = content.get(i).getAsJsonObject().get("currentStep").getAsString();
-
-                switch (currentStep){
-                    case "PROCESS_END_13":
-                        currentStep="Обработка завершена";
-                        break;
-                    case "WAIT_OUT_11":
-                        currentStep="Ожидается выдача";
-                        break;
-                    case "ATTACH_IMAGE":
-                        currentStep="Присоединение образов";
-                        break;
-                    case "PKG_IMG_WAIT_PPOZ_43":
-                        currentStep="Обработка документов в ППОЗ";
-                        break;
-                    case "CANCELED_114":
-                        currentStep="Аннулировано";
-                        break;
-                    case "CREATE":
-                        currentStep="Приём обращения";
-                        break;
-                    default:
-                        currentStep="Неизвестно";
-                        break;
+                if (!content.get(i).getAsJsonObject().get("internalNum").isJsonNull()){
+                    internalNum = content.get(i).getAsJsonObject().get("internalNum").getAsString();
                 }
+                if (!content.get(i).getAsJsonObject().get("name").isJsonNull()){
+                    name = content.get(i).getAsJsonObject().get("name").getAsString();
+                }
+                if (!content.get(i).getAsJsonObject().get("createDate").isJsonNull()){
+                    createDate = content.get(i).getAsJsonObject().get("createDate").getAsString();
+                    createDate=convertTimeFromUnix(createDate, "GMT+7", "dd.MM.yyyy");
+                }
+                if (!content.get(i).getAsJsonObject().get("statusNotePPOZ").isJsonNull()){
+                    statusNotePPOZ = content.get(i).getAsJsonObject().get("statusNotePPOZ").getAsString();
+                }
+                if (!content.get(i).getAsJsonObject().get("textApplicants").isJsonNull()){
+                    textApplicants = content.get(i).getAsJsonObject().get("textApplicants").getAsString();
+                }
+                if (!content.get(i).getAsJsonObject().get("processingEndDate").isJsonNull()){
+                    processingEndDate = content.get(i).getAsJsonObject().get("processingEndDate").getAsString();
+                    processingEndDate =convertTimeFromUnix(processingEndDate, "GMT+7", "dd.MM.yyyy");
+                }
+                if (!content.get(i).getAsJsonObject().get("currentStep").isJsonNull()){
+                    currentStep = content.get(i).getAsJsonObject().get("currentStep").getAsString();
+
+                    switch (currentStep){
+                        case "PROCESS_END_13":
+                            currentStep="Обработка завершена";
+                            break;
+                        case "WAIT_OUT_11":
+                            currentStep="Ожидается выдача";
+                            break;
+                        case "ATTACH_IMAGE":
+                            currentStep="Присоединение образов";
+                            break;
+                        case "PKG_IMG_WAIT_PPOZ_43":
+                            currentStep="Обработка документов в ППОЗ";
+                            break;
+                        case "CANCELED_114":
+                            currentStep="Аннулировано";
+                            break;
+                        case "CREATE":
+                            currentStep="Приём обращения";
+                            break;
+                        default:
+                            currentStep="Неизвестно";
+                            break;
+                    }
+                }
+
+                reportAllList.add(new ReportModel("", orgName, internalNum, name, createDate, statusNotePPOZ, textApplicants, processingEndDate, currentStep));
             }
-
-            reportAllList.add(new ReportModel("", orgName, internalNum, name, createDate, statusNotePPOZ, textApplicants, processingEndDate, currentStep));
         }
-
-
 
         return reportAllList;
     }
@@ -528,69 +538,72 @@ public class ReportController {
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(json); // Получение главного элемента
         JsonArray content= element.getAsJsonObject().get("list").getAsJsonObject().get("content").getAsJsonArray();
+        if (content.size()==0){
+            reportOrgList=null;
+        } else {
+            for (int i=0; i<content.size(); i++){
+                String codeOrg=""; String orgName=""; String internalNum=""; String name=""; String createDate="";
+                String statusNotePPOZ = ""; String textApplicants=""; String processingEndDate=""; String currentStep="";
 
-        for (int i=0; i<content.size(); i++){
-            String codeOrg=""; String orgName=""; String internalNum=""; String name=""; String createDate="";
-            String statusNotePPOZ = ""; String textApplicants=""; String processingEndDate=""; String currentStep="";
-
-            if (!content.get(i).getAsJsonObject().get("codeOrg").isJsonNull()){
-                codeOrg = content.get(i).getAsJsonObject().get("codeOrg").getAsString();
-                for (MFCsInfoModel mfCsInfoModel : MFCsList) {
-                    if (codeOrg.equals(mfCsInfoModel.getCode())) {
-                        orgName = mfCsInfoModel.getName();
-                        break;
+                if (!content.get(i).getAsJsonObject().get("codeOrg").isJsonNull()){
+                    codeOrg = content.get(i).getAsJsonObject().get("codeOrg").getAsString();
+                    for (MFCsInfoModel mfCsInfoModel : MFCsList) {
+                        if (codeOrg.equals(mfCsInfoModel.getCode())) {
+                            orgName = mfCsInfoModel.getName();
+                            break;
+                        }
                     }
                 }
-            }
-            if (!content.get(i).getAsJsonObject().get("internalNum").isJsonNull()){
-                internalNum = content.get(i).getAsJsonObject().get("internalNum").getAsString();
-            }
-            if (!content.get(i).getAsJsonObject().get("name").isJsonNull()){
-                name = content.get(i).getAsJsonObject().get("name").getAsString();
-            }
-            if (!content.get(i).getAsJsonObject().get("createDate").isJsonNull()){
-                createDate = content.get(i).getAsJsonObject().get("createDate").getAsString();
-                createDate=convertTimeOrg(createDate);
-            }
-            if (!content.get(i).getAsJsonObject().get("statusNotePPOZ").isJsonNull()){
-                statusNotePPOZ = content.get(i).getAsJsonObject().get("statusNotePPOZ").getAsString();
-            }
-            if (!content.get(i).getAsJsonObject().get("textApplicants").isJsonNull()){
-                textApplicants = content.get(i).getAsJsonObject().get("textApplicants").getAsString();
-            }
-            if (!content.get(i).getAsJsonObject().get("processingEndDate").isJsonNull()){
-                processingEndDate = content.get(i).getAsJsonObject().get("processingEndDate").getAsString();
-                processingEndDate =convertTimeOrg(processingEndDate);
-            }
-            if (!content.get(i).getAsJsonObject().get("currentStep").isJsonNull()){
-                currentStep = content.get(i).getAsJsonObject().get("currentStep").getAsString();
-
-                switch (currentStep){
-                    case "PROCESS_END_13":
-                        currentStep="Обработка завершена";
-                        break;
-                    case "WAIT_OUT_11":
-                        currentStep="Ожидается выдача";
-                        break;
-                    case "ATTACH_IMAGE":
-                        currentStep="Присоединение образов";
-                        break;
-                    case "PKG_IMG_WAIT_PPOZ_43":
-                        currentStep="Обработка документов в ППОЗ";
-                        break;
-                    case "CANCELED_114":
-                        currentStep="Аннулировано";
-                        break;
-                    case "CREATE":
-                        currentStep="Приём обращения";
-                        break;
-                    default:
-                        currentStep="Неизвестно";
-                        break;
+                if (!content.get(i).getAsJsonObject().get("internalNum").isJsonNull()){
+                    internalNum = content.get(i).getAsJsonObject().get("internalNum").getAsString();
                 }
-            }
+                if (!content.get(i).getAsJsonObject().get("name").isJsonNull()){
+                    name = content.get(i).getAsJsonObject().get("name").getAsString();
+                }
+                if (!content.get(i).getAsJsonObject().get("createDate").isJsonNull()){
+                    createDate = content.get(i).getAsJsonObject().get("createDate").getAsString();
+                    createDate=convertTimeOrg(createDate);
+                }
+                if (!content.get(i).getAsJsonObject().get("statusNotePPOZ").isJsonNull()){
+                    statusNotePPOZ = content.get(i).getAsJsonObject().get("statusNotePPOZ").getAsString();
+                }
+                if (!content.get(i).getAsJsonObject().get("textApplicants").isJsonNull()){
+                    textApplicants = content.get(i).getAsJsonObject().get("textApplicants").getAsString();
+                }
+                if (!content.get(i).getAsJsonObject().get("processingEndDate").isJsonNull()){
+                    processingEndDate = content.get(i).getAsJsonObject().get("processingEndDate").getAsString();
+                    processingEndDate =convertTimeOrg(processingEndDate);
+                }
+                if (!content.get(i).getAsJsonObject().get("currentStep").isJsonNull()){
+                    currentStep = content.get(i).getAsJsonObject().get("currentStep").getAsString();
 
-            reportOrgList.add(new ReportModel("", orgName, internalNum, name, createDate, statusNotePPOZ, textApplicants, processingEndDate, currentStep));
+                    switch (currentStep){
+                        case "PROCESS_END_13":
+                            currentStep="Обработка завершена";
+                            break;
+                        case "WAIT_OUT_11":
+                            currentStep="Ожидается выдача";
+                            break;
+                        case "ATTACH_IMAGE":
+                            currentStep="Присоединение образов";
+                            break;
+                        case "PKG_IMG_WAIT_PPOZ_43":
+                            currentStep="Обработка документов в ППОЗ";
+                            break;
+                        case "CANCELED_114":
+                            currentStep="Аннулировано";
+                            break;
+                        case "CREATE":
+                            currentStep="Приём обращения";
+                            break;
+                        default:
+                            currentStep="Неизвестно";
+                            break;
+                    }
+                }
+
+                reportOrgList.add(new ReportModel("", orgName, internalNum, name, createDate, statusNotePPOZ, textApplicants, processingEndDate, currentStep));
+            }
         }
 
 
