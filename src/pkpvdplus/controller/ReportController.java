@@ -192,7 +192,8 @@ public class ReportController {
     public static String convertTimeOrg(String dateServerPVD) throws ParseException {
         SimpleDateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.getDefault());
         SimpleDateFormat newDateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
-
+        // give a timezone reference for formatting (see comment at the bottom)
+        newDateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT+14"));
         Date dateServerD = oldDateFormat.parse(dateServerPVD);
         String resultDateCorrect = newDateFormat.format(dateServerD);
         return resultDateCorrect;
