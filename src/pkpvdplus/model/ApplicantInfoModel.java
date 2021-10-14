@@ -1,5 +1,5 @@
 package pkpvdplus.model;
-
+// Модель для отображения информации о заявителе (представителе)
 public class ApplicantInfoModel {
     private String typeOfApplicant; // Тип заявителя (Физ. лицо или организация)
 
@@ -24,7 +24,7 @@ public class ApplicantInfoModel {
     private String kppOrg; // КПП организации
     private String addressOrg; // Адрес организации
     private String categoryOrg; // Категория заявителя (организация)
-
+    // Конструктор
     public ApplicantInfoModel(String typeOfApplicant, String applicantFIO, String applicantSubjectType, String applicantDocumentNumberSeries, String applicantDocumentWhenIssuedAndWhoIssued,
                               String applicantSnils, String applicantSubType, String applicantResidenceAddress, String applicantRegistrAddress, String applicantPhoneNumber,
                               String applicantCategory, String representiveType, String confirmAuthorRepres, String applicantOrg, String nameOrg, String ogrnOrg, String innOrg,
@@ -50,7 +50,7 @@ public class ApplicantInfoModel {
         this.addressOrg = addressOrg;
         this.categoryOrg = categoryOrg;
     }
-
+    // Геттеры и сеттеры
     public String getTypeOfApplicant() {
         return typeOfApplicant;
     }

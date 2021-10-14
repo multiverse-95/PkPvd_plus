@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-
+// Класс отвечает за отображение информации об обращении
 public class AppealInfoController {
     @FXML
     private ResourceBundle resources;
@@ -232,11 +232,11 @@ public class AppealInfoController {
     void initialize() {
         appeal_info_accord.getPanes().remove(object_info_appeal_pane);
     }
-
+    // Класс для потока получения информации об обращении
     public static class ShowAppealInfoTask extends Task<AllAppealInfoModel> {
         private final String cookie; // куки
         private final String numberAppeal; // Номер обращения
-
+        // Конструктор
         public ShowAppealInfoTask(String cookie, String numberAppeal) {
             this.cookie = cookie;
             this.numberAppeal = numberAppeal;
@@ -244,18 +244,19 @@ public class AppealInfoController {
         }
         @Override
         protected AllAppealInfoModel call() throws Exception {
-            //ArrayList<ApplicantInfoModel> applicantInfoArr=new ArrayList<ApplicantInfoModel>();
+
             AllAppealInfoModel allAppealInfoModel=null;
             GetAppealInfoController getAppealInfoController=new GetAppealInfoController();
+            // Получаем информации об обращении
             try {
                 allAppealInfoModel= getAppealInfoController.GetAppealInfo(cookie,numberAppeal);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return allAppealInfoModel;
+            return allAppealInfoModel; // Возвращаем список с информацией
         }
     }
-
+    // Функция для отображения информации по обращению
     public void ShowAppealInfo(String cookie, String numberAppeal){
         // Запуск прогресса индикации
         ProgressIndicator pi = new ProgressIndicator();
@@ -264,6 +265,7 @@ public class AppealInfoController {
 
         vbox_main.setDisable(true);
         root.getChildren().add(box);
+        // Поток для получения информации по обращению
         Task ShowAppealInfoTask = new ShowAppealInfoTask(cookie, numberAppeal);
         ShowAppealInfoTask.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
@@ -271,51 +273,52 @@ public class AppealInfoController {
                 AllAppealInfoModel allAppealInfoModel;
                 AppealGeneralInfoModel appealGeneralInfoModel;
                 ArrayList<ApplicantInfoModel> applicantInfoArr;
+                // Получаем информацию об обращении
                 allAppealInfoModel= (AllAppealInfoModel) ShowAppealInfoTask.getValue();
                 appealGeneralInfoModel=allAppealInfoModel.getAppealGeneralInfoModel();
                 applicantInfoArr=allAppealInfoModel.getApplicantInfoArr();
 
-                setTextAppealGeneralInfo(appealGeneralInfoModel);
-                setPresentOutputDocInfo(appealGeneralInfoModel);
+                setTextAppealGeneralInfo(appealGeneralInfoModel); // Устанавливаем общую информацию по обращению
+                setPresentOutputDocInfo(appealGeneralInfoModel); // Устанавливаем тип получения документов
+                // Если есть данные
                 if (applicantInfoArr.size()>0){
-                    switch (applicantInfoArr.get(0).getTypeOfApplicant()){
-                        case "Person":
-                            switch (applicantInfoArr.size()){
-                                case 1:
-                                    setTextApplicant(applicantInfoArr);
-                                    applicants_tabPane.getTabs().remove(organiz_tab);
-                                    applicants_tabPane.getTabs().remove(representive_tab);
+                    switch (applicantInfoArr.get(0).getTypeOfApplicant()){ // Получить тип заявителя
+                        case "Person": // Если физ лицо
+                            switch (applicantInfoArr.size()){ // Если есть заявитель и представитель
+                                case 1: // Если только заявитель
+                                    setTextApplicant(applicantInfoArr); // Установить данные о заявителе
+                                    applicants_tabPane.getTabs().remove(organiz_tab); // Удалить вкладку об организации
+                                    applicants_tabPane.getTabs().remove(representive_tab); // Удалить вкладку о представителе
                                     break;
-                                case 2:
-                                    setTextApplicant(applicantInfoArr);
-                                    setTextRepresentive(applicantInfoArr);
-                                    applicants_tabPane.getTabs().remove(organiz_tab);
+                                case 2: // Если есть заявитель и представитель
+                                    setTextApplicant(applicantInfoArr); // Установить данные о заявителе
+                                    setTextRepresentive(applicantInfoArr); // Установить данные о представителе
+                                    applicants_tabPane.getTabs().remove(organiz_tab); // Удалить вкладку об организации
                                     break;
                                 default:
                                     break;
                             }
                             break;
-                        case "Organization":
-                            if (applicantInfoArr.size()==1) {
-                                setTextApplicantOrganization(applicantInfoArr);
-                                applicants_tabPane.getTabs().remove(representive_tab);
+                        case "Organization": // Если организации
+                            if (applicantInfoArr.size()==1) { // Если только заявитель
+                                setTextApplicantOrganization(applicantInfoArr); // Установить данные об организации
+                                applicants_tabPane.getTabs().remove(representive_tab); // Удалить вкладку о представителе
                             }
-                            if (applicantInfoArr.size()==2) {
-                                setTextApplicantOrganization(applicantInfoArr);
-                                setTextRepresentive(applicantInfoArr);
+                            if (applicantInfoArr.size()==2) { // Если заявитель и представитель
+                                setTextApplicantOrganization(applicantInfoArr); // Установить данные о заявителе
+                                setTextRepresentive(applicantInfoArr); // Установить данные о представителе
                             }
-                            applicants_tabPane.getTabs().remove(applicant_tab);
+                            applicants_tabPane.getTabs().remove(applicant_tab); // Удалить вкладку о физическом лице
                             break;
                         default:
                             break;
 
                     }
-                } else {
+                } else { // Если нет данных о заявителях
+                    // Заблокировать вкладки о заявителях и способах получения документов
                     applicant_appeal_info_pane.setDisable(true);
                     given_present_doc_pane.setDisable(true);
                 }
-
-
 
                 // Закрытие прогресса индикации
                 box.setDisable(true);
@@ -330,9 +333,9 @@ public class AppealInfoController {
         ShowAppealInfoThread.start();
 
     }
-
+    // Функция для отображения данных об обращении
     public void setTextAppealGeneralInfo(AppealGeneralInfoModel appealGeneralInfoModel){
-
+        // Получаем данные с модели и вставляем в текстовые поля
         String statementType_appeal=appealGeneralInfoModel.getStatementType();
         statementType_appeal_textf.setText(statementType_appeal);
         String internalNum_appeal =appealGeneralInfoModel.getInternalNum()+"; Создан: " +appealGeneralInfoModel.getCreateEventDateWhen()+" "+appealGeneralInfoModel.getCreateEventPerformer();
@@ -367,10 +370,13 @@ public class AppealInfoController {
         }
 
     }
-
+    // Функция для отображения данных о способе получения документов
     public void setPresentOutputDocInfo(AppealGeneralInfoModel appealGeneralInfoModel){
-
+        // Получаем данные с модели
+        // Устанавливаем нужные переключатели
+        // Если тип представления документов в МФЦ
         if (appealGeneralInfoModel.isPres_on_MFC()){
+            // Устанавливаем переключатель для мфц
             pres_on_MFC_rb.setSelected(true);
             pres_on_MFC_rb.setOnAction(event -> {
                 pres_on_MFC_rb.setSelected(true);
@@ -378,7 +384,9 @@ public class AppealInfoController {
             pres_mail_rb.setDisable(true);
             pres_indiv_rb.setDisable(true);
         }
+        // Если тип представления документов почтой
         if (appealGeneralInfoModel.isPres_mail()) {
+            // Устанавливаем тип документов почтой
             pres_mail_rb.setSelected(true);
             pres_mail_rb.setOnAction(event -> {
                 pres_mail_rb.setSelected(true);
@@ -386,7 +394,9 @@ public class AppealInfoController {
             pres_on_MFC_rb.setDisable(true);
             pres_indiv_rb.setDisable(true);
         }
+        // Если тип представления документов индивидуальный
         if (appealGeneralInfoModel.isPres_indiv()) {
+            // Устанавливаем тип документов индивидульный
             pres_indiv_rb.setSelected(true);
             pres_indiv_rb.setOnAction(event -> {
                 pres_indiv_rb.setSelected(true);
@@ -394,7 +404,9 @@ public class AppealInfoController {
             pres_on_MFC_rb.setDisable(true);
             pres_mail_rb.setDisable(true);
         }
+        // Если способ получения документов в мфц
         if (appealGeneralInfoModel.isOutput_doc_MFC()) {
+            // Устанавливаем переключатель для мфц
             output_doc_MFC_rb.setSelected(true);
             hbox_getDocMail.getChildren().clear();
             output_doc_MFC_rb.setOnAction(event -> {
@@ -403,7 +415,9 @@ public class AppealInfoController {
             output_doc_mail_rb.setDisable(true);
             output_doc_email_rb.setDisable(true);
         }
+        // Если способ получения почтой
         if (appealGeneralInfoModel.isOutput_doc_mail()){
+            // Устанавливаем переключатель для почтый
             output_doc_mail_rb.setSelected(true);
             output_doc_mail_rb.setOnAction(event -> {
                 output_doc_mail_rb.setSelected(true);
@@ -411,8 +425,11 @@ public class AppealInfoController {
             output_doc_MFC_rb.setDisable(true);
             output_doc_email_rb.setDisable(true);
         }
+        // Если способ получения эл почтой
         if (appealGeneralInfoModel.isOutput_doc_email()){
+            // Устанавливаем переключатель эл почтой
             output_doc_email_rb.setSelected(true);
+            // Устанавливаем наименование эл почты
             email_adress_getDoc_textf.setText(appealGeneralInfoModel.getOutput_email());
             output_doc_email_rb.setOnAction(event -> {
                 output_doc_email_rb.setSelected(true);
@@ -422,9 +439,10 @@ public class AppealInfoController {
         }
 
     }
-
+    // Функция для отображения информации о заявителе
     public void setTextApplicant(ArrayList<ApplicantInfoModel> applicantInfoArr){
-
+        // Получаем данные со списка и устанавливаем в текстовые поля
+        // Получаем данные о заявителе
         System.out.println("FIO APPl from arrr "+applicantInfoArr.get(0).getApplicantFIO());
         String applicantFIO=applicantInfoArr.get(0).getApplicantFIO();
         String applicant_subjectType=applicantInfoArr.get(0).getApplicantSubjectType();
@@ -435,7 +453,7 @@ public class AppealInfoController {
         String registrAddress=applicantInfoArr.get(0).getApplicantRegistrAddress();
         String phoneNumber=applicantInfoArr.get(0).getApplicantPhoneNumber();
         String categoryApplic=applicantInfoArr.get(0).getApplicantCategory();
-
+        // Устанавливаем данные для заявителя
         fio_applicant_textf.setText(applicantFIO);
         type_sub_applicant_textf.setText(applicant_subjectType);
         doc_num_ser_applicant_textf.setText(document_applicant_num_ser);
@@ -446,9 +464,10 @@ public class AppealInfoController {
         phone_applicant_textf.setText(phoneNumber);
         category_applicant_textf.setText(categoryApplic);
     }
-
+    // Функция для отображения информации об организации
     public void setTextApplicantOrganization(ArrayList<ApplicantInfoModel> applicantInfoArr){
-
+        // Получаем информацию со списка
+        // Получаем данные об организации
         String applicant_organiz=applicantInfoArr.get(0).getApplicantOrg();
         String type_sub_applicant_organiz=applicantInfoArr.get(0).getApplicantSubjectType();
         String name_organiz=applicantInfoArr.get(0).getNameOrg();
@@ -457,7 +476,7 @@ public class AppealInfoController {
         String kpp_organiz=applicantInfoArr.get(0).getKppOrg();
         String address_organiz=applicantInfoArr.get(0).getAddressOrg();
         String category_applicant_organiz=applicantInfoArr.get(0).getCategoryOrg();
-
+        // Устанавливаем в текстовые поля
         applicant_organiz_textf.setText(applicant_organiz);
         type_sub_applicant_organiz_textf.setText(type_sub_applicant_organiz);
         name_organiz_textf.setText(name_organiz);
@@ -468,9 +487,10 @@ public class AppealInfoController {
         category_applicant_organiz_textf.setText(category_applicant_organiz);
 
     }
-
+    // Функция для отображения данных о представителе
     public void setTextRepresentive(ArrayList<ApplicantInfoModel> applicantInfoArr){
-
+        // Получаем данные со списка
+        // Получаем данные о представителе
         System.out.println("FIO REPRES from arrr "+applicantInfoArr.get(1).getApplicantFIO());
         String representiveFIO=applicantInfoArr.get(1).getApplicantFIO();
         String representive_subjectType=applicantInfoArr.get(1).getApplicantSubjectType();
@@ -482,7 +502,7 @@ public class AppealInfoController {
         String phoneNumberRepres=applicantInfoArr.get(1).getApplicantPhoneNumber();
         String categoryRepres=applicantInfoArr.get(1).getRepresentiveType();
         String confirmAuthorRepres=applicantInfoArr.get(1).getConfirmAuthorRepres();
-
+        // Устанавливаем данные о представителе в текстовые поля
         fio_applicant_repres_textf.setText(representiveFIO);
         type_sub_applicant_repres_textf.setText(representive_subjectType);
         doc_num_ser_applicant_repres_textf.setText(document_representive_num_ser);

@@ -54,9 +54,9 @@ public class ReportController {
     public static class ReportTask extends Task<ArrayList<ReportModel>> {
         private final String cookies; // Куки
         private final String search_text;
-        private final LocalDate dateStart; // Дата начала в юникс
-        private final LocalDate dateFinish; // Дата окончания в юникс
-
+        private final LocalDate dateStart; // Дата начала
+        private final LocalDate dateFinish; // Дата окончания
+        // Конструктор
         public ReportTask(String cookies, String search_text, LocalDate dateStart, LocalDate dateFinish) {
             this.cookies = cookies;
             this.search_text = search_text;
@@ -66,25 +66,25 @@ public class ReportController {
         @Override
         protected ArrayList<ReportModel> call() throws Exception {
             //System.out.println("start date: "+dateStart+" finish date: "+dateFinish);
-            String dateStartStr= String.valueOf(dateStart);
-            String dateFinishStr=String.valueOf(dateFinish);
+            String dateStartStr= String.valueOf(dateStart); // Переводим дату начала в строку
+            String dateFinishStr=String.valueOf(dateFinish); // Переводим дату окончания в строку
             System.out.println("start date: "+dateStartStr+" finish date: "+dateFinishStr);
-            ArrayList<MFCsInfoModel> MFCsList=getMFCs(cookies);
-            // получение одного общего отчёта
+            ArrayList<MFCsInfoModel> MFCsList=getMFCs(cookies); // Получаем список всех мфц
 
+            // Получение отчёта по всем заявителям
             ArrayList<ReportModel> reportListFinal= GetReportAll(cookies,dateStartStr,dateFinishStr, MFCsList);
             return reportListFinal; // Возвращаем итоговый отчёт
         }
     }
 
-    // Класс для потока получения отчёта
+    // Класс для потока получения отчёта (По организациям)
     public static class ReportOrgTask extends Task<ArrayList<ReportModel>> {
         private final String cookies; // Куки
         private final String search_text;
-        private final LocalDate dateStart; // Дата начала в юникс
-        private final LocalDate dateFinish; // Дата окончания в юникс
-        private final String typeGetDoc;
-
+        private final LocalDate dateStart; // Дата начала
+        private final LocalDate dateFinish; // Дата окончания
+        private final String typeGetDoc; // Тип получения документов
+        // Конструктор
         public ReportOrgTask(String cookies, String search_text, LocalDate dateStart, LocalDate dateFinish, String typeGetDoc) {
             this.cookies = cookies;
             this.search_text = search_text;
@@ -96,28 +96,28 @@ public class ReportController {
         protected ArrayList<ReportModel> call() throws Exception {
             ArrayList<MFCsInfoModel> MFCsList;
             System.out.println("start date: "+dateStart+" finish date: "+dateFinish);
-            String dateStartS = convertTimeOrgInput(String.valueOf(dateStart));
-            String dateFinishS = convertTimeOrgInput(String.valueOf(dateFinish));
+            String dateStartS = convertTimeOrgInput(String.valueOf(dateStart)); // Переводим дату начала в строку
+            String dateFinishS = convertTimeOrgInput(String.valueOf(dateFinish)); // Переводим дату окончания в строку
             ArrayList<ReportModel> reportListOrg=new ArrayList<ReportModel>();
             // Получение отчёта по заявлениям с сервера
             switch (typeGetDoc){
-                case "ALL":
+                case "ALL": // Если выбран тип документа "Все"
                     System.out.println("Chosen ALL DOC");
-                    String jsonOrgALL= getReportOrgTypeDocALL(cookies, dateStartS, dateFinishS);
-                    MFCsList=getMFCs(cookies);
-                    reportListOrg= parsingReportOrg(jsonOrgALL, MFCsList);
+                    String jsonOrgALL= getReportOrgTypeDocALL(cookies, dateStartS, dateFinishS); // Получаем отчёт по всем документам
+                    MFCsList=getMFCs(cookies); // Получаем список мфц
+                    reportListOrg= parsingReportOrg(jsonOrgALL, MFCsList); // Парсим отчёт
                     break;
-                case "MFC":
+                case "MFC": // Если выбран тип документа "Только в мфц"
                     System.out.println("Chosen MFC DOC");
-                    String jsonOrgMFC= getReportOrgTypeDocMFC(cookies, dateStartS, dateFinishS);
-                    MFCsList=getMFCs(cookies);
-                    reportListOrg= parsingReportOrg(jsonOrgMFC, MFCsList);
+                    String jsonOrgMFC= getReportOrgTypeDocMFC(cookies, dateStartS, dateFinishS); // Получаем отчёт "Только в мфц"
+                    MFCsList=getMFCs(cookies); // Получаем список мфц
+                    reportListOrg= parsingReportOrg(jsonOrgMFC, MFCsList); // Парсим отчёт
                     break;
-                case "EMAIL":
+                case "EMAIL": // Если выбран тип документа "По электронной почте"
                     System.out.println("Chosen EMAIL DOC");
-                    String jsonOrgEMAIL= getReportOrgTypeDocEMAIL(cookies, dateStartS, dateFinishS);
-                    MFCsList=getMFCs(cookies);
-                    reportListOrg= parsingReportOrg(jsonOrgEMAIL, MFCsList);
+                    String jsonOrgEMAIL= getReportOrgTypeDocEMAIL(cookies, dateStartS, dateFinishS); // Получаем отчёт "По эл почте"
+                    MFCsList=getMFCs(cookies); // Получаем список всех мфц
+                    reportListOrg= parsingReportOrg(jsonOrgEMAIL, MFCsList); // Парсим отчёт
                     break;
             }
 
@@ -177,29 +177,29 @@ public class ReportController {
     }
 
 
-    // Функция для конвертирования времени в нужный формат (Для отчёта по юридическим лицам)
+    // Функция для конвертирования времени в нужный формат (Для отчёта по юридическим лицам). С полей ввода
     public static String convertTimeOrgInput(String dateInputOrg) throws ParseException {
         SimpleDateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         SimpleDateFormat newDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
 
         Date dateServerD = oldDateFormat.parse(dateInputOrg);
         String resultDateCorrect = newDateFormat.format(dateServerD);
-        return resultDateCorrect;
+        return resultDateCorrect; // Возвращаем итоговую дату
 
     }
 
-    // Функция для конвертирования времени в нужный формат (Для отчёта по юридическим лицам)
+    // Функция для конвертирования времени в нужный формат (Для отчёта по юридическим лицам). Для парсинга
     public static String convertTimeOrg(String dateServerPVD) throws ParseException {
         SimpleDateFormat oldDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.getDefault());
         SimpleDateFormat newDateFormat = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault());
-        // give a timezone reference for formatting (see comment at the bottom)
+        // Устанавливаем часовой пояс
         newDateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT+14"));
         Date dateServerD = oldDateFormat.parse(dateServerPVD);
         String resultDateCorrect = newDateFormat.format(dateServerD);
-        return resultDateCorrect;
+        return resultDateCorrect; // Возвращаем итоговую дату
 
     }
-
+    // Функция для получения первого отчёта, чтобы определить количество данных на сервере
     public static String GetReportFirst(String cookie, String dateStart, String dateFinish) throws IOException {
         CookieStore httpCookieStore = new BasicCookieStore();
         HttpClient httpClient = null;
@@ -227,26 +227,30 @@ public class ReportController {
                 return resultJson;
         }
     }
-
+    // Функция для получения отчета по всем заявителям с сервера
     public static ArrayList<ReportModel> GetReportAll(String cookie, String dateStart, String dateFinish, ArrayList<MFCsInfoModel> MFCsList) throws IOException, ParseException {
-        ArrayList<ReportModel> listAllReport=new ArrayList<ReportModel>();
-        ArrayList<ReportModel> filteredReport=new ArrayList<ReportModel>();
-        ArrayList<ReportModel> reportList=new ArrayList<ReportModel>();
-        String JsonFirst= GetReportFirst(cookie, dateStart, dateFinish);
+        ArrayList<ReportModel> listAllReport=new ArrayList<ReportModel>(); // Итоговый отчёт
+        ArrayList<ReportModel> filteredReport=new ArrayList<ReportModel>(); // Отсортированный отчёт
+        ArrayList<ReportModel> reportList=new ArrayList<ReportModel>(); // Отчёт на текущем цикле
+        String JsonFirst= GetReportFirst(cookie, dateStart, dateFinish); // Получаем результат с первого отчёта
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(JsonFirst); // Получение главного элемента
         System.out.println("ALL DATA: "+element.getAsJsonObject().get("totalElements").getAsInt());
         //System.out.println("NumberOfElements: "+element.getAsJsonObject().get("numberOfElements").getAsInt());
 
-        double allDataRep=element.getAsJsonObject().get("totalElements").getAsInt();
+        double allDataRep=element.getAsJsonObject().get("totalElements").getAsInt(); // Получаем список всех элементов
+        // Т.к. для одного запроса есть ограничение в 2000 элементов, то необходимо определить, сколько раз подряд выполнить запрос. В итоге
+        // мы получим с каждой ветки цикл отчёт, и на каждой ветке будем прибавлять текущий отчёт к общему отчёту. В итоге получим итоговый отчёт со всеми данными
         double result=allDataRep/2000;
-        int page=(int)Math.ceil(result);
+        int page=(int)Math.ceil(result); // Получаем количество страниц (Сколько раз выполнить запрос)
         System.out.println("ALL PAGES: "+page);
+        // Идем по циклу. Выполняем запросы,пока не кончатся "страницы"
         for (int i_page=0; i_page<page; i_page++){
             CookieStore httpCookieStore = new BasicCookieStore();
             HttpClient httpClient = null;
             HttpClientBuilder builder = HttpClientBuilder.create().setDefaultCookieStore(httpCookieStore);
             httpClient = builder.build();
+            // Адрес для получения отчёта
             String getUrl       = "http://10.42.200.207/api/rs/appeal/search2?page="+i_page+"&size=2000&sort=createDate,desc&startWith=false&internalNum=&packageNum=" +
                     "&statusNotePPOZ=&currentStep=&createDateFrom="+dateStart+"&createDateTill="+dateFinish+"&createWho=&moveStepDate=&kudNum=&routineExecutionDays" +
                     "=&processingEndDateFrom=&processingEndDateTill=&typeGosUslug=&cn=&textApplicants=";// Сервер авторизации
@@ -264,38 +268,40 @@ public class ReportController {
             // Если код ответа 200, значит куки действителен, если 401 или другой, то недействителен
             switch (status_code){
                 case 200:
-                    reportList= parsingReportAll(resultJson, MFCsList);
-                    if (reportList!=null) {
-                        listAllReport.addAll(reportList);
-                    } else {
+                    reportList= parsingReportAll(resultJson, MFCsList); // Парсим результат запроса
+                    if (reportList!=null) { // если ответ на запрос не пустой
+                        listAllReport.addAll(reportList); // Добавляем в общий отчёт текущий отчёт
+                    } else { // Иначе обнуляем весь отчёт
                         listAllReport=null;
                     }
                     break;
-                default:
+                default: // если ответ с сервера не приходит, то обнуляем все отчёты
                     reportList=null;
                     listAllReport=null;
                     break;
             }
         }
+        // Если итоговый отчёт не пустой
         if (listAllReport!=null){
+            // Фильтруем отчёт. Оставляем данные только по ЕРГН
             for (ReportModel reportModel : listAllReport) {
                 if (reportModel.getNameAppeal().equals("Предоставление сведений об объекте недвижимости") ||
                         reportModel.getNameAppeal().equals("Предоставление сведений о правообладателе")) {
                     filteredReport.add(reportModel);
                 }
             }
-
+            // Разворачиваем отчёт
             Collections.reverse(filteredReport);
-        } else {
+        } else { // Если отчёт пустой, то обнуляем общий отчёт
             filteredReport=null;
         }
 
-        return filteredReport;
+        return filteredReport; // Возвращаем итоговый результат
     }
 
 
 
-    // Функция для получения отчёта с сервера (Только юридические лица)
+    // Функция для получения отчёта с сервера (Только юридические лица). По всем документам
     public static String getReportOrgTypeDocALL(String cookie, String dateStart, String dateFinish) throws IOException {
         CookieStore httpCookieStore = new BasicCookieStore();
         // Заполнение json параметрами
@@ -332,10 +338,10 @@ public class ReportController {
         String jsonResult=EntityUtils.toString(entity);
 
         //System.out.println("Json ORG! - \n"+jsonResult);
-        return jsonResult; // Возвращаем результат в формате csv
+        return jsonResult; // Возвращаем результат в формате json
     }
 
-    // Функция для получения отчёта с сервера (Только юридические лица)
+    // Функция для получения отчёта с сервера (Только юридические лица). Тип получения документов - в МФЦ
     public static String getReportOrgTypeDocMFC(String cookie, String dateStart, String dateFinish) throws IOException {
         CookieStore httpCookieStore = new BasicCookieStore();
         // Заполнение json параметрами
@@ -377,10 +383,10 @@ public class ReportController {
         String jsonResult=EntityUtils.toString(entity);
 
         //System.out.println("Json ORG! - \n"+jsonResult);
-        return jsonResult; // Возвращаем результат в формате csv
+        return jsonResult; // Возвращаем результат в формате json
     }
 
-    // Функция для получения отчёта с сервера (Только юридические лица)
+    // Функция для получения отчёта с сервера (Только юридические лица). Тип получения документов - по эл почте
     public static String getReportOrgTypeDocEMAIL(String cookie, String dateStart, String dateFinish) throws IOException {
         CookieStore httpCookieStore = new BasicCookieStore();
         // Заполнение json параметрами
@@ -424,7 +430,7 @@ public class ReportController {
         //System.out.println("Json ORG! - \n"+jsonResult);
         return jsonResult; // Возвращаем результат в формате csv
     }
-
+    // Функция для получения всех мфц
     public static ArrayList<MFCsInfoModel> getMFCs(String cookie) throws IOException {
         CookieStore httpCookieStore = new BasicCookieStore();
         HttpClient httpClient = null;
@@ -441,66 +447,82 @@ public class ReportController {
 
         int status_code= response.getStatusLine().getStatusCode(); // Получаем код ответа от сервера
         System.out.println("Status GetMFCs: "+status_code);
-        if (status_code==200){
+        if (status_code==200){ // Если есть ответ с сервера
             ArrayList<MFCsInfoModel> MFCsList=new ArrayList<MFCsInfoModel>();
 
             JsonParser parser = new JsonParser();
             JsonElement element = parser.parse(result_of_req); // Получение главного элемента
             JsonArray content= element.getAsJsonArray();
+            // Добавляем в список данные по мфц: код и наименование мфц
             for (int i=0; i<content.size(); i++){
                 MFCsList.add(new MFCsInfoModel(content.get(i).getAsJsonObject().get("code").getAsString(),content.get(i).getAsJsonObject().get("name").getAsString()));
             }
-            return MFCsList;
+            return MFCsList; // Возвращаем итоговый список
 
-        } else {
+        } else { // Если нет ответа с сервера
             return null;
         }
     }
-
+    // Функция для парсинга отчёта по всем заявителям
     public static ArrayList<ReportModel> parsingReportAll(String json, ArrayList<MFCsInfoModel> MFCsList) throws ParseException {
         ArrayList<ReportModel> reportAllList=new ArrayList<ReportModel>();
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(json); // Получение главного элемента
         JsonArray content= element.getAsJsonObject().get("content").getAsJsonArray();
-        if (content.size()==0){
-            reportAllList=null;
-        } else {
+        if (content.size()==0){ // Если данных нет
+            reportAllList=null; // Итоговый отчёт зануляем
+        } else { // Иначе
+            // Идем по размеру контента
             for (int i=0; i<content.size(); i++){
+                // Переменные для отчёта
                 String codeOrg=""; String orgName=""; String internalNum=""; String name=""; String createDate="";
                 String statusNotePPOZ = ""; String textApplicants=""; String processingEndDate=""; String currentStep="";
-
+                // Определяем по коду мфц, название мфц
                 if (!content.get(i).getAsJsonObject().get("codeOrg").isJsonNull()){
-                    codeOrg = content.get(i).getAsJsonObject().get("codeOrg").getAsString();
+                    codeOrg = content.get(i).getAsJsonObject().get("codeOrg").getAsString(); // Получаем код мфц с json
+                    // Идем по циклу списка мфц
                     for (MFCsInfoModel mfCsInfoModel : MFCsList) {
+                        // Если код со списка совпадает с кодом из запроса отчёта. То добавляем в переменную наименование отчета. Останавливаем цикл.
                         if (codeOrg.equals(mfCsInfoModel.getCode())) {
                             orgName = mfCsInfoModel.getName();
                             break;
                         }
                     }
                 }
+                // Парсим остальные данные
+
+                // Парсим внутренний номер обращения
                 if (!content.get(i).getAsJsonObject().get("internalNum").isJsonNull()){
                     internalNum = content.get(i).getAsJsonObject().get("internalNum").getAsString();
                 }
+                // Парсим Наименование обращения
                 if (!content.get(i).getAsJsonObject().get("name").isJsonNull()){
                     name = content.get(i).getAsJsonObject().get("name").getAsString();
                 }
+                // Парсим дату создания обращения
                 if (!content.get(i).getAsJsonObject().get("createDate").isJsonNull()){
                     createDate = content.get(i).getAsJsonObject().get("createDate").getAsString();
+                    // Дата создания приходит в формате UNIX формате. Конвертируем в обычную дату
                     createDate=convertTimeFromUnix(createDate, "GMT+7", "dd.MM.yyyy");
                 }
+                // Парсим статус обращения
                 if (!content.get(i).getAsJsonObject().get("statusNotePPOZ").isJsonNull()){
                     statusNotePPOZ = content.get(i).getAsJsonObject().get("statusNotePPOZ").getAsString();
                 }
+                // Парсим имена заявителей
                 if (!content.get(i).getAsJsonObject().get("textApplicants").isJsonNull()){
                     textApplicants = content.get(i).getAsJsonObject().get("textApplicants").getAsString();
                 }
+                // Парсим дату окончания обработки
                 if (!content.get(i).getAsJsonObject().get("processingEndDate").isJsonNull()){
                     processingEndDate = content.get(i).getAsJsonObject().get("processingEndDate").getAsString();
+                    // Дата окончания обработки приходит в UNIX формате. Конвертируем в обычную дату
                     processingEndDate =convertTimeFromUnix(processingEndDate, "GMT+7", "dd.MM.yyyy");
                 }
+                // Парсим текущий шаг
                 if (!content.get(i).getAsJsonObject().get("currentStep").isJsonNull()){
                     currentStep = content.get(i).getAsJsonObject().get("currentStep").getAsString();
-
+                    // Получили текущий шаг в кодовом имени. Преобразуем в нормальный вид
                     switch (currentStep){
                         case "PROCESS_END_13":
                             currentStep="Обработка завершена";
@@ -525,59 +547,74 @@ public class ReportController {
                             break;
                     }
                 }
-
+                // Добавляем все данные в список
                 reportAllList.add(new ReportModel("", orgName, internalNum, name, createDate, statusNotePPOZ, textApplicants, processingEndDate, currentStep));
             }
         }
 
-        return reportAllList;
+        return reportAllList; // Возвращаем итоговый список
     }
-
+    // Функция для парсинга данных по организациям
     public static ArrayList<ReportModel> parsingReportOrg(String json, ArrayList<MFCsInfoModel> MFCsList) throws ParseException {
         ArrayList<ReportModel> reportOrgList=new ArrayList<ReportModel>();
 
         JsonParser parser = new JsonParser();
         JsonElement element = parser.parse(json); // Получение главного элемента
         JsonArray content= element.getAsJsonObject().get("list").getAsJsonObject().get("content").getAsJsonArray();
-        if (content.size()==0){
+        if (content.size()==0){ // Если данных нет, то зануляем список
             reportOrgList=null;
-        } else {
+        } else { // Если данные есть
+            // Идем по списку и парсим данные
             for (int i=0; i<content.size(); i++){
+                // Переменные для отчёта
                 String codeOrg=""; String orgName=""; String internalNum=""; String name=""; String createDate="";
                 String statusNotePPOZ = ""; String textApplicants=""; String processingEndDate=""; String currentStep="";
-
+                // Определяем по коду мфц, название мфц
                 if (!content.get(i).getAsJsonObject().get("codeOrg").isJsonNull()){
-                    codeOrg = content.get(i).getAsJsonObject().get("codeOrg").getAsString();
+                    codeOrg = content.get(i).getAsJsonObject().get("codeOrg").getAsString(); // Получаем код мфц с json
+                    // Идем по циклу списка мфц
                     for (MFCsInfoModel mfCsInfoModel : MFCsList) {
+                        // Если код со списка совпадает с кодом из запроса отчёта. То добавляем в переменную наименование отчета. Останавливаем цикл.
                         if (codeOrg.equals(mfCsInfoModel.getCode())) {
                             orgName = mfCsInfoModel.getName();
                             break;
                         }
                     }
                 }
+                // Парсим остальные данные
+
+                // Парсим внутренний номер обращения
                 if (!content.get(i).getAsJsonObject().get("internalNum").isJsonNull()){
                     internalNum = content.get(i).getAsJsonObject().get("internalNum").getAsString();
                 }
+                // Парсим Наименование обращения
                 if (!content.get(i).getAsJsonObject().get("name").isJsonNull()){
                     name = content.get(i).getAsJsonObject().get("name").getAsString();
                 }
+                // Парсим дату создания обращения
                 if (!content.get(i).getAsJsonObject().get("createDate").isJsonNull()){
                     createDate = content.get(i).getAsJsonObject().get("createDate").getAsString();
+                    // Дата создания приходит в формате yyyy-MM-dd'T'HH:mm:ss.SSS. Конвертируем в обычную дату
                     createDate=convertTimeOrg(createDate);
                 }
+                // Парсим статус обращения
                 if (!content.get(i).getAsJsonObject().get("statusNotePPOZ").isJsonNull()){
                     statusNotePPOZ = content.get(i).getAsJsonObject().get("statusNotePPOZ").getAsString();
                 }
+                // Парсим имена заявителей
                 if (!content.get(i).getAsJsonObject().get("textApplicants").isJsonNull()){
                     textApplicants = content.get(i).getAsJsonObject().get("textApplicants").getAsString();
                 }
+                // Парсим дату окончания обработки
                 if (!content.get(i).getAsJsonObject().get("processingEndDate").isJsonNull()){
                     processingEndDate = content.get(i).getAsJsonObject().get("processingEndDate").getAsString();
+                    // Дата окончания приходит в формате yyyy-MM-dd'T'HH:mm:ss.SSS. Конвертируем в обычную дату
                     processingEndDate =convertTimeOrg(processingEndDate);
                 }
+                // Парсим текущий шаг
                 if (!content.get(i).getAsJsonObject().get("currentStep").isJsonNull()){
                     currentStep = content.get(i).getAsJsonObject().get("currentStep").getAsString();
-
+                    // Получили текущий шаг в кодовом имени. Преобразуем в нормальный вид
                     switch (currentStep){
                         case "PROCESS_END_13":
                             currentStep="Обработка завершена";
@@ -602,13 +639,12 @@ public class ReportController {
                             break;
                     }
                 }
-
+                // Добавляем все данные в список
                 reportOrgList.add(new ReportModel("", orgName, internalNum, name, createDate, statusNotePPOZ, textApplicants, processingEndDate, currentStep));
             }
         }
 
-
-        return reportOrgList;
+        return reportOrgList; // Возвращаем итоговый список
     }
 
     // Функция для загрузки отчета
@@ -623,7 +659,6 @@ public class ReportController {
             fileChooser.setInitialDirectory(new File(lastPathDirectory));
         }
         // Устанавливаем список расширений для файла
-        //fileChooser.setInitialFileName("report_pkpvd");// Устанавливаем название для файла
         fileChooser.setInitialFileName("report_pkpvd_"+dateStart.getDayOfMonth()+"."+dateStart.getMonthValue()+"."+dateStart.getYear()+"-"+
                 datefinish.getDayOfMonth()+"."+datefinish.getMonthValue()+"."+datefinish.getYear());// Устанавливаем название для файла
         // Список расширений для Excel

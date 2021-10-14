@@ -1,7 +1,7 @@
 package pkpvdplus.model;
 
 import javafx.beans.property.SimpleStringProperty;
-// Класс для отображения данных в отчёте
+// Модель для отображения данных в отчёте
 public class ReportModel {
     private SimpleStringProperty period; // Период, за который сформирован отчёт
     private SimpleStringProperty nameCompany; // Наименование организации
@@ -12,9 +12,6 @@ public class ReportModel {
     private SimpleStringProperty applicant; // Заявители
     private SimpleStringProperty dateEnd; // Дата окончания обработки
     private SimpleStringProperty currentStep; // Текущий шаг
-
-
-
     // Конструктор
     public ReportModel(String period, String nameCompany, String numberAppeal, String nameAppeal, String dateCreate, String status, String applicant, String dateEnd, String currentStep) {
         this.period =new SimpleStringProperty(period);
@@ -28,7 +25,6 @@ public class ReportModel {
         this.currentStep = new SimpleStringProperty(currentStep);
 
     }
-
     // Геттеры и сеттеры
     public String getPeriod() {
         return period.get();

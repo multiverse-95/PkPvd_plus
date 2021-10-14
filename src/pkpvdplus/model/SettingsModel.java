@@ -1,13 +1,12 @@
 package pkpvdplus.model;
 
-// Класс для json-настроек
+// Модель для json-настроек
 public class SettingsModel {
     private String login; // Логин
     private String password; // Пароль
     private String cookie; // Куки
     private String lastPathToFile; // Последний путь к файлу, где был сохранен отчёт
     private boolean isCheckBoxSel; // Флаг чекбокса
-
     // Конструктор
     public SettingsModel(String login, String password, String cookie, String lastPathToFile, boolean isCheckBoxSel) {
         this.login = login;

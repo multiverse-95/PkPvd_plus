@@ -78,14 +78,6 @@ public class LoginController {
                 Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8));
                 out.write(content);
                 out.close();
-                /*try {
-                    FileWriter fileWriter = null;
-                    fileWriter = new FileWriter(file);
-                    fileWriter.write(content); // Записываем данные
-                    fileWriter.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(LoginController.class.getName()).log(Level.SEVERE, null, ex);
-                }*/
             } else {
                 System.out.println("Directory is not created");
                 SaveSettings(login, password, cookie, isCheckBoxSel);

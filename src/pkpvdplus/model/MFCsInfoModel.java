@@ -1,14 +1,14 @@
 package pkpvdplus.model;
-
+// Модель информации об мфц
 public class MFCsInfoModel {
-    private String code;
-    private String name;
-
+    private String code; // Код мфц
+    private String name; // Наименование мфц
+    // Конструктор
     public MFCsInfoModel(String code, String name) {
         this.code = code;
         this.name = name;
     }
-
+    // Геттеры и сеттеры
     public String getCode() {
         return code;
     }

@@ -1,5 +1,5 @@
 package pkpvdplus.model;
-
+// Модель для отображения информации об обращении
 public class AppealGeneralInfoModel {
     // Переменные для главной информации об обращении
     private String statementType; // Наименование
@@ -34,7 +34,7 @@ public class AppealGeneralInfoModel {
     private boolean output_doc_mail; // Получение документов почтой
     private boolean output_doc_email; // Получение документов на электронную почту
     private String output_email; // Адрес эл. почты (если есть)
-
+    // Конструктор
     public AppealGeneralInfoModel(String statementType, String internalNum, String createEventDateWhen, String createEventPerformer, String packageNum, String numPPOZ,
                                   String createPPOZDate, String statusNotePPOZ, String statusPPOZ, String statusPPOZDate, String routineExecutionDays, String processingEndDate,
                                   String nameAdvanced, String internalNumAdvanced, String createEventDateWhenAdvanced, String createEventPerformerAdvanced, String currentStepAdvanced,
@@ -70,7 +70,7 @@ public class AppealGeneralInfoModel {
         this.output_doc_email = output_doc_email;
         this.output_email = output_email;
     }
-
+    // Геттеры и сеттеры
     public String getStatementType() {
         return statementType;
     }
